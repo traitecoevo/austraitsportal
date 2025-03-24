@@ -1,13 +1,30 @@
-Package: austraits-portal
+Package: austraits.portal
 Title: Shiny interface to the AusTraits database
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: CC BY 4.0
+        c(person(given = "Daniel",
+             family = "Falster",
+             role = "aut",
+             email = "daniel.falster@unsw.edu.au",
+             comment = c(ORCID = "0000-0002-9814-092X")),
+      person(given = "Elizabeth", 
+            family = "Wenk", 
+            role = "aut",
+            email = "e.wenk@unsw.edu.au", 
+            comment = c(ORCID = "0000-0001-5640-5910")),
+      person(given = "Fonti",
+             family = "Kar",
+             role = c("aut", "cre"),
+             email = "f.kar@unsw.edu.au",
+             comment = c(ORCID = "0000-0002-2760-3974"))
+             )
+Description: Shiny R package to the AusTraits Plant Traits database
+License: CC BY 4.0 + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Depends:
+  R >= 3.5.0
 Imports: 
   shiny,
   arrow,
@@ -16,4 +33,6 @@ Imports:
   DT,
 Remotes:
   traitecoevo/austraits
-  
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
