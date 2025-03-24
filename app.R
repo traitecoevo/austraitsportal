@@ -1,11 +1,3 @@
-# Dependencies we need
-library(shiny)
-library(bslib)
-library(dplyr)
-library(DT)
-library(austraits)
-library(arrow)
-
 # Load data
 ## TODO: One day parquet of flattened database may be uploaded to Zenodo, 
 ## For now will use the R package and store in Github Releases see data-raw/create-flat-austraits.R
