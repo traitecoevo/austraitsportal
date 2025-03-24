@@ -34,7 +34,8 @@ ui <- page_sidebar(
     ## By genus
     selectizeInput("user_genus",
                    label = "Filter by genus:",
-                   choices = c("All", all_genus)
+                   choices = NULL,
+                   multiple = TRUE
     )
   ),
   
@@ -49,6 +50,14 @@ ui <- page_sidebar(
 
 # Define server logic required to filter and display data
 server <- function(input, output, session) {
+  # Server-side selectize
+  updateSelectizeInput(
+    session,
+    "user_genus",
+    choices = all_genus,
+    selected = NULL,
+    server = TRUE
+  )
   
   # Reactive value to store the filtered data later
   filtered_data <- reactiveVal(NULL)
@@ -58,22 +67,15 @@ server <- function(input, output, session) {
   observeEvent(input$user_genus,
                {
                  # Requirements for this modules to work
+                 # Input returns as a chacter vector of genus
                  req(input$user_genus)
                  
                  # Filter by genus
                  filtered_by_genus <- austraits |> 
-                   filter(genus == input$user_genus)
+                   semi_join(tibble(genus = input$user_genus))
                  
                  # Store in reactive
                  filtered_data(filtered_by_genus)
-
-                 # updateSelectizeInput(
-                 #   session,
-                 #   "user_genus",
-                 #   choices = all_genus,
-                 #   selected = NULL,
-                 #   server = TRUE
-                 # )
                }
   )
 
