@@ -13,6 +13,10 @@ austraits <-
   open_dataset("data/austraits/austraits-lite.parquet") |> 
   collect()
 
+## Set up possible genus
+# Unique values of genus
+all_genus <- austraits$genus |> unique() |> sort()
+
 # User interface (UI)
 ui <- page_sidebar(
   
@@ -28,9 +32,10 @@ ui <- page_sidebar(
     
     # Filter by taxonomic information
     ## By genus
-    selectizeInput("user-genus",
-                   label = "Search for a genus",
-                   choices = "All")
+    selectizeInput("user_genus",
+                   label = "Filter by genus:",
+                   choices = c("All", all_genus)
+    )
   ),
   
   # Data display
@@ -45,55 +50,37 @@ ui <- page_sidebar(
 # Define server logic required to filter and display data
 server <- function(input, output, session) {
   
-  # # Reactive value to store the data
-  # data_reactive <- reactiveVal(NULL)
-  # 
-  # # Put austraits in reactive
-  # data_reactive(austraits)
-  # 
-  # # Update selection
-  # observeEvent(input$user-genus,
-  #   {
-  #     req(data_reactive(), input$user-genus) # Requirements for this to work
-  #     
-  #     data <- data_reactive()
-  #     all_genus <- data["genus"] |> unique() |> sort()
-  #     
-  #     print(data)
-      # updateSelectizeInput(
-      #   session,
-      #   "user-genus",
-      #   choices = c("All", all_genus),
-      #   selected = NULL,
-      #   server = TRUE
-      # )
-  #   }
-  # )
+  # Reactive value to store the filtered data later
+  filtered_data <- reactiveVal(NULL)
 
-  # # Filter by taxonomic information
-  # ## Store filtered data into a reactive object
-  # filtered_data <- reactive({
-  #   
-  #   if(input$user-genus == "All"){
-  #     data <- austraits
-  #   } else {
-  #   data   <- austraits |> 
-  #       filter(genus == input$user-genus) 
-  #   }
-  #   
-  #   # Collect the data
-  #   output <- data |> 
-  #     collect()
-  #   
-  #   # Return output
-  #   return(output)
-  # })
-  # 
-  # 
+  # Filter data by taxonomic information
+  # Watch for changes in user-genus
+  observeEvent(input$user_genus,
+               {
+                 # Requirements for this modules to work
+                 req(input$user_genus)
+                 
+                 # Filter by genus
+                 filtered_by_genus <- austraits |> 
+                   filter(genus == input$user_genus)
+                 
+                 # Store in reactive
+                 filtered_data(filtered_by_genus)
+
+                 # updateSelectizeInput(
+                 #   session,
+                 #   "user_genus",
+                 #   choices = all_genus,
+                 #   selected = NULL,
+                 #   server = TRUE
+                 # )
+               }
+  )
+
   # Render user selected data table output
   output$data_table <- renderDT({
     datatable(
-      data = austraits,
+      data = filtered_data(),
       options = list(
         pageLength = 10,
         scrollX = TRUE
