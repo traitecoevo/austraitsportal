@@ -13,4 +13,5 @@ flatten_austraits <- austraits |> flatten_database()
 ## Save this as a parquet
 write_parquet(flatten_austraits, "data/austraits/austraits-6.0.0-flatten.parquet")
 
+## Save lite version as a parquet
 write_parquet(austraits:::austraits_5.0.0_lite |> flatten_database(), "data/austraits/austraits-lite.parquet")
