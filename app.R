@@ -9,45 +9,88 @@ library(arrow)
 
 # Load data
 ## TODO: One day parquet of flattened database may be uploaded to Zenodo, 
-## For now will use the R package and store in Github Releases
-austraits <- open_dataset("data/austraits/austraits-6.0.0-flatten.parquet")
+## For now will use the R package and store in Github Releases see data-raw/create-flat-austraits.R
+austraits <- 
+  open_dataset("data/austraits/austraits-6.0.0-flatten.parquet") |> 
+  collect()
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
+# User interface (UI)
+ui <- page_sidebar(
+  
+  # Set the overall theme of the app
+  theme = bs_theme(preset = "flatly"),
+  
+  # Title of the portal
+  title = "AusTraits Data Portal",
+  
+  # Create a sidebar for the app
+  sidebar = sidebar(
+    title = "Controls",
+    
+    # Filter by taxonomic information
+    ## By genus
+    selectizeInput("user-genus",
+                   label = "Search for a genus",
+                   choices = "All")
     )
-)
+    )
+
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  
+  observeEvent(
+    list(
+      input$user-genus
+    ),
+    {
+      updateSelectizeInput(
+        session,
+        "user-genus",
+        selected = "All",
+        choices = c("All", sort(unique(
+          austraits$genus
+        ))),
+        server = TRUE
+      )
+    }
+  )
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-    })
+  # # Filter by taxonomic information
+  # ## Store filtered data into a reactive object
+  # filtered_data <- reactive({
+  #   
+  #   if(input$user-genus == "All"){
+  #     data <- austraits
+  #   } else {
+  #   data   <- austraits |> 
+  #       filter(genus == input$user-genus) 
+  #   }
+  #   
+  #   # Collect the data
+  #   output <- data |> 
+  #     collect()
+  #   
+  #   # Return output
+  #   return(output)
+  # })
+  # 
+  # 
+  # # Render user selected data table output
+  # output$data_table <- renderDT({
+  #   datatable(
+  #     filtered_data(),
+  #     options = list(
+  #       pageLength = 10,
+  #       scrollX = TRUE,
+  #       dom = 'Bfrtip',
+  #       buttons = c('copy', 'csv', 'excel')
+  #     ),
+  #     rownames = FALSE,
+  #     filter = 'top',
+  #     class = 'cell-border stripe'
+  #   )
+  # })
 }
 
 # Run the application 

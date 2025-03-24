@@ -13,7 +13,7 @@ penguins_clean <- na.omit(penguins)
 ui <- page_sidebar(
   title = "Palmer Penguins Data Portal",
   sidebar = sidebar(
-    title = "Filters",
+    title = "Controls",
     
     # Species filter
     checkboxGroupInput(
