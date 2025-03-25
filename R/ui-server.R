@@ -21,6 +21,12 @@ austraits_ui <- function(){
                      choices = NULL,
                      multiple = TRUE
       ),
+      ## By family
+      selectizeInput("user_family",
+                     label = "Filter by family:",
+                     choices = NULL,
+                     multiple = TRUE
+      ),
       
       # Download button
       downloadButton("download_data", "Download displayed data")
@@ -43,7 +49,7 @@ austraits_ui <- function(){
 #' @param session 
 
 austraits_server <- function(input, output, session) {
-  # Server-side selectize
+  # Server-side selectize for genus
   updateSelectizeInput(
     session,
     "user_genus",
@@ -57,18 +63,28 @@ austraits_server <- function(input, output, session) {
 
   # Filter data by taxonomic information
   # Watch for changes in user-genus
-  observeEvent(input$user_genus,
+  observeEvent(
+    list(input$user_genus
+         ),
                {
                  # Requirements for this modules to work
-                 # Input returns as a chacter vector of genus
+                 # Input returns as a character vector of genus
                  req(input$user_genus)
                  
-                 # Filter by genus
-                 filtered_by_genus <- austraits |> 
+                 # Filter by taxonomic info
+                 filtered_by_taxonomy <- austraits |> 
                    semi_join(tibble(genus = input$user_genus))
                  
                  # Store in reactive
-                 filtered_data(filtered_by_genus)
+                 filtered_data(filtered_by_taxonomy)
+                 
+                 # Server-side selectize for family
+                 updateSelectizeInput(
+                   session,
+                   "user_family",
+                   choices = sort(unique(filtered_data()$family)),
+                   server = TRUE
+                 )
                }
   )
 
