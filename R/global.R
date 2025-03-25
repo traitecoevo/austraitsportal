@@ -2,7 +2,8 @@
 ## TODO: One day parquet of flattened database may be uploaded to Zenodo,
 ## For now will use the R package and store in Github Releases see data-raw/create-flat-austraits.R
 austraits <-
-  load_austraits(version = "6.0.0", path = "inst/extdata/austraits/") 
+  load_austraits(version = "6.0.0", path = "inst/extdata/austraits/") |> 
+  join_taxa()
 
 ## Set up possible values for selectize
 # Unique values of taxon_name
