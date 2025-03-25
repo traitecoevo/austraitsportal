@@ -27,6 +27,7 @@ Depends:
   R (>= 3.5.0)
 Imports: 
   shiny,
+  austraits,
   arrow,
   bslib,
   dplyr,
