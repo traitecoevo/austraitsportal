@@ -28,6 +28,10 @@ austraits_ui <- function(){
                      multiple = TRUE
       ),
       
+      br(),
+      actionButton("clear_filters", "Clear Filters", 
+                   class = "btn-warning w-100"),
+      
       # Download button
       downloadButton("download_data", "Download displayed data")
     ),
@@ -58,14 +62,21 @@ austraits_server <- function(input, output, session) {
     server = TRUE
   )
   
+  # Server-side selectize for family
+  updateSelectizeInput(
+    session,
+    "user_family",
+    choices = all_family,
+    selected = NULL,
+    server = TRUE
+  )
+  
   # Reactive value to store the filtered data later
   filtered_data <- reactiveVal(NULL)
 
   # Filter data by taxonomic information
   # Watch for changes in user-genus
-  observeEvent(
-    list(input$user_genus
-         ),
+  observeEvent(input$user_genus,
                {
                  # Requirements for this modules to work
                  # Input returns as a character vector of genus
@@ -78,7 +89,7 @@ austraits_server <- function(input, output, session) {
                  # Store in reactive
                  filtered_data(filtered_by_taxonomy)
                  
-                 # Server-side selectize for family
+                 # Update server-side selectize for family after filtering
                  updateSelectizeInput(
                    session,
                    "user_family",
@@ -87,7 +98,63 @@ austraits_server <- function(input, output, session) {
                  )
                }
   )
+  
+  # Watch for changes in user-family
+  observeEvent(input$user_family,
+               {
+                 # Requirements for this modules to work
+                 # Input returns as a character vector of genus
+                 req(input$user_family)
+                 
+                 # Filter by taxonomic info
+                 filtered_by_taxonomy <- austraits |> 
+                   semi_join(tibble(family = input$user_family))
+                 
+                 # Store in reactive
+                 filtered_data(filtered_by_taxonomy)
+                 
+                 # Update server-side selectize for genus after filtering
+                 updateSelectizeInput(
+                   session,
+                   "user_genus",
+                   choices = sort(unique(filtered_data()$genus)),
+                   server = TRUE
+                 )
+               }
+  )
 
+  # Clear filters button action
+  observeEvent(input$clear_filters, {
+    req(filtered_data())
+    
+    # Clear the filter values
+    # Server-side selectize for genus
+    updateSelectizeInput(
+      session,
+      "user_genus",
+      choices = all_genus,
+      selected = NULL,
+      server = TRUE
+    )
+    
+    # Server-side selectize for family
+    updateSelectizeInput(
+      session,
+      "user_family",
+      choices = all_family,
+      selected = NULL,
+      server = TRUE
+    )
+    
+    # Store nothing in filtered_data()
+    filtered_data(NULL)
+    
+    # Show notification
+    showNotification("Filters have been cleared", 
+                     type = "message", 
+                     duration = 3)
+  })
+  
   # Render user selected data table output
   output$data_table <- DT::renderDT({
     datatable(
