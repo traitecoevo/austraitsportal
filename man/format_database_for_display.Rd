@@ -7,7 +7,7 @@
 format_database_for_display(database)
 }
 \arguments{
-\item{database}{}
+\item{database}{traits.build object}
 }
 \description{
 Format relational database for display

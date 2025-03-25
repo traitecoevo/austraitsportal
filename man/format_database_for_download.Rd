@@ -7,7 +7,7 @@
 format_database_for_download(database)
 }
 \arguments{
-\item{database}{}
+\item{database}{traits.build object}
 }
 \description{
 Format database for download handler
