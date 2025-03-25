@@ -109,9 +109,25 @@ austraits_server <- function(input, output, session) {
   )
   
   # Reactive value to store the filtered data later
-  filtered_data <- reactiveVal(NULL)
+  filtered_database <- reactiveVal(NULL)
 
   # Filter data by taxonomic information
+  # Watch for changes in user_taxon_name
+  observeEvent(input$user_taxon_name,
+               {
+                 # Requirements for this modules to work
+                 # Input returns as a character vector of genus
+                 req(input$user_taxon_name)
+                 
+                 # Filter by taxonomic info
+                 filtered_by_taxonomy <- austraits |> 
+                   extract_taxa(taxon_name = input$user_taxon_name)
+                 
+                 # Store in reactive
+                 filtered_database(filtered_by_taxonomy)
+               }
+  )
+  
   # Watch for changes in user-genus
   observeEvent(input$user_genus,
                {
@@ -121,18 +137,10 @@ austraits_server <- function(input, output, session) {
                  
                  # Filter by taxonomic info
                  filtered_by_taxonomy <- austraits |> 
-                   semi_join(tibble(genus = input$user_genus))
+                   extract_taxa(genus = input$user_genus)
                  
                  # Store in reactive
-                 filtered_data(filtered_by_taxonomy)
-                 
-                 # Update server-side selectize for family after filtering
-                 updateSelectizeInput(
-                   session,
-                   "user_family",
-                   choices = sort(unique(filtered_data()$family)),
-                   server = TRUE
-                 )
+                 filtered_database(filtered_by_taxonomy)
                }
   )
   
@@ -145,24 +153,16 @@ austraits_server <- function(input, output, session) {
                  
                  # Filter by taxonomic info
                  filtered_by_taxonomy <- austraits |> 
-                   semi_join(tibble(family = input$user_family))
+                   extract_taxa(family = input$user_family)
                  
                  # Store in reactive
-                 filtered_data(filtered_by_taxonomy)
-                 
-                 # Update server-side selectize for genus after filtering
-                 updateSelectizeInput(
-                   session,
-                   "user_genus",
-                   choices = sort(unique(filtered_data()$genus)),
-                   server = TRUE
-                 )
+                 filtered_database(filtered_by_taxonomy)
                }
   )
 
   # Clear filters button action
   observeEvent(input$clear_filters, {
-    req(filtered_data())
+    req(filtered_database())
     
     # Clear the filter values
     # Server-side selectize for taxon_name
@@ -194,7 +194,7 @@ austraits_server <- function(input, output, session) {
     )
     
     # Store nothing in filtered_data()
-    filtered_data(NULL)
+    filtered_database(NULL)
     
     # Show notification
     showNotification("Filters have been cleared", 
@@ -202,10 +202,38 @@ austraits_server <- function(input, output, session) {
                      duration = 3)
   })
   
-  # Render user selected data table output
+  # Set up display data
+  display_data_table <- reactive({
+    # Get the current filtered database
+    filtered_db <- filtered_database()
+    
+    # Check if it's NULL and return appropriate value
+    if (is.null(filtered_db)) {
+      return(NULL)
+    }
+    
+    # Format the database for display
+    format_database_for_display(filtered_db)
+  })
+  
+  # Set up download data as reactive expression  
+  download_data_table <- reactive({
+    # Get the current filtered database
+    filtered_db <- filtered_database()
+    
+    # Check if it's NULL and return appropriate value
+    if (is.null(filtered_db)) {
+      return(NULL)
+    }
+    
+    # Format the database for download
+    format_database_for_download(filtered_db)
+  })
+  
+  ### Render user selected data table output
   output$data_table <- DT::renderDT({
     datatable(
-      data = filtered_data(),
+      data = display_data_table(),
       options = list(
         pageLength = 10,
         scrollX = TRUE
@@ -222,7 +250,7 @@ austraits_server <- function(input, output, session) {
       paste("austraits-6.0.0-", Sys.Date(), ".csv", sep = "")
     },
     content = function(file) {
-      utils::write.csv(filtered_data(), file, row.names = FALSE)
+      utils::write.csv(download_data_table(), file, row.names = FALSE)
     }
   )
 }
