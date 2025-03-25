@@ -2,6 +2,7 @@
 
 import(DT)
 import(arrow)
+import(austraits)
 import(bslib)
 import(dplyr)
 import(shiny, except=c(dataTableOutput, renderDataTable))

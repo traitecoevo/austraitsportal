@@ -4,6 +4,7 @@
 #' @import arrow
 #' @import dplyr
 #' @import DT
+#' @import austraits
 "_PACKAGE"
 
 ## usethis namespace: start
