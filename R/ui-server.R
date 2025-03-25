@@ -12,21 +12,47 @@ austraits_ui <- function(){
     
     # Create a sidebar for the app
     sidebar = sidebar(
-      title = "Controls",
-      
       # Filter by taxonomic information
+      h5("Taxonomic information"),
+      
+      radioButtons("user_taxon_rank", 
+                  label = "Filter by which taxon name:",
+                  choices = c('Taxon name' = "taxon_name",
+                              'Genus' = "genus", 
+                              'Family' = "family"
+                              )
+                  ),
+      
+      # Only show this panel if Taxon name is selected
+      conditionalPanel(
+        condition = 'input.user_taxon_rank == "taxon_name"',
+        ## By taxon_name
+        selectizeInput("user_taxon_name",
+                       label = "Taxon name:",
+                       choices = NULL,
+                       multiple = TRUE)
+        ),
+      
+    # Only show this panel if Genus is selected
+    conditionalPanel(
+      condition = 'input.user_taxon_rank == "genus"',
       ## By genus
       selectizeInput("user_genus",
-                     label = "Filter by genus:",
+                     label = "Genus:",
                      choices = NULL,
                      multiple = TRUE
-      ),
-      ## By family
+    )
+  ),
+  # Only show this panel if family is selected  
+  conditionalPanel(
+    condition = 'input.user_taxon_rank == "family"',
+  ## By family
       selectizeInput("user_family",
-                     label = "Filter by family:",
+                     label = "Family:",
                      choices = NULL,
                      multiple = TRUE
-      ),
+      )
+  ),
       
       br(),
       actionButton("clear_filters", "Clear Filters", 
@@ -44,7 +70,6 @@ austraits_ui <- function(){
         DT::DTOutput("data_table")
       )
     )
-    
   )
 }
 
@@ -56,7 +81,16 @@ austraits_ui <- function(){
 #' @param session 
 
 austraits_server <- function(input, output, session) {
-  # Server-side selectize for genus
+  # Server-side selectize for taxon_name
+  updateSelectizeInput(
+    session,
+    "user_taxon_name",
+    choices = all_taxon_names,
+    selected = NULL,
+    server = TRUE
+  )
+  
+    # Server-side selectize for genus
   updateSelectizeInput(
     session,
     "user_genus",
@@ -131,6 +165,16 @@ austraits_server <- function(input, output, session) {
     req(filtered_data())
     
     # Clear the filter values
+    # Server-side selectize for taxon_name
+    updateSelectizeInput(
+      session,
+      "user_taxon_name",
+      choices = all_taxon_names,
+      selected = NULL,
+      server = TRUE
+    )
+  
+    
     # Server-side selectize for genus
     updateSelectizeInput(
       session,
