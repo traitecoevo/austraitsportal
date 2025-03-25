@@ -39,7 +39,10 @@ austraits_ui <- function(){
     # Data display
     card(
       card_header("Data Preview"),
-      DT::DTOutput("data_table")
+      card_body(
+        fillable = TRUE,
+        DT::DTOutput("data_table")
+      )
     )
     
   )
