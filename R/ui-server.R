@@ -1,36 +1,48 @@
-# User interface (UI)
-ui <- page_sidebar(
+#' User interface (UI) for AusTraits Data Portal
+
+austraits_ui <- function(){
   
-  # Set the overall theme of the app
-  theme = bs_theme(preset = "flatly"),
-  
-  # Title of the portal
-  title = "AusTraits Data Portal",
-  
-  # Create a sidebar for the app
-  sidebar = sidebar(
-    title = "Controls",
+  ui <- page_sidebar(
     
-    # Filter by taxonomic information
-    ## By genus
-    selectizeInput("user_genus",
-                   label = "Filter by genus:",
-                   choices = NULL,
-                   multiple = TRUE
+    # Set the overall theme of the app
+    theme = bs_theme(preset = "flatly"),
+    
+    # Title of the portal
+    title = "AusTraits Data Portal",
+    
+    # Create a sidebar for the app
+    sidebar = sidebar(
+      title = "Controls",
+      
+      # Filter by taxonomic information
+      ## By genus
+      selectizeInput("user_genus",
+                     label = "Filter by genus:",
+                     choices = NULL,
+                     multiple = TRUE
+      ),
+      
+      # Download button
+      downloadButton("download_data", "Download displayed data")
+    ),
+    
+    # Data display
+    card(
+      card_header("Data Preview"),
+      DT::DTOutput("data_table")
     )
-  ),
-  
-  # Data display
-  card(
-    card_header("Data Preview"),
-    DTOutput("data_table")
+    
   )
-  
-)
+}
 
 
-# Define server logic required to filter and display data
-server <- function(input, output, session) {
+#' AusTraits Data Portal Server Logic
+#'
+#' @param input 
+#' @param output 
+#' @param session 
+
+austraits_server <- function(input, output, session) {
   # Server-side selectize
   updateSelectizeInput(
     session,
@@ -61,7 +73,7 @@ server <- function(input, output, session) {
   )
 
   # Render user selected data table output
-  output$data_table <- renderDT({
+  output$data_table <- DT::renderDT({
     datatable(
       data = filtered_data(),
       options = list(
@@ -73,6 +85,16 @@ server <- function(input, output, session) {
       class = 'cell-border stripe'
     )
   })
+  
+  # Download handler
+  output$download_data <- downloadHandler(
+    filename = function() {
+      paste("austraits-6.0.0-", Sys.Date(), ".csv", sep = "")
+    },
+    content = function(file) {
+      utils::write.csv(filtered_data(), file, row.names = FALSE)
+    }
+  )
 }
 
 

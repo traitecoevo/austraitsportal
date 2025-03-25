@@ -18,19 +18,20 @@ Authors@R:
              email = "f.kar@unsw.edu.au",
              comment = c(ORCID = "0000-0002-2760-3974"))
              )
-Description: Shiny R package to the AusTraits Plant Traits database
+Description: Shiny R package to the AusTraits Plant Traits database.
 License: CC BY 4.0 + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Depends:
-  R >= 3.5.0
+  R (>= 3.5.0)
 Imports: 
   shiny,
   arrow,
   bslib,
   dplyr,
   DT,
+  utils
 Remotes:
   traitecoevo/austraits
 Suggests: 

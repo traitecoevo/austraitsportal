@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(austraits-portal)
+library(austraits.portal)
 
-test_check("austraits-portal")
+test_check("austraits.portal")

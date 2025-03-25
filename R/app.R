@@ -1,4 +1,8 @@
+#' Open AusTraits Data Portal Locally
+#'
+#' @param ... 
+
 open_data_portal <- function(...){
   # Run the application 
-  shinyApp(ui = ui, server = server)
+  shiny::shinyApp(ui = austraits_ui, server = austraits_server, ...)
 }
