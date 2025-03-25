@@ -7,7 +7,7 @@
 open_data_portal(...)
 }
 \arguments{
-\item{...}{}
+\item{...}{arguments passed to ShinyApp()}
 }
 \description{
 Open AusTraits Data Portal Locally
