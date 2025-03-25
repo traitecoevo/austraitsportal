@@ -32,10 +32,10 @@ Imports:
   bslib,
   dplyr,
   DT,
+  httr2,
   utils
 Remotes:
   traitecoevo/austraits
 Suggests: 
-    testthat (>= 3.0.0),
-    httr2
+    testthat (>= 3.0.0)
 Config/testthat/edition: 3
