@@ -58,7 +58,7 @@ austraits_ui <- function(){
       
       ## By context property
       selectizeInput("user_context_property",
-                     label = "Search contexts by keywords",
+                     label = "Search contexts by keywords:",
                      choices = NULL,
                      multiple = TRUE
       ),
@@ -190,7 +190,7 @@ austraits_server <- function(input, output, session) {
   
   observeEvent(input$user_context_property, {
     # Skip if empty
-    if(length(input$user_taxon_name) == 0) {
+    if(length(input$user_context_property) == 0) {
       filtered_database(NULL)
       return()
     }
