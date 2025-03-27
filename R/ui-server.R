@@ -185,34 +185,55 @@ austraits_server <- function(input, output, session) {
     # Store in reactive
     filtered_by_taxonomy(filter_taxonomic_output)
   })
+
   
-  # Filter data by contexts information
-  updateSelectizeInput(
-    session,
-    "user_context_property",
-    choices = all_contexts,
-    selected = NULL,
-    server = TRUE
-  )
+  # Update contexts by taxonomic filter if applied
+  observe({
+    # Get current taxonomy filtered data
+    tax_data <- filtered_by_taxonomy()
+    
+    if(!is.null(tax_data)) {
+      # Extract the available contexts from the taxonomy-filtered data
+      available_contexts <- unique(tax_data$contexts$context_property) |> sort()
+
+      # Preserve valid selections if possible
+      current_selections <- input$user_context_property
+      valid_selections <- intersect(current_selections, available_contexts)
+
+      # Update the selectizeInput with only the available contexts
+      updateSelectizeInput(
+        session,
+        "user_context_property",
+        choices = available_contexts,
+        # selected = valid_selections,  # Keep valid selections
+        server = TRUE,
+        options = list(
+          placeholder = "Type to search contexts (e.g. fire)",
+          plugins = list('remove_button'),
+          searchField = 'text',
+          highlight = TRUE,
+          create = TRUE
+        )
+      )
+    } else {
+      # If no taxonomy filter is applied, reset to all contexts
+      updateSelectizeInput(
+        session,
+        "user_context_property",
+        choices = all_contexts,
+        selected = input$user_context_property,  # Preserve current selections
+        server = TRUE,
+        options = list(
+          plugins = list('remove_button'),
+          searchField = 'text',
+          highlight = TRUE,
+          create = TRUE
+        )
+      )
+    }
+  })
   
-  # Filter by contexts information
-  # observeEvent(input$user_context_property, {
-  #   # Skip if empty
-  #   if(length(input$user_context_property) == 0) {
-  #     filtered_database(NULL)
-  #     return()
-  #   }
-  #   
-  #   # Filter by context property 
-  #   filtered_by_contexts <- austraits |> 
-  #     extract_data(table = "contexts",
-  #                  col = "context_property", 
-  #                  col_value = input$user_context_property)
-  #   
-  #   # Store in reactive
-  #   filtered_database(filtered_by_contexts)
-  # })
-  
+  # Filter by contexts (with taxonomic) information 
   # Observer that combines both taxonomy and context filters
   observe({
     # Get current taxonomy filtered data
@@ -220,9 +241,11 @@ austraits_server <- function(input, output, session) {
     
     # Get context filter values
     context_values <- input$user_context_property
-    
+
     # Case 1: Both taxonomy and context filters are active
     if(!is.null(tax_data) && length(context_values) > 0) {
+      # browser()
+      
       tax_context_output <- tax_data |> 
         extract_data(table = "contexts",
                      col = "context_property", 
@@ -232,7 +255,7 @@ austraits_server <- function(input, output, session) {
       filtered_database(tax_context_output)
     }  
     # Case 2: Only taxonomy filter is active
-    else if(!is.null(tax_data)) {
+    else if(!is.null(tax_data) && length(context_values) == 0) {
       filtered_database(tax_data)
     }
     # Case 3: Only context filter is active
