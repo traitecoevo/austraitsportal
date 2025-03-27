@@ -60,7 +60,9 @@ austraits_ui <- function(){
       selectizeInput("user_context_property",
                      label = "Search contexts by keywords:",
                      choices = NULL,
-                     multiple = TRUE
+                     multiple = TRUE,
+                     options = list(
+                       create = TRUE)
       ),
       
       br(),
