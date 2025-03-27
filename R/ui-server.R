@@ -78,7 +78,8 @@ austraits_ui <- function(){
       card_header("Data Preview"),
       card_body(
         fillable = TRUE,
-        DT::DTOutput("data_table")
+        DT::DTOutput("data_table"
+                     )
       )
     )
   )
@@ -97,7 +98,11 @@ austraits_server <- function(input, output, session) {
   genus_choices <- reactive({ all_genus })
   family_choices <- reactive({ all_family })
   
-  # Reactive value to store the filtered data later
+  # Reactive values for storage
+  ## One for taxonomy filters
+  filtered_by_taxonomy <- reactiveVal(NULL)
+  
+  # Final combined filtered data
   filtered_database <- reactiveVal(NULL)
   
   # Update the appropriate selectizeInput when radio button changes
@@ -137,48 +142,48 @@ austraits_server <- function(input, output, session) {
   observeEvent(input$user_taxon_name, {
     # Skip if empty
     if(length(input$user_taxon_name) == 0) {
-      filtered_database(NULL)
+      filtered_by_taxonomy(NULL)
       return()
     }
     
     # Filter by taxonomic info
-    filtered_by_taxonomy <- austraits |> 
+    filter_taxonomic_output <- austraits |> 
       extract_taxa(taxon_name = input$user_taxon_name)
-    
+
     # Store in reactive
-    filtered_database(filtered_by_taxonomy)
+    filtered_by_taxonomy(filter_taxonomic_output)
   })
   
   ## Watch for changes in user-genus
   observeEvent(input$user_genus, {
     # Skip if empty
     if(length(input$user_genus) == 0) {
-      filtered_database(NULL)
+      filtered_by_taxonomy(NULL)
       return()
     }
     
     # Filter by taxonomic info
-    filtered_by_taxonomy <- austraits |> 
+    filter_taxonomic_output <- austraits |> 
       extract_taxa(genus = input$user_genus)
     
     # Store in reactive
-    filtered_database(filtered_by_taxonomy)
+    filtered_by_taxonomy(filter_taxonomic_output)
   })
   
   ## Watch for changes in user-family
   observeEvent(input$user_family, {
     # Skip if empty
     if(length(input$user_family) == 0) {
-      filtered_database(NULL)
+      filtered_by_taxonomy(NULL)
       return()
     }
     
     # Filter by taxonomic info
-    filtered_by_taxonomy <- austraits |> 
+    filter_taxonomic_output <- austraits |> 
       extract_taxa(family = input$user_family)
     
     # Store in reactive
-    filtered_database(filtered_by_taxonomy)
+    filtered_by_taxonomy(filter_taxonomic_output)
   })
   
   # Filter data by contexts information
@@ -190,21 +195,58 @@ austraits_server <- function(input, output, session) {
     server = TRUE
   )
   
-  observeEvent(input$user_context_property, {
-    # Skip if empty
-    if(length(input$user_context_property) == 0) {
-      filtered_database(NULL)
-      return()
+  # Filter by contexts information
+  # observeEvent(input$user_context_property, {
+  #   # Skip if empty
+  #   if(length(input$user_context_property) == 0) {
+  #     filtered_database(NULL)
+  #     return()
+  #   }
+  #   
+  #   # Filter by context property 
+  #   filtered_by_contexts <- austraits |> 
+  #     extract_data(table = "contexts",
+  #                  col = "context_property", 
+  #                  col_value = input$user_context_property)
+  #   
+  #   # Store in reactive
+  #   filtered_database(filtered_by_contexts)
+  # })
+  
+  # Observer that combines both taxonomy and context filters
+  observe({
+    # Get current taxonomy filtered data
+    tax_data <- filtered_by_taxonomy()
+    
+    # Get context filter values
+    context_values <- input$user_context_property
+    
+    # Case 1: Both taxonomy and context filters are active
+    if(!is.null(tax_data) && length(context_values) > 0) {
+      tax_context_output <- tax_data |> 
+        extract_data(table = "contexts",
+                     col = "context_property", 
+                     col_value = input$user_context_property)
+      
+      # Store the combined result
+      filtered_database(tax_context_output)
+    }  
+    # Case 2: Only taxonomy filter is active
+    else if(!is.null(tax_data)) {
+      filtered_database(tax_data)
     }
-    
-    # Filter by taxonomic info
-    filtered_by_contexts <- austraits |> 
-      extract_data(table = "contexts",
-                   col = "context_property", 
-                   col_value = input$user_context_property)
-    
-    # Store in reactive
-    filtered_database(filtered_by_contexts)
+    # Case 3: Only context filter is active
+    else if(length(context_values) > 0) {
+      context_filtered <- austraits |> 
+        extract_data(table = "contexts",
+                     col = "context_property", 
+                     col_value = context_values)
+      filtered_database(context_filtered)
+    }
+    # Case 4: No filters are active
+    else {
+      filtered_database(NULL)
+    }
   })
   
   # Clear filters button action
@@ -286,6 +328,7 @@ austraits_server <- function(input, output, session) {
     datatable(
       data = display_data,
       options = list(
+        dom = 't',
         pageLength = 10,
         scrollX = TRUE
       ),
