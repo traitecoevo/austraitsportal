@@ -16,7 +16,7 @@ austraits_ui <- function(){
       h5("Taxonomic information"),
       
       radioButtons("user_taxon_rank", 
-                   label = "Filter by which taxon name:",
+                   label = "Filter by which taxon rank:",
                    choices = c('Taxon name' = "taxon_name",
                                'Genus' = "genus", 
                                'Family' = "family"
@@ -54,6 +54,15 @@ austraits_ui <- function(){
         )
       ),
       
+      h5("Contexts information"),
+      
+      ## By context property
+      selectizeInput("user_context_property",
+                     label = "Search contexts by keywords",
+                     choices = NULL,
+                     multiple = TRUE
+      ),
+      
       br(),
       actionButton("clear_filters", "Clear Filters", 
                    class = "btn-warning w-100"),
@@ -81,10 +90,13 @@ austraits_ui <- function(){
 #' @param session Session id for Shiny interaction
 
 austraits_server <- function(input, output, session) {
-  # Initialize dropdown choices
+  # Initialize dropdown choices for taxonomic information
   taxon_name_choices <- reactive({ all_taxon_names })
   genus_choices <- reactive({ all_genus })
   family_choices <- reactive({ all_family })
+  
+  # Reactive value to store the filtered data later
+  filtered_database <- reactiveVal(NULL)
   
   # Update the appropriate selectizeInput when radio button changes
   observeEvent(input$user_taxon_rank, {
@@ -118,11 +130,8 @@ austraits_server <- function(input, output, session) {
     }
   })
   
-  # Reactive value to store the filtered data later
-  filtered_database <- reactiveVal(NULL)
-  
   # Filter data by taxonomic information
-  # Watch for changes in user_taxon_name
+  ## Watch for changes in user_taxon_name
   observeEvent(input$user_taxon_name, {
     # Skip if empty
     if(length(input$user_taxon_name) == 0) {
@@ -138,7 +147,7 @@ austraits_server <- function(input, output, session) {
     filtered_database(filtered_by_taxonomy)
   })
   
-  # Watch for changes in user-genus
+  ## Watch for changes in user-genus
   observeEvent(input$user_genus, {
     # Skip if empty
     if(length(input$user_genus) == 0) {
@@ -154,7 +163,7 @@ austraits_server <- function(input, output, session) {
     filtered_database(filtered_by_taxonomy)
   })
   
-  # Watch for changes in user-family
+  ## Watch for changes in user-family
   observeEvent(input$user_family, {
     # Skip if empty
     if(length(input$user_family) == 0) {
@@ -168,6 +177,32 @@ austraits_server <- function(input, output, session) {
     
     # Store in reactive
     filtered_database(filtered_by_taxonomy)
+  })
+  
+  # Filter data by contexts information
+  updateSelectizeInput(
+    session,
+    "user_context_property",
+    choices = all_contexts,
+    selected = NULL,
+    server = TRUE
+  )
+  
+  observeEvent(input$user_context_property, {
+    # Skip if empty
+    if(length(input$user_taxon_name) == 0) {
+      filtered_database(NULL)
+      return()
+    }
+    
+    # Filter by taxonomic info
+    filtered_by_contexts <- austraits |> 
+      extract_data(table = "contexts",
+                   col = "context_property", 
+                   col_value = input$user_context_property)
+    
+    # Store in reactive
+    filtered_database(filtered_by_contexts)
   })
   
   # Clear filters button action

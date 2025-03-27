@@ -15,3 +15,10 @@ all_genus <- austraits$traits$genus |> unique() |> sort()
 ## Set up possible family
 # Unique values of genus
 all_family <- austraits$traits$family |> unique() |> sort()
+
+## Set up all possible contexts
+all_contexts <- austraits$contexts$context_property |> unique() |> sort()
+
+str_subset(austraits$contexts$context_property, "fire")
+
+
