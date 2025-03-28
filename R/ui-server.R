@@ -62,7 +62,8 @@ austraits_ui <- function(){
                      choices = NULL,
                      multiple = TRUE,
                      options = list(
-                       create = TRUE)
+                       create = TRUE
+                       )
       ),
       
       br(),
@@ -192,28 +193,27 @@ austraits_server <- function(input, output, session) {
     # Get current taxonomy filtered data
     tax_data <- filtered_by_taxonomy()
     
+    # Preserve current selection
+    current_selections <- input$user_context_property
+    
     if(!is.null(tax_data)) {
+      
       # Extract the available contexts from the taxonomy-filtered data
       available_contexts <- unique(tax_data$contexts$context_property) |> sort()
-
-      # Preserve valid selections if possible
-      current_selections <- input$user_context_property
-      valid_selections <- intersect(current_selections, available_contexts)
-
+      
       # Update the selectizeInput with only the available contexts
       updateSelectizeInput(
         session,
         "user_context_property",
         choices = available_contexts,
-        # selected = valid_selections,  # Keep valid selections
+        selected = current_selections,  # Keep current selections
         server = TRUE,
-        options = list(
-          placeholder = "Type to search contexts (e.g. fire)",
-          plugins = list('remove_button'),
-          searchField = 'text',
-          highlight = TRUE,
-          create = TRUE
-        )
+        #options = list(
+        #   plugins = list('remove_button'),
+        #   searchField = 'text',
+        #   highlight = TRUE,
+        #   create = TRUE
+        # )
       )
     } else {
       # If no taxonomy filter is applied, reset to all contexts
@@ -221,35 +221,45 @@ austraits_server <- function(input, output, session) {
         session,
         "user_context_property",
         choices = all_contexts,
-        selected = input$user_context_property,  # Preserve current selections
+        selected = current_selections,  # Preserve current selections
         server = TRUE,
-        options = list(
-          plugins = list('remove_button'),
-          searchField = 'text',
-          highlight = TRUE,
-          create = TRUE
-        )
+        # options = list(
+        #   plugins = list('remove_button'),
+        #   searchField = 'text',
+        #   highlight = TRUE,
+        #   create = TRUE
+        # )
       )
     }
   })
   
   # Filter by contexts (with taxonomic) information 
   # Observer that combines both taxonomy and context filters
-  observe({
+  # Remove the original observe() block entirely
+  
+  # Use separate observeEvent() blocks for taxonomy and context filters
+  observeEvent(filtered_by_taxonomy(), {
+    updateFilters()
+  }, ignoreInit = TRUE)
+  
+  observeEvent(input$user_context_property, {
+    updateFilters()
+  }, ignoreInit = TRUE)
+  
+  # Define a helper function to update the filtered database based on current selections
+  updateFilters <- function() {
     # Get current taxonomy filtered data
     tax_data <- filtered_by_taxonomy()
     
     # Get context filter values
     context_values <- input$user_context_property
-
+    
     # Case 1: Both taxonomy and context filters are active
     if(!is.null(tax_data) && length(context_values) > 0) {
-      # browser()
-      
       tax_context_output <- tax_data |> 
         extract_data(table = "contexts",
                      col = "context_property", 
-                     col_value = input$user_context_property)
+                     col_value = context_values)
       
       # Store the combined result
       filtered_database(tax_context_output)
@@ -270,7 +280,7 @@ austraits_server <- function(input, output, session) {
     else {
       filtered_database(NULL)
     }
-  })
+  }
   
   # Clear filters button action
   observeEvent(input$clear_filters, {
@@ -300,6 +310,18 @@ austraits_server <- function(input, output, session) {
         server = TRUE
       )
     }
+    
+    # Clear context filter as well
+    updateSelectizeInput(
+      session,
+      "user_context_property",
+      choices = all_contexts,
+      selected = NULL,
+      server = TRUE
+    )
+    
+    # Reset filtered_by_taxonomy() explicitly
+    filtered_by_taxonomy(NULL)
     
     # Store nothing in filtered_data()
     filtered_database(NULL)
