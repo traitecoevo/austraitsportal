@@ -9,20 +9,20 @@ austraits_ui <- function(){
     
     # Title of the portal
     title = "AusTraits Data Portal",
-    
+
     # Create a sidebar for the app
     sidebar = sidebar(
       # Filter by taxonomic information
       h5("Taxonomic information"),
-      
-      radioButtons("user_taxon_rank", 
+
+      radioButtons("user_taxon_rank",
                    label = "Filter by which taxon name:",
                    choices = c('Taxon name' = "taxon_name",
-                               'Genus' = "genus", 
+                               'Genus' = "genus",
                                'Family' = "family"
                    )
       ),
-      
+
       # Only show this panel if Taxon name is selected
       conditionalPanel(
         condition = 'input.user_taxon_rank == "taxon_name"',
@@ -32,7 +32,7 @@ austraits_ui <- function(){
                        choices = NULL,
                        multiple = TRUE)
       ),
-      
+
       # Only show this panel if Genus is selected
       conditionalPanel(
         condition = 'input.user_taxon_rank == "genus"',
@@ -43,7 +43,7 @@ austraits_ui <- function(){
                        multiple = TRUE
         )
       ),
-      # Only show this panel if family is selected  
+      # Only show this panel if family is selected
       conditionalPanel(
         condition = 'input.user_taxon_rank == "family"',
         ## By family
@@ -53,14 +53,14 @@ austraits_ui <- function(){
                        multiple = TRUE
         )
       ),
-      
+
       br(),
-      
+
       # Search button
-      actionButton("search_austraits", "Search AusTraits", 
+      actionButton("search_austraits", "Search AusTraits",
                    class = "btn-primary w-100"),
-      
-      
+
+
       # Clear filter button
       actionButton("clear_filters", "Clear Filters", 
                    class = "btn-warning w-100"),
@@ -228,12 +228,6 @@ austraits_server <- function(input, output, session) {
     
     datatable(
       data = display_data,
-      plain = FALSE,  # Set to TRUE if you want simple text inputs
-      # Define filter types for specific columns if needed
-      columns = list(
-        # Example for the 2nd column - use a select input with multiple = TRUE
-        list(column = 2, filterType = 'select', multiple = TRUE)
-      ),
       options = list(
         dom = 'lftip', 
         pageLength = 10,
@@ -241,7 +235,16 @@ austraits_server <- function(input, output, session) {
         searchHighlight = TRUE
       ),
       rownames = FALSE,
-      filter = 'top',
+      filter = list(
+        position = 'top',
+        clear = TRUE,
+        plain = TRUE # Set to TRUE if you want simple text inputs
+        # Define filter types for specific columns if needed
+        # columns = list(
+        #   # Example for the 2nd column - use a select input with multiple = TRUE
+        #   list(column = 2, filterType = 'select', multiple = TRUE)
+        # )
+      ),
       class = 'cell-border stripe'
     )
   })
