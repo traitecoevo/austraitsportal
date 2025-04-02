@@ -11,6 +11,9 @@ format_database_for_display <- function(database){
            -c(methods:data_contributors),
            -c(binomial:trinomial),
            -c(taxon_id_genus:aligned_name_taxonomic_status),
+           -unit,
+           -taxon_name_alternatives,
+           -scientific_name,
            "dataset_id", 
            "source_primary_citation") |> 
     rename(genus = "genus.y",

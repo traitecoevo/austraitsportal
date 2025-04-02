@@ -55,9 +55,10 @@ austraits_ui <- function(){
       ),
       
       br(),
+      
       # Search button
       actionButton("search_austraits", "Search AusTraits", 
-                   class = "btn-primary btn-lg"),
+                   class = "btn-primary w-100"),
       
       
       # Clear filter button
@@ -124,13 +125,31 @@ austraits_server <- function(input, output, session) {
     }
   })
   
-  # Watch for a go button click
-  
-  
-  
   # Reactive value to store the filtered data later
   filtered_database <- reactiveVal(NULL)
   
+  # Watch for a go button click
+  observeEvent(input$search_austraits,
+               {
+                 if(!is.null(input$user_taxon_rank))
+                   if(!is.null(input$user_taxon_name)){
+                     tax_filtered <- austraits |> 
+                       extract_taxa(taxon_name = input$user_taxon_name)
+                   } else if(!is.null(input$user_genus)){
+                     tax_filtered <- austraits |> 
+                       extract_taxa(genus = input$user_genus)
+                   } else if(!is.null(input$user_family)){
+                     tax_filtered <- austraits |> 
+                       extract_taxa(family = input$user_family)
+                   } else
+                     return(NULL)
+                 
+                 # Store in reactive
+                 filtered_database(tax_filtered)
+                 }
+               )
+  
+
   # Clear filters button action
   observeEvent(input$clear_filters, {
     # Based on which filter is currently active
@@ -209,12 +228,20 @@ austraits_server <- function(input, output, session) {
     
     datatable(
       data = display_data,
+      plain = FALSE,  # Set to TRUE if you want simple text inputs
+      # Define filter types for specific columns if needed
+      columns = list(
+        # Example for the 2nd column - use a select input with multiple = TRUE
+        list(column = 2, filterType = 'select', multiple = TRUE)
+      ),
       options = list(
+        dom = 'lftip', 
         pageLength = 10,
-        scrollX = TRUE
+        scrollX = TRUE,
+        searchHighlight = TRUE
       ),
       rownames = FALSE,
-      filter = 'none',
+      filter = 'top',
       class = 'cell-border stripe'
     )
   })
