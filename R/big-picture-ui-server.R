@@ -2,79 +2,33 @@
 
 austraits_ui <- function(){
   
-  ui <- page_sidebar(
+  ui <- page_fluid(
+    theme = bs_theme(version = 5, bootswatch = "flatly"),
     
-    # Set the overall theme of the app
-    theme = bs_theme(preset = "flatly"),
-    
-    # Title of the portal
-    title = "AusTraits Data Portal",
-
-    # Create a sidebar for the app
-    sidebar = sidebar(
-      # Filter by taxonomic information
-      h5("Taxonomic information"),
-
-      radioButtons("user_taxon_rank",
-                   label = "Filter by which taxon name:",
-                   choices = c('Taxon name' = "taxon_name",
-                               'Genus' = "genus",
-                               'Family' = "family"
-                   )
-      ),
-
-      # Only show this panel if Taxon name is selected
-      conditionalPanel(
-        condition = 'input.user_taxon_rank == "taxon_name"',
-        ## By taxon_name
-        selectizeInput("user_taxon_name",
-                       label = "Taxon name:",
-                       choices = NULL,
-                       multiple = TRUE)
-      ),
-
-      # Only show this panel if Genus is selected
-      conditionalPanel(
-        condition = 'input.user_taxon_rank == "genus"',
-        ## By genus
-        selectizeInput("user_genus",
-                       label = "Genus:",
-                       choices = NULL,
-                       multiple = TRUE
-        )
-      ),
-      # Only show this panel if family is selected
-      conditionalPanel(
-        condition = 'input.user_taxon_rank == "family"',
-        ## By family
-        selectizeInput("user_family",
-                       label = "Family:",
-                       choices = NULL,
-                       multiple = TRUE
-        )
-      ),
-
-      br(),
-
-      # Search button
-      actionButton("search_austraits", "Search AusTraits",
-                   class = "btn-primary w-100"),
-
-
-      # Clear filter button
-      actionButton("clear_filters", "Clear Filters", 
-                   class = "btn-warning w-100"),
+    page_navbar(
+      title = "Data Explorer",
       
-      # Download button
-      downloadButton("download_data", "Download displayed data")
-    ),
-    
-    # Data display
-    card(
-      card_header("Data Preview"),
-      card_body(
-        fillable = TRUE,
-        DT::DTOutput("data_table")
+      layout_column_wrap(
+        width = 12,
+        card(
+          card_header(
+            div(
+              style = "display: flex; justify-content: space-between; align-items: center;",
+              h4("Data Table", style = "margin: 0;"),
+              div(
+                actionButton("clear_filters", "Clear Filters", 
+                             class = "btn-warning", icon = icon("trash-alt")),
+                downloadButton("download_data", "Download Filtered Data", 
+                               class = "btn-primary ms-2", icon = icon("download"))
+              )
+            )
+          ),
+          full_screen = TRUE,
+          card_body(
+            DTOutput("data_table", height = "100%")
+          ),
+          height = "calc(100vh - 120px)"
+        )
       )
     )
   )
@@ -88,135 +42,17 @@ austraits_ui <- function(){
 #' @param session Session id for Shiny interaction
 
 austraits_server <- function(input, output, session) {
-  # Initialize dropdown choices
-  taxon_name_choices <- reactive({ all_taxon_names })
-  genus_choices <- reactive({ all_genus })
-  family_choices <- reactive({ all_family })
-  
-  # Update the appropriate selectizeInput when radio button changes
-  observeEvent(input$user_taxon_rank, {
-    # Reset the filtered database to clear the data preview
-    filtered_database(NULL)
-    
-    if(input$user_taxon_rank == "taxon_name") {
-      updateSelectizeInput(
-        session,
-        "user_taxon_name",
-        choices = taxon_name_choices(),
-        selected = NULL,
-        server = TRUE
-      )
-    } else if(input$user_taxon_rank == "genus") {
-      updateSelectizeInput(
-        session,
-        "user_genus",
-        choices = genus_choices(),
-        selected = NULL,
-        server = TRUE
-      )
-    } else if(input$user_taxon_rank == "family") {
-      updateSelectizeInput(
-        session,
-        "user_family",
-        choices = family_choices(),
-        selected = NULL,
-        server = TRUE
-      )
-    }
-  })
+
+  # Reactive value to store the displayed data later
+  display_data_table <- reactiveVal(NULL)
   
   # Reactive value to store the filtered data later
-  filtered_database <- reactiveVal(NULL)
+  filtered_dt_data <- reactiveVal(NULL)
   
-  # Watch for a go button click
-  observeEvent(input$search_austraits,
-               {
-                 if(!is.null(input$user_taxon_rank))
-                   if(!is.null(input$user_taxon_name)){
-                     tax_filtered <- austraits |> 
-                       extract_taxa(taxon_name = input$user_taxon_name)
-                   } else if(!is.null(input$user_genus)){
-                     tax_filtered <- austraits |> 
-                       extract_taxa(genus = input$user_genus)
-                   } else if(!is.null(input$user_family)){
-                     tax_filtered <- austraits |> 
-                       extract_taxa(family = input$user_family)
-                   } else
-                     return(NULL)
-                 
-                 # Store in reactive
-                 filtered_database(tax_filtered)
-                 }
-               )
+  # Put formatted table here
+  flat_austraits <- austraits |> flatten_database()
+  display_data_table(flat_austraits)
   
-
-  # Clear filters button action
-  observeEvent(input$clear_filters, {
-    # Based on which filter is currently active
-    if(input$user_taxon_rank == "taxon_name") {
-      updateSelectizeInput(
-        session,
-        "user_taxon_name",
-        choices = taxon_name_choices(),
-        selected = NULL,
-        server = TRUE
-      )
-    } else if(input$user_taxon_rank == "genus") {
-      updateSelectizeInput(
-        session,
-        "user_genus",
-        choices = genus_choices(),
-        selected = NULL,
-        server = TRUE
-      )
-    } else if(input$user_taxon_rank == "family") {
-      updateSelectizeInput(
-        session,
-        "user_family",
-        choices = family_choices(),
-        selected = NULL,
-        server = TRUE
-      )
-    }
-    
-    # Store nothing in filtered_data()
-    filtered_database(NULL)
-    
-    # Show notification
-    showNotification("Filters have been cleared", 
-                     type = "message", 
-                     duration = 3)
-  })
-  
-  # Set up display data as reactive expression
-  display_data_table <- reactive({
-    # Get the current filtered database
-    filtered_db <- filtered_database()
-    
-    # Check if it's NULL and return appropriate value
-    if (is.null(filtered_db)) {
-      return(NULL)
-    }
-    
-    # Format the database for display
-    format_database_for_display(filtered_db)
-  })
-  
-  # Set up download data as reactive expression  
-  download_data_table <- reactive({
-    # Get the current filtered database
-    filtered_db <- filtered_database()
-    
-    # Check if it's NULL and return appropriate value
-    if (is.null(filtered_db)) {
-      return(NULL)
-    }
-    
-    # Format the database for download
-    format_database_for_download(filtered_db)
-  })
-  
-  # Render user selected data table output
   output$data_table <- DT::renderDT({
     # Get the display data
     display_data <- display_data_table()
@@ -229,38 +65,64 @@ austraits_server <- function(input, output, session) {
     datatable(
       data = display_data,
       options = list(
-        dom = 'lftip', 
+        dom = 'lftip',
         pageLength = 10,
         scrollX = TRUE,
-        searchHighlight = TRUE
+        searchHighlight = TRUE,
+        columnDefs = list(list(searchable = TRUE, targets = "_all")),
+        # Add callback to capture filtered data
+        initComplete = JS("
+        function(settings, json) {
+          var table = this.api();
+          
+          // Update filtered data when searching/filtering happens
+          table.on('search.dt', function() {
+            var filteredData = table.rows({search: 'applied'}).data().toArray();
+            Shiny.setInputValue('filtered_data', filteredData);
+          });
+          
+          // Initial set of filtered data
+          var initialFilteredData = table.rows({search: 'applied'}).data().toArray();
+          Shiny.setInputValue('filtered_data', initialFilteredData);
+        }
+      ")
       ),
       rownames = FALSE,
-      filter = list(
-        position = 'top',
-        clear = TRUE,
-        plain = TRUE # Set to TRUE if you want simple text inputs
-        # Define filter types for specific columns if needed
-        # columns = list(
-        #   # Example for the 2nd column - use a select input with multiple = TRUE
-        #   list(column = 2, filterType = 'select', multiple = TRUE)
-        # )
-      ),
-      class = 'cell-border stripe'
+      filter = 'top',
+      class = 'cell-border stripe',
+      callback = JS("table")  # This makes the table object available to JavaScript
     )
+  })
+  
+  
+  observe({
+    # Check if filtered_data input exists
+    if (!is.null(input$filtered_data)) {
+      # Convert the filtered data to a data frame
+      filtered_df <- as.data.frame(input$filtered_data)
+      filtered_dt_data(filtered_df)
+    }
   })
   
   # Download handler
   output$download_data <- downloadHandler(
     filename = function() {
-      paste("austraits-6.0.0-", Sys.Date(), ".csv", sep = "")
+      paste("austraits-filtered-", Sys.Date(), ".csv", sep = "")
     },
     content = function(file) {
-      # Get the current download data
-      data_to_download <- download_data_table()
+      # Get the filtered data from the DataTable
+      filtered_data <- filtered_dt_data()
       
-      # Handle NULL or empty data case
-      if (is.null(data_to_download) || nrow(data_to_download) == 0) {
-        data_to_download <- data.frame(message = "No data selected")
+      # If no filtered data is available, fall back to the full data
+      if (is.null(filtered_data) || nrow(filtered_data) == 0) {
+        data_to_download <- download_data_table()
+        
+        # Handle NULL or empty data case
+        if (is.null(data_to_download) || nrow(data_to_download) == 0) {
+          data_to_download <- data.frame(message = "No data selected")
+        }
+      } else {
+        data_to_download <- filtered_data
       }
       
       utils::write.csv(data_to_download, file, row.names = FALSE)
