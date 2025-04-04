@@ -1,4 +1,4 @@
-Package: austraits.portal
+Package: austraitsportal
 Title: Shiny interface to the AusTraits database
 Version: 0.0.0.9000
 Authors@R: 
@@ -32,10 +32,12 @@ Imports:
   bslib,
   dplyr,
   DT,
-  httr2,
-  utils
+  pkgload,
+  utils,
+  austraits.portal
 Remotes:
   traitecoevo/austraits@develop
+  traitecoevo/austraits.portal@big-picture
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
