@@ -36,7 +36,7 @@ Imports:
   utils,
   austraitsportal
 Remotes:
-  traitecoevo/austraits@develop
+  traitecoevo/austraits@develop,
   traitecoevo/austraitsportal@big-picture
 Suggests: 
     testthat (>= 3.0.0)
