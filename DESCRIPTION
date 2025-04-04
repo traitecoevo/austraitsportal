@@ -33,11 +33,9 @@ Imports:
   dplyr,
   DT,
   pkgload,
-  utils,
-  austraitsportal
+  utils
 Remotes:
-  traitecoevo/austraits@develop,
-  traitecoevo/austraitsportal@big-picture
+  traitecoevo/austraits@develop
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
