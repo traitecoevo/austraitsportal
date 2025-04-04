@@ -34,10 +34,10 @@ Imports:
   DT,
   pkgload,
   utils,
-  austraits.portal
+  austraitsportal
 Remotes:
   traitecoevo/austraits@develop
-  traitecoevo/austraits.portal@big-picture
+  traitecoevo/austraitsportal@big-picture
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
