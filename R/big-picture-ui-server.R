@@ -3,31 +3,35 @@
 austraits_ui <- function(){
   
   ui <- page_fluid(
+    
+    title = "AusTraits Data Explorer",
     theme = bs_theme(version = 5, bootswatch = "flatly"),
     
-    page_navbar(
-      title = "Data Explorer",
+    page_navbar( # Option to have multiple tabs later
       
-      layout_column_wrap(
-        width = 12,
-        card(
-          card_header(
-            div(
-              style = "display: flex; justify-content: space-between; align-items: center;",
-              h4("Data Table", style = "margin: 0;"),
+      nav_panel(
+        title = "Data table",
+        layout_column_wrap(
+          width = 12,
+          card(
+            card_header(
               div(
-                actionButton("clear_filters", "Clear Filters", 
-                             class = "btn-warning", icon = icon("trash-alt")),
-                downloadButton("download_data", "Download Filtered Data", 
-                               class = "btn-primary ms-2", icon = icon("download"))
+                style = "display: flex; justify-content: space-between; align-items: center;",
+                h4("Data Table", style = "margin: 0;"),
+                div(
+                  actionButton("clear_filters", "Clear Filters", 
+                               class = "btn-warning", icon = icon("trash-alt")),
+                  downloadButton("download_data", "Download Filtered Data", 
+                                 class = "btn-primary ms-2", icon = icon("download"))
+                )
               )
-            )
-          ),
-          full_screen = TRUE,
-          card_body(
-            DTOutput("data_table", height = "100%")
-          ),
-          height = "calc(100vh - 120px)"
+            ),
+            full_screen = TRUE,
+            card_body(
+              DTOutput("data_table", height = "100%")
+            ),
+            height = "calc(100vh - 120px)"
+          )
         )
       )
     )
