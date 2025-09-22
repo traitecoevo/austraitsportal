@@ -20,20 +20,10 @@ knitr::opts_chunk$set(
 
 The goal of austraits.portal is to create a code-free interface for users to access the AusTraits Plant Trait database
 
-## Installation
-
-You can install the development version of austraits.portal from [GitHub](https://github.com/) with:
-
-``` r
-# install.packages("pak")
-pak::pak("traitecoevo/austraits.portal")
-```
-
 ## To open the data portal locally
 
 ```{r example, eval=FALSE}
-library(austraits.portal)
+devtools::load_all()
 
 open_data_portal()
 ```
-
