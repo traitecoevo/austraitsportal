@@ -16,6 +16,10 @@ austraits_server <- function(input, output, session) {
   
   # Contains the taxon text
   taxon_text <- reactiveVal(NULL)
+  output$taxon_text <- renderUI({
+    req(taxon_text())
+    HTML(commonmark::markdown_html(taxon_text()))
+  })
 
   # Initialize dropdown choices
   taxon_name_choices <- reactive({
@@ -29,264 +33,195 @@ austraits_server <- function(input, output, session) {
   })
   
   # Update the appropriate selectizeInput when radio button changes
-  observeEvent(input$taxon_rank, {
-    # Reset the filtered database to clear the data preview
-    filtered_database(NULL)
-    
-    # First, clear the Fabaceae selection from family if switching to another rank
-    if (input$taxon_rank != "family") {
-      updateSelectizeInput(
-        session,
-        "family",
-        choices = family_choices(),
-        selected = NULL,
-        server = TRUE
-      )
-    }
-    # Then update the appropriate input based on selected rank
-    if (input$taxon_rank == "taxon_name") {
-      updateSelectizeInput(
-        session,
-        "taxon_name",
-        choices = taxon_name_choices(),
-        selected = NULL,
-        server = TRUE
-      )
-    } else if (input$taxon_rank == "genus") {
-      updateSelectizeInput(
-        session,
-        "genus",
-        choices = genus_choices(),
-        selected = NULL,
-        server = TRUE
-      )
-    } else if (input$taxon_rank == "family") {
-      updateSelectizeInput(
-        session,
-        "family",
-        choices = family_choices(),
-        selected = "Fabaceae",
-        server = TRUE
-      )
-    }
-  })
+filters <- mod_filters_server(
+  "filters",
+  filtered_database,
+  family_choices = family_choices,
+  genus_choices = genus_choices,
+  taxon_name_choices = taxon_name_choices
+)
   
   # Server-side selectizeInput update for other options that are not conditional
-  updateSelectizeInput(session, "trait_name", choices = all_traits, server = TRUE)
-  updateSelectizeInput(session, "basis_of_record", choices = all_bor, server = TRUE)
-  updateSelectizeInput(session, "life_stage", choices = all_age, server = TRUE)
+  updateSelectizeInput(session, "filters-trait_name", choices = all_traits, server = TRUE)
+  updateSelectizeInput(session, "filters-basis_of_record", choices = all_bor, server = TRUE)
+  updateSelectizeInput(session, "filters-life_stage", choices = all_age, server = TRUE)
   
   # Apply Filter
-  observeEvent(list(
-    input$family,
-    input$genus,
-    input$taxon_name,
-    input$trait_name,
-    input$basis_of_record,
-    input$life_stage,
-    input$location,
-    input$apc_taxon_distribution
-  ), {
-    # At start up, we want filters set to false
-    valid_filters <- valid_filters(input)
-    
-    # Check if any filter has values using our helper function
-    has_filters <- any(sapply(valid_filters, function(name) {
-      has_input_value(input, name)
-    }))
-    
-    if (has_filters) {
-      # Convert input to a regular list first
-      input_values <- reactiveValuesToList(input)
+  observeEvent(filters(), {
 
-      # Apply filters with the input values
-      # print(input_values)
-      print("filtering")
-      filtered_data <- austraits_display |>
-        apply_filters_categorical(input_values) |>
-        apply_filters_location(input_values) |> 
-        dplyr::collect()
-      print("done")
-      usage_text(generate_usage_and_citations_text(filtered_data))
-      output$usage_text <- renderUI({usage_text()})
 
-      trait_profile <- generate_trait_profile(filtered_data)
+  # Extract filters once
+  filter_vals <- filters()
 
-      # TODO: for some reason the leaflet plot is not rendering
-      output$trait_profile <- renderUI({
-        tagList(
-          trait_profile[[1]]
-          # HTML("<b>Trait histogram:</b>"),
-          # trait_profile[[2]],
-          # HTML("<b>Trait table:</b>"),
-          # trait_profile[[3]],
-          # HTML("<b>Trait map:</b>"),
-          # leaflet::renderLeaflet(trait_profile[[4]])
+  # Check which filters are valid
+  valid_filter_names <- valid_filters(filter_vals)
+
+  has_filters <- any(
+    sapply(valid_filter_names, function(name) {
+      has_input_value(filter_vals, name)
+    })
+  )
+
+  if (has_filters) {
+
+    print("filtering")
+
+    filtered_data <- austraits_display |>
+      apply_filters_categorical(filter_vals) |>
+      apply_filters_location(filter_vals) |>
+      dplyr::collect()
+
+    print("done")
+
+    # Usage / citations
+    usage_text(generate_usage_and_citations_text(filtered_data))
+    output$usage_text <- renderUI({ usage_text() })
+
+    # Trait profile
+    trait_profile <- generate_trait_profile(filtered_data)
+
+    output$trait_profile <- renderUI({
+      tagList(trait_profile[[1]])
+    })
+
+    output$trait_histogram_text <- renderUI({
+      tagList(
+        p(
+          "The plot below shows the distribution of selected data for this trait, including data collected on individuals of all age classes (seedling, sapling, adult), both field-collected and experimental data, and data representing individuals and population means."
+        ),
+        p(
+          "Visualising data records across the families with the most data for the trait indicates the taxonomic breadth of information for this trait"
         )
-      })
+      )
+    })
 
-      output$trait_histogram_text <- renderUI({
-        tagList(
-          p("The plot below shows the distribution of selected data for this trait, including data collected on individuals of all age classes (seedling, sapling, adult), both field-collected and experimental data, and data representing individuals and population means."),
-          p("Visualising data records across the families with the most data for the trait indicates the taxonomic breadth of information for this trait"),
-          # em("Trait histogram:") #TODO: Not sure if this is needed
+    output$trait_beeswarm_plot <- plotly::renderPlotly({
+      req(filtered_data, filter_vals$trait_name)
+      plot_trait_distribution(filtered_data, filter_vals$trait_name) |>
+        plotly::ggplotly(
+          tooltip = c("x", "y", "text"),
+          height = 400
         )
-      })
+    })
 
-      output$trait_beeswarm_plot <- plotly::renderPlotly({
-        req(filtered_data, input$trait_name)
-        plot_trait_distribution(filtered_data, input$trait_name) |>
-          plotly::ggplotly(tooltip = c("x", "y", "text"), height = 400)
-      })
+    output$trait_geo_text <- renderUI({
+      trait_profile[[3]]
+    })
 
-      output$trait_geo_text <- renderUI({
-          trait_profile[[3]]
-        
-      })
+    output$trait_geo_map <- leaflet::renderLeaflet({
+      trait_profile[[4]]
+    })
 
-      output$trait_geo_map <- leaflet::renderLeaflet({
-        trait_profile[[4]]
-      })
+    # Store filtered data
+    filtered_database(filtered_data)
 
+  } else {
 
-      trait_profile <- generate_trait_profile(filtered_data)
-
-      # for some reason the leaflet plot is not rendering
-      output$trait_profile <- renderUI({
-        tagList(
-          trait_profile[[1]],
-          HTML("<b>Trait histogram:</b>"),
-          trait_profile[[2]],
-          HTML("<b>Trait table:</b>"),
-          trait_profile[[3]],
-          HTML("<b>Trait map:</b>"),
-          leaflet::renderLeaflet(trait_profile[[4]])
-        )
-      })
-      # Store filtered data into reactive value
-      filtered_database(filtered_data)
-    } else {
-      # No filters selected and all taxa is not selected
-      if (input$taxon_rank != "all") {
-        filtered_database(NULL)
-      }
-
-      output$trait_profile <- renderUI({
-        tagList(
-          HTML("Please select a single trait to view.")
-        )
-      })
+    if (filter_vals$taxon_rank != "all") {
+      filtered_database(NULL)
     }
-  })
+
+    output$trait_profile <- renderUI({
+      HTML("Please select a single trait to view.")
+    })
+  }
+})
     
 # Display all data when all taxa are selected
-  observeEvent(
-    input$taxon_rank, {
-    if(input$taxon_rank == "all") {
-      # If not taxonomic rank is selected, show full database
+  observeEvent(filters()$taxon_rank, {
+
+    if (filters()$taxon_rank == "all") {
+
+      # Show full database
       full_display_database <- austraits_display |> dplyr::collect()
       filtered_database(full_display_database)
-    } 
-    else {
+
+    } else {
       if (is.null(filtered_database())) {
         return()
       }
     }
-  }) 
+  })
 
-  # Check the taxon_name selection (input$taxon_name) when switching to "Taxon View" tab
-  observeEvent(list(
-                    input$main_tabs,
-                    input$taxon_rank,
-                    input$taxon_name
-  ), {
+  # Check the taxon_name selection when switching to "Taxon View" tab
+  observeEvent(
+    list(input$main_tabs, filters()),
+    {
+      # Only act when Taxon View tab is active
+      req(input$main_tabs == "Taxon View")
 
-    # First, handle cases where we need to clear the taxon view
-      # Case 1: Taxon rank is not "taxon_name"
-      # Case 2: taxon_name is NULL or empty
-      if (input$taxon_rank != "taxon_name" || is.null(input$taxon_name) || length(input$taxon_name) == 0) {
-        # Clear the taxon text
+      filter_vals <- filters()
+
+      # Must be in taxon_name mode with exactly 1 selected taxon
+      if (filter_vals$taxon_rank != "taxon_name" ||
+          is.null(filter_vals$taxon_name) ||
+          length(filter_vals$taxon_name) != 1) {
+
         taxon_text(NULL)
-        output$taxon_text <- renderUI({NULL})
+        showNotification(
+          "Taxon View needs Taxon rank = Taxon name and exactly 1 taxon selected.",
+          type = "warning",
+          duration = 3
+        )
+        return()
       }
-    
-    # Check if the current tab is "Taxon View"
-    if (input$main_tabs == "Taxon View") {
-      
-      # Check if taxon_rank is "taxon_name"
-      if (!input$taxon_rank == "taxon_name" || is.null(input$taxon_name)) {
-          showNotification(
-            "Only a single taxon name can be used for Taxon View",
-            type = "warning",
-            duration = 5
-          )
-        }
-        
-        # Check if taxon_name is NULL (nothing selected)
-      else if (is.null(input$taxon_name) || length(input$taxon_name) == 0) {
-          showNotification(
-            "Please select a single taxon name for Taxon View",
-            type = "warning",
-            duration = 5
-          )
-        }
-        # Check if multiple taxa are selected
-      else if (length(input$taxon_name) > 1) {
-          showNotification(
-            "Please select a single taxon name for Taxon View",
-            type = "warning",
-            duration = 5
-          )
-        }
 
-  # Generate Taxon View text if passes all checks
-      else if (input$taxon_rank == "taxon_name" && !is.null(input$taxon_name) && length(input$taxon_name) == 1) {
-        
-       
-        # Get the filtered data    
-        data <- filtered_database()
-        
-        # Check if data is NULL or if user has manually cleared filters
-        if (is.null(data)) {
-          # Apply a filter just for this taxon to generate the taxon view
-          data <- austraits_display |>
-            apply_filters_categorical(input) |>
-            dplyr::collect()
+      selected_taxon <- filter_vals$taxon_name[[1]]
 
-          # Update the filtered_database reactive
-          filtered_database(data)
-        }
-        
-        # Now we can use the data (whether it was already filtered or we just created it)
-        if (nrow(data) > 0) {
-          # Generate the taxon text
-          taxon_text(generate_taxon_text(data, input$taxon_name))
-          output$taxon_text <- renderUI({HTML(commonmark::markdown_html(taxon_text()))})
-        } else {
-          # If no data is available, show a notification
-          showNotification(
-            "No data available for the selected taxon name",
-            type = "warning",
-            duration = 5
-          )
-          # Clear the taxon text
-          taxon_text(NULL)
-          output$taxon_text <- renderUI({NULL})
-        }
+      # Prefer current filtered DB, otherwise fetch
+      data <- filtered_database()
+      if (is.null(data)) {
+        data <- austraits_display |>
+          apply_filters_categorical(filter_vals) |>
+          dplyr::collect()
+        filtered_database(data)
       }
-    }
-  }, ignoreInit = TRUE)
+
+      if (nrow(data) == 0) {
+        taxon_text(NULL)
+        showNotification(
+          "No data available for the selected taxon name",
+          type = "warning",
+          duration = 5
+        )
+        return()
+      }
+
+      # Generate taxon text
+
+      txt <- generate_taxon_text(data, selected_taxon)
+
+      # Collapse if it's a vector, check if empty
+      if (is.null(txt) || length(txt) == 0 || all(nchar(txt) == 0)) {
+        taxon_text(NULL)
+        showNotification(
+          "Taxon profile text came back empty (generate_taxon_text returned nothing).",
+          type = "error",
+          duration = 6
+        )
+        return()
+      }
+
+      # Collapse the vector into a single string if needed
+      if (length(txt) > 1) {
+        txt <- paste(txt, collapse = "\n\n")
+      }
+
+      taxon_text(txt)
+
+    },
+    ignoreInit = TRUE
+  )
 
   # Clear filters button action
-  observeEvent(input$clear_filters, {
+  observeEvent(input[["filters-clear_filters"]], {
     
   # Check if any filters are currently applied
-  filters_applied <- !is.null(input$taxon_rank) || 
-                     !is.null(input$trait_name) || 
-                     !is.null(input$basis_of_record) || 
-                     !is.null(input$life_stage) || 
-                     !is.null(input$apc_taxon_distribution) || 
-                     !is.null(input$location)
+  filter_vals <- filters()
+
+  filters_applied <- any(
+    vapply(filter_vals, function(x) !is.null(x) && length(x) > 0, logical(1))
+  )
   
   if (!filters_applied) {
     # Show a notification if no filters are applied
@@ -297,7 +232,7 @@ austraits_server <- function(input, output, session) {
   }
 
     # Based on which filter is currently active
-    if (input$taxon_rank == "taxon_name") {
+    if (filter_vals$taxon_rank == "taxon_name") {
       updateSelectizeInput(
         session,
         "taxon_name",
@@ -305,7 +240,7 @@ austraits_server <- function(input, output, session) {
         selected = NULL,
         server = TRUE
       )
-    } else if (input$taxon_rank == "genus") {
+    } else if (filter_vals$taxon_rank == "genus") {
       updateSelectizeInput(
         session,
         "genus",
@@ -313,7 +248,7 @@ austraits_server <- function(input, output, session) {
         selected = NULL,
         server = TRUE
       )
-    } else if (input$taxon_rank == "family") {
+    } else if (filter_vals$taxon_rank == "family") {
       updateSelectizeInput(
         session,
         "family",
@@ -324,15 +259,11 @@ austraits_server <- function(input, output, session) {
     }
     
     # Clear the other filters that are not conditional
-    updateSelectizeInput(session, "trait_name", choices = all_traits, server = TRUE)
-    updateSelectizeInput(session, "basis_of_record", choices = all_bor, server = TRUE)
-    updateSelectizeInput(session, "life_stage", choices = all_age, server = TRUE)
-    updateSelectizeInput(session, "apc_taxon_distribution", choices = all_states_territories, server = TRUE)
+    updateSelectizeInput(session, "filters-trait_name", choices = all_traits, server = TRUE)
+    updateSelectizeInput(session, "filters-basis_of_record", choices = all_bor, server = TRUE)
+    updateSelectizeInput(session, "filters-life_stage", choices = all_age, server = TRUE)
+    updateSelectizeInput(session, "filters-apc_taxon_distribution", choices = all_states_territories, server = TRUE)
     
-    # Clear the radio button selection
-    updateRadioButtons(session, "location", selected = character(0))
-    updateRadioButtons(session, "taxon_rank", selected = character(0))
-
     # Set the filtered database to NULL
     filtered_database(NULL)
 
@@ -440,7 +371,7 @@ austraits_server <- function(input, output, session) {
   })
   
   # Update info message about visible rows
-  output$rows_info <- renderUI({
+  output[["filters-rows_info"]] <- renderUI({
     # Get the number of rows currently displayed after filtering
     if (!is.null(input$data_table_rows_all)) {
       total_visible <- length(input$data_table_rows_all)
@@ -450,7 +381,7 @@ austraits_server <- function(input, output, session) {
   })
   
   # Download handler
-  output$download_data <- downloadHandler(
+  output[["filters-download_data"]] <- downloadHandler(
     filename = function() {
       paste("austraits-", Sys.Date(), ".zip", sep = "")
     },
