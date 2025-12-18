@@ -151,7 +151,7 @@ mod_filters_server <- function(
             session,
             "taxon_name",
             choices = taxon_name_choices(),
-            selected = NULL,
+            selected = "Abutilon oxycarpum var. oxycarpum",
             server = TRUE
           )
 
@@ -160,7 +160,7 @@ mod_filters_server <- function(
             session,
             "genus",
             choices = genus_choices(),
-            selected = NULL,
+            selected = "Abutilon",
             server = TRUE
           )
 

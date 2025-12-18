@@ -29,13 +29,25 @@ generate_trait_profile <- function(data_trait) {
 
   trait_definition <- trait_definitions[[trait]]
 
-  data_geo <-
-    data_trait |>
-    filter(!is.na(`latitude (deg)`), !is.na(`longitude (deg)`)) |>
-    mutate(
-      `latitude (deg)` = as.numeric(`latitude (deg)`),
-      `longitude (deg)` = as.numeric(`longitude (deg)`)
-    )
+  # Create clean geo data with proper type handling
+  data_geo <- data_trait |>
+    filter(!is.na(`latitude (deg)`), !is.na(`longitude (deg)`))
+
+  # Force conversion to numeric vectors
+  if (nrow(data_geo) > 0) {
+    data_geo <- data_geo |>
+      mutate(
+        lat_num = sapply(`latitude (deg)`, function(x) {
+          tryCatch(as.numeric(as.character(x)), error = function(e) NA_real_)
+        }),
+        lon_num = sapply(`longitude (deg)`, function(x) {
+          tryCatch(as.numeric(as.character(x)), error = function(e) NA_real_)
+        })
+      ) |>
+      filter(!is.na(lat_num), !is.na(lon_num), 
+            lat_num >= -90, lat_num <= 90,
+            lon_num >= -180, lon_num <= 180)
+  }
   
   ## Generate output, as a list of strings & plots
   output <- list()
@@ -103,16 +115,20 @@ Of the %s records for this trait, **%s** have latitude and longitude coordinates
   ) |> commonmark::markdown_html() |> HTML()
 
   # Geomap
+    if (nrow(data_geo) > 0 && "lat_num" %in% names(data_geo)) {
       output[[4]] <-
-      leaflet::leaflet(data = data_geo) |>
-      leaflet::addTiles() |>
-      leaflet::addCircleMarkers(
-        lng = ~`longitude (deg)`,
-        lat = ~`latitude (deg)`,
-        label = ~as.character(dataset_id),
-        radius = 4,
-        fillOpacity = 0.7
-      )
+        leaflet::leaflet(data = data_geo) |>
+        leaflet::addTiles() |>
+        leaflet::addCircleMarkers(
+          lng = ~lon_num,
+          lat = ~lat_num,
+          label = ~as.character(dataset_id),
+          radius = 4,
+          fillOpacity = 0.7
+        )
+    } else {
+      output[[4]] <- leaflet::leaflet() |> leaflet::addTiles()
+    }
 
   output
 }

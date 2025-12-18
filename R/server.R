@@ -131,10 +131,32 @@ filters <- mod_filters_server(
   observeEvent(filters()$taxon_rank, {
 
     if (filters()$taxon_rank == "all") {
-
-      # Show full database
-      full_display_database <- austraits_display |> dplyr::collect()
-      filtered_database(full_display_database)
+      
+      # Get current filter values
+      filter_vals <- filters()
+      
+      # Check if there are other filters applied (trait, location, etc.)
+      has_other_filters <- any(
+        !is.null(filter_vals$trait_name) && length(filter_vals$trait_name) > 0,
+        !is.null(filter_vals$basis_of_record) && length(filter_vals$basis_of_record) > 0,
+        !is.null(filter_vals$life_stage) && length(filter_vals$life_stage) > 0,
+        !is.null(filter_vals$location) && filter_vals$location != "",
+        !is.null(filter_vals$apc_taxon_distribution) && length(filter_vals$apc_taxon_distribution) > 0
+      )
+      
+      if (has_other_filters) {
+        # Apply filters even when "all taxa" is selected
+        filtered_data <- austraits_display |>
+          apply_filters_categorical(filter_vals) |>
+          apply_filters_location(filter_vals) |>
+          dplyr::collect()
+        
+        filtered_database(filtered_data)
+      } else {
+        # Show full database only if no other filters
+        full_display_database <- austraits_display |> dplyr::collect()
+        filtered_database(full_display_database)
+      }
 
     } else {
       if (is.null(filtered_database())) {
