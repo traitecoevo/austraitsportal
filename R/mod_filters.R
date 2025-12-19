@@ -179,7 +179,7 @@ mod_filters_server <- function(
         updateRadioButtons(
           session,
           "taxon_rank",
-          selected = character(0)
+          selected = "all"
         )
 
         updateRadioButtons(
@@ -191,6 +191,12 @@ mod_filters_server <- function(
         updateSelectizeInput(session, "family", selected = NULL)
         updateSelectizeInput(session, "genus", selected = NULL)
         updateSelectizeInput(session, "taxon_name", selected = NULL)
+
+        updateSelectizeInput(session, "trait_name", selected = NULL)
+        updateSelectizeInput(session, "basis_of_record", selected = NULL)
+        updateSelectizeInput(session, "life_stage", selected = NULL)
+        updateSelectizeInput(session, "apc_taxon_distribution", selected = NULL)
+        filtered_database(NULL)
       })
 
       # ---- RETURN FILTER STATE TO MAIN SERVER ----

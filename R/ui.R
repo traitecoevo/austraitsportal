@@ -37,73 +37,23 @@ austraits_ui <- function() {
 
       nav_panel(
         title = "Data Preview",
-        card(
-          card_body(
-            fillable = TRUE,
-            DT::DTOutput("data_table")
-          )
-        )
+        mod_data_table_ui("data_table")
       ),
       nav_panel(
         title = "App Information",
-        card(
-          card_header("How to Use the App"),
-            card_body(
-            p("This application allows users to filter and explore the AusTraits dataset."),
-            p("Use the sidebar to apply filters based on taxonomy, traits, location, and additional criteria."),
-            p("Filtered data will be displayed in the 'Data Preview' tab."),
-            p("You can download the filtered data using the 'Download displayed data' button."),
-            tags$a(href = "https://www.austraits.org", "AusTraits Website")
-          )
-        )
+        mod_app_info_ui("app_info")
       ),
       nav_panel(
         title = "Taxon View",
-        card(
-          card_header("AusTraits taxon profile"),
-          card_body(
-            htmlOutput("taxon_text"),
-          )
-        )
+        mod_taxon_view_ui("taxon_view")
       ),
       nav_panel(
         title = "Trait View",
-        card(
-          card_header("AusTraits trait profile"),
-          card_body(
-            card(
-              htmlOutput("trait_profile"),
-              min_height = 600
-            ),
-            card(
-              card_header("Observed values"),
-              card_body(
-                        uiOutput("trait_histogram_text"),
-                        plotly::plotlyOutput("trait_beeswarm_plot")
-              ),
-              min_height = 650,
-              full_screen = TRUE,
-              fillable = FALSE
-            ),
-            card(
-              card_header("Geographical distribution of trait data"),
-              min_height = 600,
-              card_body(
-                uiOutput("trait_geo_text"),
-                leaflet::leafletOutput("trait_geo_map", height = "600px")
-              )
-            )
-          )
-        )
+        mod_trait_view_ui("trait_view")
       ),
       nav_panel(
         title = "Citations",
-        card(
-          card_header("Referencing your filtered data"),
-          card_body(
-            htmlOutput("usage_text")
-          )
-        )
+        mod_citations_ui("citations")
       )
     )
   )
