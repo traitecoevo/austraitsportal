@@ -11,3 +11,4 @@ data
 .vscode/
 *.html
 *.out
+*.swp
