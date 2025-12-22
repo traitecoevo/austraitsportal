@@ -25,16 +25,20 @@ mod_taxon_view_ui <- function(id){
 #' @param filtered_database Reactive containing filtered data
 #' @param current_tab Reactive containing current tab name
 #'
-#' @noRd 
+#' @noRd
+
 mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
     taxon_text <- reactiveVal(NULL)
-    
+
     output$taxon_text <- renderUI({
       req(taxon_text())
-      HTML(commonmark::markdown_html(taxon_text()))
+      taxon_text() |>
+        commonmark::markdown_html() |>
+        add_target_blank() |>
+        HTML()
     })
     
     observeEvent(
