@@ -32,11 +32,6 @@ mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
     ns <- session$ns
     
     taxon_text <- reactiveVal(NULL)
-    
-    # Helper to add target blank to links
-    add_target_blank <- function(html_text) {
-      gsub('<a href=', '<a target="_blank" href=', html_text, fixed = TRUE)
-    }
 
     output$taxon_text <- renderUI({
       req(taxon_text())

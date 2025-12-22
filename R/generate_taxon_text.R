@@ -12,12 +12,6 @@
 #' \dontrun{
 #' generate_taxon_text(austraits_data, "Eucalyptus globulus")
 #' }
-#' Add target blank to all links in HTML
-#' @keywords internal
-#' @noRd
-add_target_blank <- function(html_text) {
-  gsub('<a href=', '<a target="_blank" href=', html_text, fixed = TRUE)
-}
 
 generate_taxon_text <- function(data, taxon) {
 

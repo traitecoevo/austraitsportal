@@ -12,12 +12,6 @@
 #' data_trait <- arrow::open_dataset("inst/extdata/austraits/austraits-6.0.0-mid-flatten.parquet") |> filter(trait_name == "leaf_area") |> collect()
 #' generate_trait_profile(data_trait, "leaf_area")
 #' }
-#' Add target blank to all links in HTML
-#' @keywords internal
-#' @noRd
-add_target_blank <- function(html_text) {
-  gsub('<a href=', '<a target="_blank" href=', html_text, fixed = TRUE)
-}
 
 generate_trait_profile <- function(data_trait) {
 
