@@ -12,6 +12,13 @@
 #' data_trait <- arrow::open_dataset("inst/extdata/austraits/austraits-6.0.0-mid-flatten.parquet") |> filter(trait_name == "leaf_area") |> collect()
 #' generate_trait_profile(data_trait, "leaf_area")
 #' }
+#' Add target blank to all links in HTML
+#' @keywords internal
+#' @noRd
+add_target_blank <- function(html_text) {
+  gsub('<a href=', '<a target="_blank" href=', html_text, fixed = TRUE)
+}
+
 generate_trait_profile <- function(data_trait) {
 
   # Check validity
@@ -99,7 +106,7 @@ For this trait, AusTraits includes a total of **%s** records. This includes:
   data_trait$taxon_name |> dplyr::n_distinct(),
   data_trait$family |> dplyr::n_distinct(),
   data_trait$dataset_id |> dplyr::n_distinct()
-  ) |> commonmark::markdown_html() |> HTML()
+  ) |> commonmark::markdown_html() |> add_target_blank() |> HTML()
 
   # Geo text
     output[[3]] <-
@@ -112,7 +119,7 @@ Of the %s records for this trait, **%s** have latitude and longitude coordinates
 ", 
   data_trait |> nrow(),
   nrow(data_geo)
-  ) |> commonmark::markdown_html() |> HTML()
+  ) |> commonmark::markdown_html() |> add_target_blank() |> HTML()
 
   # Geomap
     if (nrow(data_geo) > 0 && "lat_num" %in% names(data_geo)) {

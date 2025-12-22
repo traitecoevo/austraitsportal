@@ -22,7 +22,7 @@ austraits_ui <- function() {
 
     footer =  tags$footer(
       "Powered by ",
-      tags$a(href = "https://www.unsw.edu.au/science", "UNSW Faculty of Science"), 
+      tags$a(href = "https://www.unsw.edu.au/science", target = "_blank", "UNSW Faculty of Science"), 
       align = "right", style = "padding: 30px",
       
       div("Created by AusTraits Team",  

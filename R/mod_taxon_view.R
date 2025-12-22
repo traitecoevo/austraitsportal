@@ -25,16 +25,25 @@ mod_taxon_view_ui <- function(id){
 #' @param filtered_database Reactive containing filtered data
 #' @param current_tab Reactive containing current tab name
 #'
-#' @noRd 
+#' @noRd
+
 mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
     taxon_text <- reactiveVal(NULL)
     
+    # Helper to add target blank to links
+    add_target_blank <- function(html_text) {
+      gsub('<a href=', '<a target="_blank" href=', html_text, fixed = TRUE)
+    }
+
     output$taxon_text <- renderUI({
       req(taxon_text())
-      HTML(commonmark::markdown_html(taxon_text()))
+      taxon_text() |>
+        commonmark::markdown_html() |>
+        add_target_blank() |>
+        HTML()
     })
     
     observeEvent(
