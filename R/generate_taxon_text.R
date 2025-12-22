@@ -12,6 +12,13 @@
 #' \dontrun{
 #' generate_taxon_text(austraits_data, "Eucalyptus globulus")
 #' }
+#' Add target blank to all links in HTML
+#' @keywords internal
+#' @noRd
+add_target_blank <- function(html_text) {
+  gsub('<a href=', '<a target="_blank" href=', html_text, fixed = TRUE)
+}
+
 generate_taxon_text <- function(data, taxon) {
 
   data_taxon <- data |>
@@ -156,7 +163,7 @@ generate_taxon_text <- function(data, taxon) {
     stringr::str_replace_all("&lt;", "<") |>
     stringr::str_replace_all("&gt;", ">")
 
-  c(taxon_description, sources)
+  c(add_target_blank(taxon_description), add_target_blank(sources))
 }
 
 #' Generate Portal Links for a Taxon
