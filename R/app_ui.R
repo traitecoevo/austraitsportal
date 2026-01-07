@@ -1,6 +1,6 @@
 #' User interface (UI) for AusTraits Data Portal
 
-austraits_ui <- function() {
+app_ui <- function() {
   ui <- page_sidebar(
     # Custom CSS for DataTable
       tags$head(
