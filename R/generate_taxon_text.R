@@ -18,14 +18,17 @@ generate_taxon_text <- function(data, taxon) {
   data_taxon <- data |>
     dplyr::filter(taxon_name == taxon)
 
+  data_taxon_trait_means <- austraits_species_averages |>
+    dplyr::filter(taxon_name == taxon) |>
+    dplyr::collect()
+
   taxon_info <- data_taxon |>
     dplyr::select(
       taxon_name, 
       taxon_distribution, 
       taxon_rank, 
       taxonomic_status, 
-      taxonomic_dataset, 
-      taxon_name_alternatives,
+      taxonomic_dataset,
       genus, 
       family, 
       binomial,
@@ -35,20 +38,13 @@ generate_taxon_text <- function(data, taxon) {
       taxon_id,
       taxon_id_genus, 
       taxon_id_family,
-      scientific_name_id, 
-      aligned_name, 
-      taxonomic_resolution,
-      aligned_name_taxon_id,
-      aligned_name_taxonomic_status
-      ) |>
+      scientific_name_id
+    ) |>
     dplyr::slice(1) |>
     as.list()
 
   # Generate links to other portals
   portal_links <- generate_taxon_portal_links(taxon_info)
-
-  # Calculate trait means for the taxon
-  data_taxon_trait_means <- suppressWarnings(estimate_species_trait_means(data_taxon))
 
   # Load trait links and merge with trait means
   trait_info_all <- 

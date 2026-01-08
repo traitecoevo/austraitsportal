@@ -145,6 +145,24 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
 
     # Sources
     austraits$sources |> RefManageR::WriteBib(file.path(output_dir, "sources.bib"))
+
+    # create species means dataset
+  
+    # list of traits to take means for - core traits only
+    traits <- 
+      readr::read_csv(
+        "inst/extdata/austraits/trait_groups_for_portal.csv", show_col_types = FALSE) |>
+      dplyr::filter(!is.na(core_trait)) |>
+      dplyr::pull(trait)
+
+    austraits_species_averages <-
+      austraits_full_flatten |>
+      dplyr::filter(trait_name %in% traits) |>    
+      estimate_species_trait_means()
+
+    # Save the species means dataset
+    austraits_species_averages |>
+      arrow::write_parquet(file.path(output_dir, "austraits-species-data.parquet"))
   }
 }
 

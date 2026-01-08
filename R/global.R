@@ -17,7 +17,10 @@ data_path <- "inst/extdata/austraits/austraits-5.0.0-lite"
 # Load the datasets
 austraits <- arrow::open_dataset(file.path(data_path, "austraits-data.parquet"))
 austraits_display <- arrow::open_dataset(file.path(data_path, "austraits-display.parquet"))
+austraits_species_averages <- arrow::open_dataset(file.path(data_path, "austraits-species-data.parquet"))
+
 trait_definitions <- yaml::read_yaml(file.path(data_path, "definitions.yml"))
+
 trait_groups <- readr::read_csv(
   "inst/extdata/austraits/trait_groups_for_portal.csv",
   col_types = readr::cols(.default = readr::col_character())
