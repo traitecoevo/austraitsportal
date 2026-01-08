@@ -12,6 +12,7 @@
 #' \dontrun{
 #' generate_taxon_text(austraits_data, "Eucalyptus globulus")
 #' }
+
 generate_taxon_text <- function(data, taxon) {
 
   data_taxon <- data |>
@@ -55,7 +56,14 @@ generate_taxon_text <- function(data, taxon) {
     dplyr::rename(trait_name = trait) |>
     dplyr::mutate(core_trait = ifelse(!is.na(core_trait) & core_trait == "core_trait", "core", "other")) |>
     dplyr::left_join(data_taxon_trait_means, by = "trait_name") |>
-    dplyr::mutate(data_available = !is.na(type))
+    dplyr::mutate(
+      data_available = !is.na(type),
+      # Add units from trait_definitions
+      units = sapply(trait_name, function(t) {
+        def <- trait_definitions[[t]]
+        if (!is.null(def) && !is.null(def$units)) def$units else ""
+      })
+    )
 
   trait_info_na <- trait_info_all |> dplyr::filter(!data_available)
   
@@ -66,7 +74,11 @@ generate_taxon_text <- function(data, taxon) {
     dplyr::mutate(text = 
       ifelse(type == "categorical", 
         sprintf("- [%s](%s) (categorical): %s  [sources: %s]", trait_name, Entity, value_count, dataset_id),
-        sprintf("- [%s](%s) (numerical): %s (%s-%s)  [sources: %s]", trait_name, Entity, value_mean, value_min, value_max, dataset_id)
+        sprintf("- [%s](%s) (numerical): %s %s (%s-%s %s)  [sources: %s]", 
+          trait_name, Entity, 
+          round(as.numeric(value_mean), 2), units,
+          round(as.numeric(value_min), 2), round(as.numeric(value_max), 2), units,
+          dataset_id)
       )) |>
     dplyr::group_by(trait_group_for_portal, core_trait) |>
     dplyr::summarise(
@@ -103,7 +115,7 @@ generate_taxon_text <- function(data, taxon) {
 
 **Taxonomy**: %s
 
-**Distribution**: %s
+**Distribution (APC)**: %s
 
 **Profiles**: %s
 
@@ -156,7 +168,7 @@ generate_taxon_text <- function(data, taxon) {
     stringr::str_replace_all("&lt;", "<") |>
     stringr::str_replace_all("&gt;", ">")
 
-  c(taxon_description, sources)
+  c(add_target_blank(taxon_description), add_target_blank(sources))
 }
 
 #' Generate Portal Links for a Taxon

@@ -9,5 +9,5 @@ open_data_portal <- function(...){
   #                                output_dir = file.path(system.file("extdata/austraits", package = "austraits.portal"))) 
 
   # Run the application 
-  shiny::shinyApp(ui = austraits_ui, server = austraits_server, ...)
+  shiny::shinyApp(ui = app_ui, server = app_server, ...)
 }

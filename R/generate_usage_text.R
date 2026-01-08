@@ -13,6 +13,7 @@
 #'   cat(usage_text)
 #' }
 #' @export
+
 generate_usage_and_citations_text <- function(data) {
 
   # Extract the version of the package
@@ -45,7 +46,7 @@ References
     paste("- ", references) |> paste(collapse = "\n" )
   )
 
-  usage_text |> commonmark::markdown_html() |> HTML()
+  usage_text |> commonmark::markdown_html() |> add_target_blank() |> HTML()
 }
 
 #' Export BibTeX Entries for Data
