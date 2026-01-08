@@ -175,7 +175,9 @@ format_database_for_display <- function(database){
     ) |> 
     dplyr::relocate("dataset_id", .before = "taxon_name") |> 
     dplyr::relocate("source_primary_citation", .after = "method_context_properties") |> 
-    dplyr::relocate(c("genus", "family"), .after = "taxon_name")
+    dplyr::relocate(c("genus", "family"), .after = "taxon_name") |>
+    dplyr::arrange(family, taxon_name, trait_name)
+
 }
 
 #' Format hyperlinks in flattened database for display
