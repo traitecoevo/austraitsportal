@@ -175,16 +175,83 @@ generate_taxon_text <- function(data, taxon) {
 #' @keywords internal
 #' @noRd 
 generate_taxon_portal_links <- function(taxon_info) {
-  # Generate links to other portals
-  dplyr::tribble(
+  # Get distribution
+  distribution <- if (is.null(taxon_info$taxon_distribution)) "" else taxon_info$taxon_distribution  
+  # Base links (always show)
+  links <- dplyr::tribble(
     ~source, ~url,
     "APC", taxon_info$taxon_id,
-    "NSW Flora", sprintf("https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?page=nswfl&lvl=sp&name=%s", gsub(" ", "~", taxon_info$taxon_name)),
-    "Vic Flora", "https://vicflora.rbg.vic.gov.au/flora/taxon/",
-    "Flora of Australia", sprintf("https://profiles.ala.org.au/opus/foa/profile/%s", gsub(" ", "%20", taxon_info$taxon_name)),
-    "ALA", sprintf("https://bie.ala.org.au/species/%s", taxon_info$taxon_id),
-    "iNaturalist", sprintf("https://www.inaturalist.org/taxa/search?q=%s", gsub(" ", "-", taxon_info$taxon_name))
   )
+  # Perma links (always show) 
+    links <- links |>
+    dplyr::add_row(
+      source = "Flora of Australia",
+      url = sprintf("https://profiles.ala.org.au/opus/foa/profile/%s", gsub(" ", "%20", taxon_info$taxon_name))
+    ) |>
+    dplyr::add_row(
+      source = "ALA",
+      url = sprintf("https://bie.ala.org.au/species/%s", taxon_info$taxon_id)
+    ) |>
+    dplyr::add_row(
+      source = "iNaturalist",
+      url = sprintf("https://www.inaturalist.org/taxa/search?q=%s", gsub(" ", "-", taxon_info$taxon_name))
+    )
+  # NSW Flora only if distributed in NSW
+  if (grepl("NSW", distribution, ignore.case = TRUE)) {
+    links <- links |> 
+      dplyr::add_row(
+        source = "NSW Flora",
+        url = sprintf("https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?page=nswfl&lvl=sp&name=%s", gsub(" ", "~", taxon_info$taxon_name))
+      )
+  }
+  
+  # Vic Flora only if distributed in Vic/Victoria
+  if (grepl("Vic", distribution, ignore.case = TRUE)) {
+    links <- links |>
+      dplyr::add_row(
+        source = "Vic Flora",
+        url = "https://vicflora.rbg.vic.gov.au/flora/taxon/"
+      )
+  }
+
+  # ATRP only if distributed in Qld (Australian Tropical Rainforest Plants)
+  if (grepl("Qld", distribution, ignore.case = TRUE)) {
+    links <- links |>
+      dplyr::add_row(
+        source = "ATRP",
+        url = sprintf("https://apps.lucidcentral.org/rainforest/text/entities/%s.htm", 
+                     gsub(" ", "_", tolower(taxon_info$taxon_name)))
+      )
+  }
+  
+  # SA eFlora only if distributed in SA (homepage until we get numeric IDs)
+  if (grepl("SA", distribution, ignore.case = TRUE)) {
+    links <- links |>
+      dplyr::add_row(
+        source = "SA eFlora",
+        url = "https://flora.sa.gov.au/"
+      )
+  }
+  
+  # Florabase only if distributed in WA (homepage until we get numeric IDs)
+  if (grepl("WA", distribution, ignore.case = TRUE)) {
+    links <- links |>
+      dplyr::add_row(
+        source = "Florabase",
+        url = "https://florabase.dbca.wa.gov.au/"
+      )
+  }
+  
+  # NT eFlora only if distributed in NT (homepage until we get numeric IDs)
+  if (grepl("NT", distribution, ignore.case = TRUE)) {
+    links <- links |>
+      dplyr::add_row(
+        source = "NT eFlora",
+        url = "https://eflora.nt.gov.au/"
+      )
+  }
+  
+  return(links)
 }
 
 #' Export BibTeX Entries for Data
