@@ -181,31 +181,35 @@ observeEvent(input[["filters-clear_filters"]], {
     }
   })
     
-  # Set up download data as reactive expression
+  # Set up download data as reactive expression - downloads ALL filtered rows
   download_data_table <- reactive({
-    # Get the current filtered database that is on display
-    display_db <- filtered_database()
-
-    # Check if it's NULL and return appropriate value
-    if (is.null(display_db)) {
+    # Use the query cache to get ALL filtered data, not just displayed 100 rows
+    query <- filtered_query_cache()
+    
+    if (is.null(query)) {
       return(NULL)
     }
     
-    # Assuming user has used column filtering: 
-    # Get the row indices from the DT table that are currently visible
-    # after filtering in the datatable
+    # If user applied DataTable column filters, respect those
     if (!is.null(data_table_outputs$visible_rows())) {
       visible_rows <- data_table_outputs$visible_rows()
+      display_db <- filtered_database()
       
-      # Subset the display data with the visible row indices
-      display_db_filtered <- display_db[visible_rows, , drop = FALSE]
-      
-      # Join back up to full dataset to get all columns for only the visible rows
-      return(austraits |> dplyr::semi_join(display_db_filtered, by = "row_id"))
+      if (!is.null(display_db) && length(visible_rows) > 0 && length(visible_rows) < nrow(display_db)) {
+        # User filtered within the DataTable - only download those rows
+        display_db_filtered <- display_db[visible_rows, , drop = FALSE]
+        return(austraits |> dplyr::semi_join(display_db_filtered, by = "row_id"))
+      }
     }
     
-    # Default: Join back up to full dataset to get all columns
-    austraits |> dplyr::semi_join(display_db, by = "row_id")
+    # Default: Return ALL filtered data from the query (not just 100 displayed)
+    # Collect ALL row_ids from the filtered query, then join with full dataset
+    filtered_row_ids <- query |> 
+      dplyr::select(row_id) |> 
+      dplyr::collect()
+    
+    # Join full dataset with ALL filtered row_ids
+    austraits |> dplyr::semi_join(filtered_row_ids, by = "row_id")
   })
   
   # Data table module
