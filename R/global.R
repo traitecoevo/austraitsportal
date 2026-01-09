@@ -87,7 +87,7 @@ atrp_links <- readr::read_csv(
   "inst/extdata/ATRP_links.csv",
   show_col_types = FALSE
 ) |>
-  dplyr::rename(url = formatted) |>  # ATRP mein "formatted" column hai
+  dplyr::rename(url = formatted) |> 
   dplyr::select(taxon_name, url) |>
   dplyr::filter(!is.na(url), url != "")
 
@@ -95,14 +95,14 @@ nt_links <- readr::read_csv(
   "inst/extdata/NT_links.csv",
   show_col_types = FALSE
 ) |>
-  dplyr::select(taxon_name, url) |>  # NT mein already "url" hai
+  dplyr::select(taxon_name, url) |> 
   dplyr::filter(!is.na(url), url != "")
 
 vic_links <- readr::read_csv(
   "inst/extdata/Vic_links.csv",
   show_col_types = FALSE
 ) |>
-  dplyr::select(taxon_name, url) |>  # Vic mein already "url" hai
+  dplyr::select(taxon_name, url) |> 
   dplyr::filter(!is.na(url), url != "")
 
 # Custom Github hyperlink icon
