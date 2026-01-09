@@ -59,6 +59,7 @@ Imports:
     htmltools,
     yaml,
     jsonlite,
+    spelling,
     RefManageR,
     cli,
     forcats,
