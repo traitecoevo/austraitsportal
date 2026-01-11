@@ -185,7 +185,8 @@ generate_taxon_portal_links <- function(taxon_info) {
     "APC", taxon_info$taxon_id,
     "Flora of Australia", sprintf("https://profiles.ala.org.au/opus/foa/profile/%s", gsub(" ", "%20", taxon)),
     "ALA", sprintf("https://bie.ala.org.au/species/%s", taxon_info$taxon_id),
-    "iNaturalist", sprintf("https://www.inaturalist.org/taxa/search?q=%s", gsub(" ", "-", taxon))
+    "iNaturalist", sprintf("https://www.inaturalist.org/taxa/search?q=%s", 
+      gsub(" ", "-", gsub(" var\\. | subsp\\. ", " ", taxon)))
   )
   
   # STATE/REGIONAL LINKS (conditional based on distribution)
