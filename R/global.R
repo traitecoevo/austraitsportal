@@ -104,6 +104,28 @@ vic_links <- readr::read_csv(
 ) |>
   dplyr::select(taxon_name, url) |> 
   dplyr::filter(!is.na(url), url != "")
+## Trait groupings and keywords
+all_trait_groupings <- trait_groups |>
+  dplyr::pull(trait_group_for_portal) |>
+  unique() |>
+  sort()
+
+all_structure_measured <- trait_groups |>
+  dplyr::pull(structure_measured) |>
+  stringr::str_remove_all("\\[.*?\\]") |> 
+  stringr::str_split("; |,") |>              
+  unlist() |>                              
+  stringr::str_trim() |>
+  unique() |>
+  sort()
+
+all_keywords <- trait_groups |>
+    dplyr::pull(keywords) |>
+    stringr::str_split(",") |>
+    unlist() |>
+    stringr::str_trim() |>
+    unique() |>
+    sort()
 
 # Custom Github hyperlink icon
 target <- bsplus::shiny_iconlink(name = "github")

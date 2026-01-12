@@ -42,8 +42,42 @@ observeEvent(input[["filters-clear_filters"]], {
   
   # Server-side selectizeInput update for other options that are not conditional
   updateSelectizeInput(session, "filters-trait_name", choices = all_traits, server = TRUE)
+  updateSelectizeInput(session, "filters-trait_grouping", choices = all_trait_groupings, server = TRUE)
+  updateSelectizeInput(session, "filters-structure_measured", choices = all_structure_measured, server = TRUE)
+  updateSelectizeInput(session, "filters-keywords", choices = all_keywords, server = TRUE)
   updateSelectizeInput(session, "filters-basis_of_record", choices = all_bor, server = TRUE)
   updateSelectizeInput(session, "filters-life_stage", choices = all_age, server = TRUE)
+
+  # Populate custom column filter
+  all_columns <- c("dataset_id", "value", "unit", "entity_type", "value_type", "basis_of_value",
+                  "replicates", "basis_of_record", "life_stage", "collection_date",
+                  "location_name", "establishment_means")
+  updateSelectizeInput(session, "filters-custom_col_1", choices = all_columns, server = TRUE)
+  updateSelectizeInput(session, "filters-custom_col_2", choices = all_columns, server = TRUE)
+  updateSelectizeInput(session, "filters-custom_col_3", choices = all_columns, server = TRUE)
+
+  # When column selected, populate values
+  for (i in 1:3) {
+    local({
+      num <- i
+      observeEvent(input[[paste0("filters-custom_col_", num)]], {
+        req(input[[paste0("filters-custom_col_", num)]])
+        
+        column_name <- input[[paste0("filters-custom_col_", num)]]
+        
+        unique_values <- austraits_display |>
+          dplyr::select(!!rlang::sym(column_name)) |>
+          dplyr::distinct() |>
+          dplyr::collect() |>
+          dplyr::pull(1) |>
+          sort()
+        
+        updateSelectizeInput(session, paste0("filters-custom_val_", num), 
+                            choices = unique_values, 
+                            server = TRUE)
+      }, ignoreInit = TRUE)
+    })
+  }
   
   # Apply Filter
   observeEvent(filters(), {
@@ -80,17 +114,26 @@ observeEvent(input[["filters-clear_filters"]], {
           dplyr::collect() |> 
           dplyr::pull(n)
         
-        # Only collect first 100 rows for display
-        filtered_data <- filtered_query |> 
-          dplyr::slice_head(n = 100) |> 
-          dplyr::collect()
+        # Only use lazy loading for large datasets (> 10,000 rows)
+        if (total_rows > 10000) {
+          # Load first 100 rows only
+          filtered_data <- filtered_query |> 
+            dplyr::slice_head(n = 100) |> 
+            dplyr::collect()
+          
+          print(paste("done - showing 100 of", total_rows, "rows"))
+        } else {
+          # Load all data for small datasets
+          filtered_data <- filtered_query |> 
+            dplyr::collect()
+          
+          print(paste("done - showing all", total_rows, "rows"))
+        }
         
-        # Add total_rows as attribute so we can display it
+        # Add total_rows as attribute
         attr(filtered_data, "total_rows") <- total_rows
         # Query for loading more rows later
         filtered_query_cache(filtered_query)
-
-        print(paste("done - showing 100 of", total_rows, "rows"))
 
         # Clear the full cache when filters change
         full_filtered_cache(NULL)
@@ -131,7 +174,6 @@ observeEvent(input[["filters-clear_filters"]], {
       )
       
       if (has_other_filters) {
-        # Apply filters even when "all taxa" is selected - ONLY LOAD 100 ROWS
         filtered_query <- austraits_display |>
           apply_filters_categorical(filter_vals) |>
           apply_filters_location(filter_vals)
@@ -142,10 +184,15 @@ observeEvent(input[["filters-clear_filters"]], {
           dplyr::collect() |> 
           dplyr::pull(n)
         
-        # Only collect first 100 rows
-        filtered_data <- filtered_query |> 
-          dplyr::slice_head(n = 100) |> 
-          dplyr::collect()
+        # Only use lazy loading for large datasets
+        if (total_rows > 10000) {
+          filtered_data <- filtered_query |> 
+            dplyr::slice_head(n = 100) |> 
+            dplyr::collect()
+        } else {
+          filtered_data <- filtered_query |> 
+            dplyr::collect()
+        }
         
         attr(filtered_data, "total_rows") <- total_rows
         filtered_query_cache(filtered_query)
@@ -153,7 +200,7 @@ observeEvent(input[["filters-clear_filters"]], {
         
         filtered_database(filtered_data)
       } else {
-        # Show full database - ONLY LOAD 100 ROWS
+        # Show full database
         all_data_query <- austraits_display
         
         # Get total count
@@ -162,10 +209,15 @@ observeEvent(input[["filters-clear_filters"]], {
           dplyr::collect() |> 
           dplyr::pull(n)
         
-        # Only collect first 100 rows
-        full_display_database <- all_data_query |> 
-          dplyr::slice_head(n = 100) |> 
-          dplyr::collect()
+        # Only use lazy loading for large datasets
+        if (total_rows > 10000) {
+          full_display_database <- all_data_query |> 
+            dplyr::slice_head(n = 100) |> 
+            dplyr::collect()
+        } else {
+          full_display_database <- all_data_query |> 
+            dplyr::collect()
+        }
         
         attr(full_display_database, "total_rows") <- total_rows
         filtered_query_cache(all_data_query)
@@ -367,21 +419,50 @@ observeEvent(input[["filters-clear_filters"]], {
     }
   })
   
-  # Update info message about visible rows
-  output[["filters-rows_info"]] <- renderUI({
-    visible <- data_table_outputs$visible_rows()
-    if (!is.null(visible)) {
-      return(HTML(paste0("<span> Download will include ", length(visible), " observations.</span>")))
+  # Dynamic download UI with warning for large datasets
+  output[["filters-download_ui"]] <- renderUI({
+    display_db <- filtered_database()
+    
+    if (is.null(display_db)) {
+      return(downloadButton("filters-download_data", "Download Data", class = "btn-primary w-100", icon = icon("download")))
     }
-    return(NULL)
+    
+    total_rows <- attr(display_db, "total_rows")
+    if (is.null(total_rows)) total_rows <- nrow(display_db)
+    
+    if (total_rows >= 100000) {
+      # Large dataset - show warning
+      tagList(
+        div(
+          style = "background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 10px; margin-bottom: 10px;",
+          icon("exclamation-triangle", style = "color: #856404;"),
+          span(
+            style = "color: #856404; margin-left: 5px; font-weight: bold;",
+            sprintf("⚠️ Large download: %s rows", format(total_rows, big.mark = ","))
+          )
+        ),
+        downloadButton(
+          "filters-download_data",
+          sprintf("Confirm & Download (%s rows)", format(total_rows, big.mark = ",")),
+          class = "btn-warning w-100",
+          icon = icon("download")
+        )
+      )
+    } else {
+      # Small dataset - direct download
+      downloadButton("filters-download_data", "Download Data", class = "btn-primary w-100", icon = icon("download"))
+    }
   })
-  
-  # Download handler
+
   output[["filters-download_data"]] <- downloadHandler(
     filename = function() {
       paste("austraits-", Sys.Date(), ".zip", sep = "")
     },
     content = function(file) {
+      # Clear memory caches before download
+      full_filtered_cache(NULL)
+      gc()
+      
       tmpdir = tempfile(pattern="tempdir", fileext = ".dir")
       dir.create(tmpdir)
       csv_file <- file.path(tmpdir, "austraits-data.csv")
@@ -398,17 +479,35 @@ observeEvent(input[["filters-clear_filters"]], {
       } else {
         arrow::write_csv_arrow(data_query, csv_file)
         
-        keys_data <- data_query |> 
-          dplyr::select(source_primary_key) |> 
-          dplyr::distinct() |> 
-          dplyr::collect()
-        
-        keys <- keys_data$source_primary_key |> unique()
+      # Only collect distinct keys, not full dataset
+      keys_data <- data_query |> 
+        dplyr::select(source_primary_key) |> 
+        dplyr::distinct() |> 
+        dplyr::collect()
+
+      keys <- keys_data$source_primary_key |> unique()
+
+      rm(keys_data)  # Immediately free memory
+      gc()  # Force cleanup
         export_bibtex_for_data(keys, bib_file)
         
-        sample_data <- data_query |> dplyr::collect()
+      # Only collect a small sample for usage text to avoid memory crash
+      total_rows <- attr(filtered_database(), "total_rows")
+      if (is.null(total_rows)) total_rows <- nrow(filtered_database())
+
+      if (!is.null(total_rows) && total_rows < 50000) {
+        # Small dataset - generate full usage text
+        sample_data <- data_query |> 
+          dplyr::slice_head(n = 1000) |> 
+          dplyr::collect()
         usage_text_content <- generate_usage_and_citations_text(sample_data)
         htmltools::save_html(usage_text_content, html_file)
+        rm(sample_data)
+        gc()
+      } else {
+        # Large dataset - skip usage text to save memory
+        writeLines("<h3>Usage Information</h3><p>For large datasets, please refer to the AusTraits documentation at <a href='https://traitecoevo.github.io/austraits/'>https://traitecoevo.github.io/austraits/</a></p>", html_file)
+      }
       }
 
       showNotification("Downloading filtered data...",
@@ -422,6 +521,9 @@ observeEvent(input[["filters-clear_filters"]], {
       )
 
       unlink(tmpdir, recursive = TRUE)
+
+      # Force garbage collection to free memory
+      gc()
     },
     contentType = "application/zip"
   )
