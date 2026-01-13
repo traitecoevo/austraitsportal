@@ -29,10 +29,24 @@ valid_filters <- function(input, exclude_taxon_rank = TRUE){
 #' @keywords internal
 apply_filters_categorical <- function(data = austraits, input){
   
+  # First apply trait metadata filters if any
+  has_trait_filters <- any(
+    !is.null(input$trait_grouping) && length(input$trait_grouping) > 0,
+    !is.null(input$structure_measured) && length(input$structure_measured) > 0,
+    !is.null(input$keywords) && length(input$keywords) > 0,
+    !is.null(input$trait_name) && length(input$trait_name) > 0
+  )
+  
+  if (has_trait_filters) {
+    data <- apply_trait_metadata_filters(data, input, get("trait_groups", envir = .GlobalEnv))
+  }
+  
   # Generate a list of filter conditions based on the input
   filter_conditions <-
     input |>
     valid_filters() |>
+    # Exclude trait-related filters (already handled)
+    purrr::keep(~ !.x %in% c("trait_name", "trait_grouping", "structure_measured", "keywords")) |>
     # Construct filter conditions dynamically
     purrr::map(function(v) {
       # paste in case value contains more than one item
@@ -44,10 +58,24 @@ apply_filters_categorical <- function(data = austraits, input){
     })
 
   # Combine all filter conditions into a single filter call
-  data <- data |>
-    # Apply the filter conditions to the data
-    dplyr::filter(!!!filter_conditions)  # Unquote and splice the conditions
+  # ONLY if there are filter conditions
+  if (length(filter_conditions) > 0) {
+    data <- data |>
+      dplyr::filter(!!!filter_conditions)
+  }
   
+  # Apply custom filters (up to 3 individual filters)
+  for (i in 1:3) {
+    col_name <- paste0("custom_col_", i)
+    val_name <- paste0("custom_val_", i)
+    
+    if (!is.null(input[[col_name]]) && !is.null(input[[val_name]]) && 
+        length(input[[val_name]]) > 0) {
+      data <- data |>
+        dplyr::filter(!!rlang::sym(input[[col_name]]) %in% input[[val_name]])
+    }
+  }
+
   return(data)
 }
 
@@ -84,6 +112,47 @@ apply_filters_location <- function(data = austraits, input){
   return(data)
 }
 
+#' Apply trait metadata filters
+#' @keywords internal
+apply_trait_metadata_filters <- function(data, input, trait_groups) {
+  
+  matching_traits <- trait_groups$trait
+  
+  if (!is.null(input$trait_grouping) && length(input$trait_grouping) > 0) {
+    matching_traits <- trait_groups |>
+      dplyr::filter(trait_group_for_portal %in% input$trait_grouping) |>
+      dplyr::pull(trait)
+  }
+  
+  if (!is.null(input$structure_measured) && length(input$structure_measured) > 0) {
+    structure_pattern <- paste(input$structure_measured, collapse = "|")
+    matching_traits_structure <- trait_groups |>
+      dplyr::filter(stringr::str_detect(structure_measured, structure_pattern)) |>
+      dplyr::pull(trait)
+    matching_traits <- intersect(matching_traits, matching_traits_structure)
+  }
+  
+  if (!is.null(input$keywords) && length(input$keywords) > 0 && "keywords" %in% names(trait_groups)) {
+    keyword_pattern <- paste(input$keywords, collapse = "|")
+    matching_traits_keywords <- trait_groups |>
+      dplyr::filter(stringr::str_detect(keywords, keyword_pattern)) |>
+      dplyr::pull(trait)
+    matching_traits <- intersect(matching_traits, matching_traits_keywords)
+  }
+  
+  if (!is.null(input$trait_name) && length(input$trait_name) > 0) {
+    matching_traits <- intersect(matching_traits, input$trait_name)
+  }
+  
+  if (length(matching_traits) > 0) {
+    data <- data |>
+      dplyr::filter(trait_name %in% matching_traits)
+  } else {
+    data <- data |> dplyr::filter(FALSE)
+  }
+  
+  return(data)
+}
 
 #' Find distinct values for a given variable
 #' @keywords internal

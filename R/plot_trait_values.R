@@ -281,19 +281,28 @@ plot_trait_distribution_beeswarm <- function(data,
   }
 
   # Define scale on x-axis and transform to log if required
-  if (vals$minimum != 0 & range > 20) {
-    # log transformation
+  if (vals$minimum > 0 & !is.infinite(vals$minimum) & 
+      vals$maximum > 0 & !is.infinite(vals$maximum) & 
+      range > 20) {
+    # log transformation - use a wrapper to ensure breaks and labels match
+    make_log_breaks <- function(limits) {
+      breaks_fn <- scales::breaks_log()
+      breaks <- breaks_fn(limits)
+      # Filter out any breaks outside limits
+      breaks[breaks >= limits[1] & breaks <= limits[2]]
+    }
+    
     p1 <- p1 +
       ggplot2::scale_x_log10(
         name = "",
-        breaks = scales::breaks_log(),
+        breaks = make_log_breaks,
         labels = scientific_10,
         limits = c(vals$minimum, vals$maximum)
       )
     p2 <- p2 +
       ggplot2::scale_x_log10(
         name = paste(trait_name, " (", data$unit[1], ")"),
-        breaks = scales::breaks_log(),
+        breaks = make_log_breaks,
         labels = scientific_10,
         limits = c(vals$minimum, vals$maximum)
       )

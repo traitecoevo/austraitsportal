@@ -65,6 +65,40 @@ mod_filters_ui <- function(id) {
       options = list(create = TRUE)
     ),
 
+    radioButtons(
+      ns("trait_filter_type"),
+      label = "Additional trait filters:",
+      choices = c(
+        "None" = "name",
+        "Trait features" = "features"
+      ),
+      selected = "name"
+    ),
+
+    conditionalPanel(
+      condition = sprintf('input["%s"] == "features"', ns("trait_filter_type")),
+      selectizeInput(
+        ns("trait_grouping"),
+        label = "Trait grouping:",
+        choices = NULL,
+        multiple = TRUE
+      ),
+      
+      selectizeInput(
+        ns("structure_measured"),
+        label = "Structure measured:",
+        choices = NULL,
+        multiple = TRUE
+      ),
+      
+      selectizeInput(
+        ns("keywords"),
+        label = "Keywords:",
+        choices = NULL,
+        multiple = TRUE
+      )
+    ),
+
     h5("Location"),
     radioButtons(
       ns("location"),
@@ -86,19 +120,61 @@ mod_filters_ui <- function(id) {
       )
     ),
 
-    h5("Additional"),
-    selectizeInput(
-      ns("basis_of_record"),
-      label = "Basis of Record:",
-      choices = NULL,
-      multiple = TRUE
-    ),
+    h5("Custom Filters"),
 
     selectizeInput(
-      ns("life_stage"),
-      label = "Life stage:",
+      ns("custom_col_1"),
+      label = "Filter 1 - Column:",
       choices = NULL,
-      multiple = TRUE
+      multiple = FALSE
+    ),
+
+    conditionalPanel(
+      condition = sprintf('input["%s"] != "" && input["%s"] != null', ns("custom_col_1"), ns("custom_col_1")),
+      selectizeInput(
+        ns("custom_val_1"),
+        label = "Filter 1 - Values:",
+        choices = NULL,
+        multiple = TRUE
+      ),
+      
+      # Filter 2 appears only when Filter 1 has values
+      selectizeInput(
+        ns("custom_col_2"),
+        label = "Filter 2 - Column:",
+        choices = NULL,
+        multiple = FALSE
+      )
+    ),
+
+    conditionalPanel(
+      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0', 
+                        ns("custom_col_1"), ns("custom_col_1"), ns("custom_val_1"), ns("custom_val_1")),
+      selectizeInput(
+        ns("custom_val_2"),
+        label = "Filter 2 - Values:",
+        choices = NULL,
+        multiple = TRUE
+      ),
+      
+      # Filter 3 appears only when Filter 2 has values
+      selectizeInput(
+        ns("custom_col_3"),
+        label = "Filter 3 - Column:",
+        choices = NULL,
+        multiple = FALSE
+      )
+    ),
+
+    conditionalPanel(
+      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0 && input["%s"] != null && input["%s"].length > 0', 
+                        ns("custom_col_2"), ns("custom_col_2"), ns("custom_val_1"), ns("custom_val_1"), ns("custom_val_2"), ns("custom_val_2")),
+      selectizeInput(
+        ns("custom_val_3"),
+        label = "Filter 3 - Values:",
+        choices = NULL,
+        multiple = TRUE
+      )
     ),
 
     br(),
@@ -110,7 +186,7 @@ mod_filters_ui <- function(id) {
     ),
 
     uiOutput(ns("rows_info")),
-    downloadButton(ns("download_data"), "Download displayed data")
+    uiOutput(ns("download_ui"))
   )
 }
 
@@ -191,11 +267,15 @@ mod_filters_server <- function(
         updateSelectizeInput(session, "family", selected = NULL)
         updateSelectizeInput(session, "genus", selected = NULL)
         updateSelectizeInput(session, "taxon_name", selected = NULL)
-
         updateSelectizeInput(session, "trait_name", selected = NULL)
+        updateSelectizeInput(session, "trait_grouping", selected = NULL) 
+        updateSelectizeInput(session, "structure_measured", selected = NULL) 
+        updateSelectizeInput(session, "keywords", selected = NULL)
         updateSelectizeInput(session, "basis_of_record", selected = NULL)
         updateSelectizeInput(session, "life_stage", selected = NULL)
         updateSelectizeInput(session, "apc_taxon_distribution", selected = NULL)
+        updateSelectizeInput(session, "custom_column", selected = NULL)
+        updateSelectizeInput(session, "custom_values", selected = NULL)
         filtered_database(NULL)
       })
 
@@ -207,11 +287,21 @@ mod_filters_server <- function(
             family = input$family,
             genus = input$genus,
             taxon_name = input$taxon_name,
+            trait_filter_type = input$trait_filter_type,
             trait_name = input$trait_name,
+            trait_grouping = input$trait_grouping,
+            structure_measured = input$structure_measured,
+            keywords = input$keywords,
             basis_of_record = input$basis_of_record,
             life_stage = input$life_stage,
             location = input$location,
-            apc_taxon_distribution = input$apc_taxon_distribution
+            apc_taxon_distribution = input$apc_taxon_distribution,
+            custom_col_1 = input$custom_col_1,
+            custom_val_1 = input$custom_val_1,
+            custom_col_2 = input$custom_col_2,
+            custom_val_2 = input$custom_val_2,
+            custom_col_3 = input$custom_col_3,
+            custom_val_3 = input$custom_val_3
           )
         })
       )
