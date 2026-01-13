@@ -121,7 +121,7 @@ all_structure_measured <- trait_groups |>
 
 all_keywords <- trait_groups |>
     dplyr::pull(keywords) |>
-    stringr::str_split(",") |>
+    stringr::str_split("; |,") |>
     unlist() |>
     stringr::str_trim() |>
     unique() |>
