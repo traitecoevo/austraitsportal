@@ -64,6 +64,7 @@ Imports:
     cli,
     forcats,
     knitr,
+    shinybusy,
     leaflet,
     plotly,
     scales
