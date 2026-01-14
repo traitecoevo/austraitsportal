@@ -127,6 +127,32 @@ all_keywords <- trait_groups |>
     unique() |>
     sort()
 
+# Define controlled vocabulary columns (dropdown)
+controlled_vocab_columns <- c(
+  "dataset_id", "entity_type", "value_type", "basis_of_value",
+  "basis_of_record", "life_stage", "original_name", "taxon_rank",
+  "establishment_means"
+)
+
+# Define free-text columns (text input)
+free_text_columns <- c(
+  "collection_date", "measurement_remarks", "location_name",
+  "location_properties", "treatment_context_properties",
+  "plot_context_properties", "entity_context_properties",
+  "temporal_context_properties", "method_context_properties",
+  "source_primary_citation", "data_contributors"
+)
+
+# Define columns to omit from custom filter
+omit_from_custom_filter <- c(
+  "taxon_name", "genus", "family", "trait_name",
+  "unit", "value", "replicates", "taxon_distribution",
+  "latitude (deg)", "longitude (deg)"
+)
+
+# Available columns for custom filter
+custom_filter_columns <- c(controlled_vocab_columns, free_text_columns)
+
 # Custom Github hyperlink icon
 target <- bsplus::shiny_iconlink(name = "github")
 target$attribs$href <- "https://github.com/traitecoevo/austraits.portal"

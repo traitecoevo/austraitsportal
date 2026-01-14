@@ -122,6 +122,7 @@ mod_filters_ui <- function(id) {
 
     h5("Custom Filters"),
 
+    # FILTER 1 - Always visible
     selectizeInput(
       ns("custom_col_1"),
       label = "Filter 1 - Column:",
@@ -129,52 +130,57 @@ mod_filters_ui <- function(id) {
       multiple = FALSE
     ),
 
+    selectizeInput(
+      ns("custom_val_1"),
+      label = "Filter 1 - Values:",
+      choices = NULL,
+      multiple = TRUE
+    ),
+
+    # FILTER 2 - Shows when Filter 1 has values
     conditionalPanel(
-      condition = sprintf('input["%s"] != "" && input["%s"] != null', ns("custom_col_1"), ns("custom_col_1")),
-      selectizeInput(
-        ns("custom_val_1"),
-        label = "Filter 1 - Values:",
-        choices = NULL,
-        multiple = TRUE
-      ),
+      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0', 
+                        ns("custom_col_1"), ns("custom_col_1"), ns("custom_val_1"), ns("custom_val_1")),
       
-      # Filter 2 appears only when Filter 1 has values
       selectizeInput(
         ns("custom_col_2"),
         label = "Filter 2 - Column:",
         choices = NULL,
         multiple = FALSE
-      )
-    ),
-
-    conditionalPanel(
-      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0', 
-                        ns("custom_col_1"), ns("custom_col_1"), ns("custom_val_1"), ns("custom_val_1")),
+      ),
+      
       selectizeInput(
         ns("custom_val_2"),
         label = "Filter 2 - Values:",
         choices = NULL,
         multiple = TRUE
-      ),
+      )
+    ),
+
+    # FILTER 3 - Shows when Filter 2 has values
+    conditionalPanel(
+      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0 && input["%s"] != null && input["%s"].length > 0', 
+                        ns("custom_col_2"), ns("custom_col_2"), ns("custom_val_1"), ns("custom_val_1"), ns("custom_val_2"), ns("custom_val_2")),
       
-      # Filter 3 appears only when Filter 2 has values
       selectizeInput(
         ns("custom_col_3"),
         label = "Filter 3 - Column:",
         choices = NULL,
         multiple = FALSE
-      )
-    ),
-
-    conditionalPanel(
-      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0 && input["%s"] != null && input["%s"].length > 0', 
-                        ns("custom_col_2"), ns("custom_col_2"), ns("custom_val_1"), ns("custom_val_1"), ns("custom_val_2"), ns("custom_val_2")),
+      ),
+      
       selectizeInput(
         ns("custom_val_3"),
         label = "Filter 3 - Values:",
         choices = NULL,
         multiple = TRUE
       )
+    ),
+
+    conditionalPanel(
+      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0 && input["%s"] != null && input["%s"].length > 0', 
+                        ns("custom_col_2"), ns("custom_col_2"), ns("custom_val_1"), ns("custom_val_1"), ns("custom_val_2"), ns("custom_val_2")),
+      uiOutput(ns("custom_val_3_ui"))
     ),
 
     br(),
@@ -274,9 +280,74 @@ mod_filters_server <- function(
         updateSelectizeInput(session, "basis_of_record", selected = NULL)
         updateSelectizeInput(session, "life_stage", selected = NULL)
         updateSelectizeInput(session, "apc_taxon_distribution", selected = NULL)
-        updateSelectizeInput(session, "custom_column", selected = NULL)
-        updateSelectizeInput(session, "custom_values", selected = NULL)
+        updateSelectizeInput(session, "custom_col_1", selected = character(0))
+        updateSelectizeInput(session, "custom_val_1", selected = character(0))
+        updateSelectizeInput(session, "custom_col_2", selected = character(0))
+        updateSelectizeInput(session, "custom_val_2", selected = character(0))
+        updateSelectizeInput(session, "custom_col_3", selected = character(0))
+        updateSelectizeInput(session, "custom_val_3", selected = character(0))
         filtered_database(NULL)
+      })
+
+      # Dynamic UI for custom value inputs (dropdown vs text input)
+      output$custom_val_1_ui <- renderUI({
+        req(input$custom_col_1)
+        
+        if (input$custom_col_1 %in% controlled_vocab_columns) {
+          selectizeInput(
+            session$ns("custom_val_1"),  # USE session$ns
+            label = "Filter 1 - Values:",
+            choices = NULL,
+            selected = character(0),
+            multiple = TRUE
+          )
+        } else {
+          textInput(
+            session$ns("custom_val_1"),  # USE session$ns
+            label = "Filter 1 - Search text:",
+            placeholder = "Type to search..."
+          )
+        }
+      })
+
+      output$custom_val_2_ui <- renderUI({
+        req(input$custom_col_2)
+        
+        if (input$custom_col_2 %in% controlled_vocab_columns) {
+          selectizeInput(
+            session$ns("custom_val_2"),  # USE session$ns
+            label = "Filter 2 - Values:",
+            selected = character(0),
+            choices = NULL,
+            multiple = TRUE
+          )
+        } else {
+          textInput(
+            session$ns("custom_val_2"),  # USE session$ns
+            label = "Filter 2 - Search text:",
+            placeholder = "Type to search..."
+          )
+        }
+      })
+
+      output$custom_val_3_ui <- renderUI({
+        req(input$custom_col_3)
+        
+        if (input$custom_col_3 %in% controlled_vocab_columns) {
+          selectizeInput(
+            session$ns("custom_val_3"),  # USE session$ns
+            label = "Filter 3 - Values:",
+            selected = character(0),
+            choices = NULL,
+            multiple = TRUE
+          )
+        } else {
+          textInput(
+            session$ns("custom_val_3"),  # USE session$ns
+            label = "Filter 3 - Search text:",
+            placeholder = "Type to search..."
+          )
+        }
       })
 
       # ---- RETURN FILTER STATE TO MAIN SERVER ----

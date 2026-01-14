@@ -65,14 +65,31 @@ apply_filters_categorical <- function(data = austraits, input){
   }
   
   # Apply custom filters (up to 3 individual filters)
+  controlled_vocab <- get("controlled_vocab_columns", envir = .GlobalEnv)
+
   for (i in 1:3) {
     col_name <- paste0("custom_col_", i)
     val_name <- paste0("custom_val_", i)
     
-    if (!is.null(input[[col_name]]) && !is.null(input[[val_name]]) && 
-        length(input[[val_name]]) > 0) {
-      data <- data |>
-        dplyr::filter(!!rlang::sym(input[[col_name]]) %in% input[[val_name]])
+    if (!is.null(input[[col_name]]) && !is.null(input[[val_name]])) {
+      column <- input[[col_name]]
+      values <- input[[val_name]]
+      
+      # Check if it's a controlled vocab or free text column
+      if (column %in% controlled_vocab) {
+        # Controlled vocabulary - exact match with multiple values
+        if (length(values) > 0) {
+          data <- data |>
+            dplyr::filter(!!rlang::sym(column) %in% values)
+        }
+      } else {
+        # Free text - pattern matching
+        if (nchar(values) > 0) {
+          data <- data |>
+            dplyr::filter(stringr::str_detect(!!rlang::sym(column), 
+                                            fixed(values, ignore_case = TRUE)))
+        }
+      }
     }
   }
 

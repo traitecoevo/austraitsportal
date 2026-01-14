@@ -48,15 +48,21 @@ observeEvent(input[["filters-clear_filters"]], {
   updateSelectizeInput(session, "filters-basis_of_record", choices = all_bor, server = TRUE)
   updateSelectizeInput(session, "filters-life_stage", choices = all_age, server = TRUE)
 
-  # Populate custom column filter
-  all_columns <- c("dataset_id", "value", "unit", "entity_type", "value_type", "basis_of_value",
-                  "replicates", "basis_of_record", "life_stage", "collection_date",
-                  "location_name", "establishment_means")
-  updateSelectizeInput(session, "filters-custom_col_1", choices = all_columns, server = TRUE)
-  updateSelectizeInput(session, "filters-custom_col_2", choices = all_columns, server = TRUE)
-  updateSelectizeInput(session, "filters-custom_col_3", choices = all_columns, server = TRUE)
+  # Populate custom column filters (using predefined list from global.R)
+  updateSelectizeInput(session, "filters-custom_col_1", 
+                      choices = custom_filter_columns, 
+                      selected = character(0),
+                      server = TRUE)
+  updateSelectizeInput(session, "filters-custom_col_2", 
+                      choices = custom_filter_columns,
+                      selected = character(0),
+                      server = TRUE)
+  updateSelectizeInput(session, "filters-custom_col_3", 
+                      choices = custom_filter_columns,
+                      selected = character(0),
+                      server = TRUE)
 
-  # When column selected, populate values
+  # When column selected, populate values (only for controlled vocab)
   for (i in 1:3) {
     local({
       num <- i
@@ -65,17 +71,38 @@ observeEvent(input[["filters-clear_filters"]], {
         
         column_name <- input[[paste0("filters-custom_col_", num)]]
         
-        unique_values <- austraits_display |>
-          dplyr::select(!!rlang::sym(column_name)) |>
-          dplyr::distinct() |>
-          dplyr::collect() |>
-          dplyr::pull(1) |>
-          sort()
-        
-        updateSelectizeInput(session, paste0("filters-custom_val_", num), 
-                            choices = unique_values, 
-                            server = TRUE)
-      }, ignoreInit = TRUE)
+        # Only populate dropdown for controlled vocabulary columns
+        if (column_name %in% controlled_vocab_columns) {
+          # ALWAYS use full dataset query, not just loaded 100 rows
+          query <- filtered_query_cache()
+
+          if (!is.null(query) && column_name %in% names(query)) {
+            # Use full query (not just loaded data)
+            unique_values <- query |>
+              dplyr::select(!!rlang::sym(column_name)) |>
+              dplyr::distinct() |>
+              dplyr::collect() |>
+              dplyr::pull(1) |>
+              na.omit() |>
+              sort()
+          } else {
+            # Fallback to full dataset
+            unique_values <- austraits_display |>
+              dplyr::select(!!rlang::sym(column_name)) |>
+              dplyr::distinct() |>
+              dplyr::collect() |>
+              dplyr::pull(1) |>
+              na.omit() |>
+              sort()
+          }
+          
+          updateSelectizeInput(session, paste0("filters-custom_val_", num), 
+                              choices = unique_values, 
+                              server = TRUE,
+                              selected = NULL)
+        }
+        # For free text columns, no need to populate (user types freely)
+      })
     })
   }
   
@@ -156,7 +183,7 @@ observeEvent(input[["filters-clear_filters"]], {
     }
   })
     
-# Display all data when all taxa are selected
+  # Display all data when all taxa are selected
   observeEvent(filters()$taxon_rank, {
 
     if (filters()$taxon_rank == "all" || filters()$taxon_rank == "") {
@@ -169,8 +196,14 @@ observeEvent(input[["filters-clear_filters"]], {
         !is.null(filter_vals$trait_name) && length(filter_vals$trait_name) > 0,
         !is.null(filter_vals$basis_of_record) && length(filter_vals$basis_of_record) > 0,
         !is.null(filter_vals$life_stage) && length(filter_vals$life_stage) > 0,
-        !is.null(filter_vals$location) && filter_vals$location != "",
-        !is.null(filter_vals$apc_taxon_distribution) && length(filter_vals$apc_taxon_distribution) > 0
+        !is.null(filter_vals$location) && length(filter_vals$location) > 0 && filter_vals$location != "",
+        !is.null(filter_vals$apc_taxon_distribution) && length(filter_vals$apc_taxon_distribution) > 0,
+        !is.null(filter_vals$custom_col_1) && !is.null(filter_vals$custom_val_1) && 
+          (length(filter_vals$custom_val_1) > 0) && (nchar(paste(filter_vals$custom_val_1, collapse="")) > 0),
+        !is.null(filter_vals$custom_col_2) && !is.null(filter_vals$custom_val_2) && 
+          (length(filter_vals$custom_val_2) > 0) && (nchar(paste(filter_vals$custom_val_2, collapse="")) > 0),
+        !is.null(filter_vals$custom_col_3) && !is.null(filter_vals$custom_val_3) && 
+          (length(filter_vals$custom_val_3) > 0) && (nchar(paste(filter_vals$custom_val_3, collapse="")) > 0)
       )
       
       if (has_other_filters) {
