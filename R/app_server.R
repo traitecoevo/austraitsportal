@@ -48,6 +48,71 @@ observeEvent(input[["filters-clear_filters"]], {
   updateSelectizeInput(session, "filters-basis_of_record", choices = all_bor, server = TRUE)
   updateSelectizeInput(session, "filters-life_stage", choices = all_age, server = TRUE)
 
+  # Update trait names when trait features are selected
+  observeEvent(
+    list(
+      input[["filters-trait_grouping"]],
+      input[["filters-structure_measured"]],
+      input[["filters-keywords"]]
+    ),
+    {
+      # Get current selections
+      selected_grouping <- input[["filters-trait_grouping"]]
+      selected_structure <- input[["filters-structure_measured"]]
+      selected_keywords <- input[["filters-keywords"]]
+      
+      # If any trait feature is selected, filter traits
+      if (!is.null(selected_grouping) && length(selected_grouping) > 0 ||
+          !is.null(selected_structure) && length(selected_structure) > 0 ||
+          !is.null(selected_keywords) && length(selected_keywords) > 0) {
+        
+        # Start with all traits
+        matching_traits <- trait_groups$trait
+        
+        # Filter by grouping
+        if (!is.null(selected_grouping) && length(selected_grouping) > 0) {
+          matching_traits <- trait_groups |>
+            dplyr::filter(trait_group_for_portal %in% selected_grouping) |>
+            dplyr::pull(trait) |>
+            unique()
+        }
+        
+        # Filter by structure
+        if (!is.null(selected_structure) && length(selected_structure) > 0) {
+          structure_pattern <- paste(selected_structure, collapse = "|")
+          structure_traits <- trait_groups |>
+            dplyr::filter(stringr::str_detect(structure_measured, structure_pattern)) |>
+            dplyr::pull(trait)
+          matching_traits <- intersect(matching_traits, structure_traits)
+        }
+        
+        # Filter by keywords
+        if (!is.null(selected_keywords) && length(selected_keywords) > 0 && "keywords" %in% names(trait_groups)) {
+          keyword_pattern <- paste(selected_keywords, collapse = "|")
+          keyword_traits <- trait_groups |>
+            dplyr::filter(stringr::str_detect(keywords, keyword_pattern)) |>
+            dplyr::pull(trait)
+          matching_traits <- intersect(matching_traits, keyword_traits)
+        }
+        
+        # Update trait_name dropdown
+        current_trait_selection <- input[["filters-trait_name"]]
+        updateSelectizeInput(session, "filters-trait_name",
+                            choices = sort(matching_traits),
+                            selected = current_trait_selection,
+                            server = TRUE)
+      } else {
+        # No trait features selected - show all traits
+        current_trait_selection <- input[["filters-trait_name"]]
+        updateSelectizeInput(session, "filters-trait_name",
+                            choices = all_traits,
+                            selected = current_trait_selection,
+                            server = TRUE)
+      }
+    },
+    ignoreInit = TRUE
+  )
+
   # Populate custom column filters (using predefined list from global.R)
   updateSelectizeInput(session, "filters-custom_col_1", 
                       choices = custom_filter_columns, 
@@ -194,6 +259,9 @@ observeEvent(input[["filters-clear_filters"]], {
       # Check if there are other filters applied (trait, location, etc.)
       has_other_filters <- any(
         !is.null(filter_vals$trait_name) && length(filter_vals$trait_name) > 0,
+        !is.null(filter_vals$trait_grouping) && length(filter_vals$trait_grouping) > 0,  # ADD
+        !is.null(filter_vals$structure_measured) && length(filter_vals$structure_measured) > 0,  # ADD
+        !is.null(filter_vals$keywords) && length(filter_vals$keywords) > 0,  # ADD
         !is.null(filter_vals$basis_of_record) && length(filter_vals$basis_of_record) > 0,
         !is.null(filter_vals$life_stage) && length(filter_vals$life_stage) > 0,
         !is.null(filter_vals$location) && length(filter_vals$location) > 0 && filter_vals$location != "",

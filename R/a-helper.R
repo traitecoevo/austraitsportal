@@ -83,11 +83,11 @@ apply_filters_categorical <- function(data = austraits, input){
             dplyr::filter(!!rlang::sym(column) %in% values)
         }
       } else {
-        # Free text - pattern matching
+        # Free text - pattern matching (case insensitive)
         if (nchar(values) > 0) {
           data <- data |>
             dplyr::filter(stringr::str_detect(!!rlang::sym(column), 
-                                            fixed(values, ignore_case = TRUE)))
+                                            regex(values, ignore_case = TRUE)))
         }
       }
     }

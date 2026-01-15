@@ -99,15 +99,15 @@ mod_filters_ui <- function(id) {
       )
     ),
 
-    h5("Location"),
     radioButtons(
       ns("location"),
-      label = "Filter by which location filter:",
+      label = h5("Location filters:"),
       choices = c(
+        "None" = "",
         "Georeferenced records" = "georeferenced",
         "APC taxon distribution" = "apc"
       ),
-      selected = character(0)
+      selected = ""
     ),
 
     conditionalPanel(
@@ -130,11 +130,9 @@ mod_filters_ui <- function(id) {
       multiple = FALSE
     ),
 
-    selectizeInput(
-      ns("custom_val_1"),
-      label = "Filter 1 - Values:",
-      choices = NULL,
-      multiple = TRUE
+    conditionalPanel(
+      condition = sprintf('input["%s"] != "" && input["%s"] != null', ns("custom_col_1"), ns("custom_col_1")),
+      uiOutput(ns("custom_val_1_ui"))
     ),
 
     # FILTER 2 - Shows when Filter 1 has values
@@ -149,11 +147,9 @@ mod_filters_ui <- function(id) {
         multiple = FALSE
       ),
       
-      selectizeInput(
-        ns("custom_val_2"),
-        label = "Filter 2 - Values:",
-        choices = NULL,
-        multiple = TRUE
+      conditionalPanel(
+        condition = sprintf('input["%s"] != "" && input["%s"] != null', ns("custom_col_2"), ns("custom_col_2")),
+        uiOutput(ns("custom_val_2_ui"))
       )
     ),
 
@@ -169,11 +165,9 @@ mod_filters_ui <- function(id) {
         multiple = FALSE
       ),
       
-      selectizeInput(
-        ns("custom_val_3"),
-        label = "Filter 3 - Values:",
-        choices = NULL,
-        multiple = TRUE
+      conditionalPanel(
+        condition = sprintf('input["%s"] != "" && input["%s"] != null', ns("custom_col_3"), ns("custom_col_3")),
+        uiOutput(ns("custom_val_3_ui"))
       )
     ),
 
