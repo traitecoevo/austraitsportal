@@ -156,3 +156,16 @@ custom_filter_columns <- c(controlled_vocab_columns, free_text_columns)
 # Custom Github hyperlink icon
 target <- bsplus::shiny_iconlink(name = "github")
 target$attribs$href <- "https://github.com/traitecoevo/austraits.portal"
+
+# Load species averages datasets
+austraits_species <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
+austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits-species-averages-display.parquet"))
+
+# Columns to display for species averages (different from raw data)
+columns_display_species <- c(
+  "dataset_id", "taxon_name", "genus", "family", "trait_name", 
+  "value_mean", "value_min", "value_max", "value_median", "unit",
+  "value_type", "observation_id",
+  "value_count", "all_replicates",
+  "taxon_rank", "taxon_distribution", "establishment_means"
+)

@@ -9,6 +9,31 @@ app_server <- function(input, output, session) {
   filtered_database <- reactiveVal(NULL)
   filtered_query_cache <- reactiveVal(NULL)
   full_filtered_cache <- reactiveVal(NULL)
+
+  # Reactive datasets that switch based on user selection
+  current_austraits <- reactive({
+    if (filters()$dataset_type == "species") {
+      austraits_species
+    } else {
+      austraits
+    }
+  })
+
+  current_austraits_display <- reactive({
+    if (filters()$dataset_type == "species") {
+      austraits_species_display
+    } else {
+      austraits_display
+    }
+  })
+
+  current_columns_display <- reactive({
+    if (filters()$dataset_type == "species") {
+      columns_display_species
+    } else {
+      columns_display
+    }
+  })
   
   # Initialize dropdown choices
   taxon_name_choices <- reactive({
@@ -152,7 +177,7 @@ observeEvent(input[["filters-clear_filters"]], {
               sort()
           } else {
             # Fallback to full dataset
-            unique_values <- austraits_display |>
+            unique_values <- current_austraits_display() |>
               dplyr::select(!!rlang::sym(column_name)) |>
               dplyr::distinct() |>
               dplyr::collect() |>
@@ -175,8 +200,8 @@ observeEvent(input[["filters-clear_filters"]], {
   observeEvent(filters(), {
     
     # SAFETY CHECK: Wait for data to be loaded
-    req(exists("austraits_display"))
-    if (!exists("austraits_display")) return()
+    req(exists("austraits_display") || exists("austraits_species_display"))
+    if (!exists("austraits_display") && !exists("austraits_species_display")) return()
 
     # Extract filters once
     filter_vals <- filters()
@@ -196,7 +221,7 @@ observeEvent(input[["filters-clear_filters"]], {
       
       tryCatch({
         # Apply filters but don't collect yet
-        filtered_query <- austraits_display |>
+        filtered_query <- current_austraits_display() |>
           apply_filters_categorical(filter_vals) |>
           apply_filters_location(filter_vals)
         
@@ -280,7 +305,7 @@ observeEvent(input[["filters-clear_filters"]], {
       )
       
       if (has_other_filters) {
-        filtered_query <- austraits_display |>
+        filtered_query <- current_austraits_display() |>
           apply_filters_categorical(filter_vals) |>
           apply_filters_location(filter_vals)
         
@@ -307,7 +332,7 @@ observeEvent(input[["filters-clear_filters"]], {
         filtered_database(filtered_data)
       } else {
         # Show full database
-        all_data_query <- austraits_display
+        all_data_query <- current_austraits_display()
         
         # Get total count
         total_rows <- all_data_query |> 
@@ -356,7 +381,7 @@ observeEvent(input[["filters-clear_filters"]], {
       if (!is.null(display_db) && length(visible_rows) > 0 && length(visible_rows) < nrow(display_db)) {
         # User filtered within the DataTable - only download those rows
         display_db_filtered <- display_db[visible_rows, , drop = FALSE]
-        return(austraits |> dplyr::semi_join(display_db_filtered, by = "row_id"))
+        return(current_austraits() |> dplyr::semi_join(display_db_filtered, by = "row_id"))
       }
     }
     
@@ -367,11 +392,11 @@ observeEvent(input[["filters-clear_filters"]], {
       dplyr::collect()
     
     # Join full dataset with ALL filtered row_ids
-    austraits |> dplyr::semi_join(filtered_row_ids, by = "row_id")
+    current_austraits() |> dplyr::semi_join(filtered_row_ids, by = "row_id")
   })
   
   # Data table module
-  data_table_outputs <- mod_data_table_server("data_table", filtered_database, filtered_query_cache, columns_display)
+  data_table_outputs <- mod_data_table_server("data_table", filtered_database, filtered_query_cache, current_columns_display)
 
   # Reset pagination whenever filtered data changes (e.g. new filter)
   observeEvent(filtered_database(), {

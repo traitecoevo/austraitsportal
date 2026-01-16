@@ -11,6 +11,19 @@ mod_filters_ui <- function(id) {
   ns <- NS(id)
 
   sidebar(
+    h5("Dataset"),
+    radioButtons(
+      ns("dataset_type"),
+      label = NULL,
+      choices = c(
+        "Raw data" = "raw",
+        "Species averages" = "species"
+      ),
+      selected = "raw"
+    ),
+    
+    hr(),
+  
     h5("Taxonomy"),
 
     radioButtons(
@@ -379,6 +392,7 @@ mod_filters_server <- function(
       return(
         reactive({
           list(
+            dataset_type = input$dataset_type,
             taxon_rank = input$taxon_rank,
             family = input$family,
             genus = input$genus,
