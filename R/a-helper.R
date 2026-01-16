@@ -114,7 +114,32 @@ apply_filters_location <- function(data = austraits, input){
       dplyr::filter(
         !is.na(.data$`latitude (deg)`) & !is.na(.data$`longitude (deg)`)
       )
-  } 
+    
+  # Apply bounding box filter if specified
+  min_lat <- as.numeric(input$min_latitude)
+  if (!is.null(min_lat) && !is.na(min_lat)) {
+    data <- data |> 
+      dplyr::filter(.data$`latitude (deg)` >= min_lat)
+  }
+
+  max_lat <- as.numeric(input$max_latitude)
+  if (!is.null(max_lat) && !is.na(max_lat)) {
+    data <- data |> 
+      dplyr::filter(.data$`latitude (deg)` <= max_lat)
+  }
+
+  min_lon <- as.numeric(input$min_longitude)
+  if (!is.null(min_lon) && !is.na(min_lon)) {
+    data <- data |> 
+      dplyr::filter(.data$`longitude (deg)` >= min_lon)
+  }
+
+  max_lon <- as.numeric(input$max_longitude)
+  if (!is.null(max_lon) && !is.na(max_lon)) {
+    data <- data |> 
+      dplyr::filter(.data$`longitude (deg)` <= max_lon)
+  }
+  }
 
   # Taxon distribution: filter for any of the selected states
   if (input$location == "apc" && !is.null(input$apc_taxon_distribution)) {  

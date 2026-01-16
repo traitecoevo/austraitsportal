@@ -266,6 +266,11 @@ observeEvent(input[["filters-clear_filters"]], {
         !is.null(filter_vals$life_stage) && length(filter_vals$life_stage) > 0,
         !is.null(filter_vals$location) && length(filter_vals$location) > 0 && filter_vals$location != "",
         !is.null(filter_vals$apc_taxon_distribution) && length(filter_vals$apc_taxon_distribution) > 0,
+        (!is.null(filter_vals$min_latitude) && !is.na(as.numeric(filter_vals$min_latitude))) ||
+        (!is.null(filter_vals$max_latitude) && !is.na(as.numeric(filter_vals$max_latitude))) ||
+        (!is.null(filter_vals$min_longitude) && !is.na(as.numeric(filter_vals$min_longitude))) ||
+        (!is.null(filter_vals$max_longitude) && !is.na(as.numeric(filter_vals$max_longitude))),
+        !is.null(filter_vals$custom_col_1) && !is.null(filter_vals$custom_val_1) &&
         !is.null(filter_vals$custom_col_1) && !is.null(filter_vals$custom_val_1) && 
           (length(filter_vals$custom_val_1) > 0) && (nchar(paste(filter_vals$custom_val_1, collapse="")) > 0),
         !is.null(filter_vals$custom_col_2) && !is.null(filter_vals$custom_val_2) && 

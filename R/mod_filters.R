@@ -120,6 +120,39 @@ mod_filters_ui <- function(id) {
       )
     ),
 
+    conditionalPanel(
+      condition = sprintf('input["%s"] == "georeferenced"', ns("location")),
+      h6("Filter to bounding box (optional)"),
+      numericInput(
+        ns("min_latitude"),
+        label = "Minimum latitude:",
+        value = -10,
+        min = -45,
+        max = -10
+      ),
+      numericInput(
+        ns("max_latitude"),
+        label = "Maximum latitude:",
+        value = -45,
+        min = -45,
+        max = -10
+      ),
+      numericInput(
+        ns("min_longitude"),
+        label = "Minimum longitude:",
+        value = 113,
+        min = 113,
+        max = 154
+      ),
+      numericInput(
+        ns("max_longitude"),
+        label = "Maximum longitude:",
+        value = 154,
+        min = 113,
+        max = 154
+      )
+    ),
+
     h5("Custom Filters"),
 
     # FILTER 1 - Always visible
@@ -130,10 +163,7 @@ mod_filters_ui <- function(id) {
       multiple = FALSE
     ),
 
-    conditionalPanel(
-      condition = sprintf('input["%s"] != "" && input["%s"] != null', ns("custom_col_1"), ns("custom_col_1")),
-      uiOutput(ns("custom_val_1_ui"))
-    ),
+      uiOutput(ns("custom_val_1_ui")),
 
     # FILTER 2 - Shows when Filter 1 has values
     conditionalPanel(
@@ -147,10 +177,7 @@ mod_filters_ui <- function(id) {
         multiple = FALSE
       ),
       
-      conditionalPanel(
-        condition = sprintf('input["%s"] != "" && input["%s"] != null', ns("custom_col_2"), ns("custom_col_2")),
         uiOutput(ns("custom_val_2_ui"))
-      )
     ),
 
     # FILTER 3 - Shows when Filter 2 has values
@@ -274,6 +301,10 @@ mod_filters_server <- function(
         updateSelectizeInput(session, "basis_of_record", selected = NULL)
         updateSelectizeInput(session, "life_stage", selected = NULL)
         updateSelectizeInput(session, "apc_taxon_distribution", selected = NULL)
+        updateNumericInput(session, "min_latitude", value = NA)
+        updateNumericInput(session, "max_latitude", value = NA)
+        updateNumericInput(session, "min_longitude", value = NA)
+        updateNumericInput(session, "max_longitude", value = NA)
         updateSelectizeInput(session, "custom_col_1", selected = character(0))
         updateSelectizeInput(session, "custom_val_1", selected = character(0))
         updateSelectizeInput(session, "custom_col_2", selected = character(0))
@@ -361,6 +392,10 @@ mod_filters_server <- function(
             life_stage = input$life_stage,
             location = input$location,
             apc_taxon_distribution = input$apc_taxon_distribution,
+            min_latitude = input$min_latitude,
+            max_latitude = input$max_latitude,
+            min_longitude = input$min_longitude,
+            max_longitude = input$max_longitude,
             custom_col_1 = input$custom_col_1,
             custom_val_1 = input$custom_val_1,
             custom_col_2 = input$custom_col_2,
