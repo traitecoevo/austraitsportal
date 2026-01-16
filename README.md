@@ -20,7 +20,7 @@ open_data_portal()
 
 ## Deploy to shinyapps.io
 
-App is deplyed at https://unsw.shinyapps.io/austraits-portal/ with configuration 
+App is deployed at https://unsw.shinyapps.io/austraits-portal/ with configuration 
 details stored at `rsconnect/shinyapps.io/unsw/austraits.portal.dcf`.
 
 To update deployment, open in Rstudio and run 

@@ -60,7 +60,7 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
         data = display_data,
         escape = FALSE,
         rownames = FALSE,
-        filter = list(position = "top", clear = TRUE, plain = FALSE),
+        filter = "none",
         class = "cell-border stripe nowrap",
         options = list(
           pageLength = 10,

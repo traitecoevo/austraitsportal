@@ -99,15 +99,15 @@ mod_filters_ui <- function(id) {
       )
     ),
 
-    h5("Location"),
     radioButtons(
       ns("location"),
-      label = "Filter by which location filter:",
+      label = h5("Location filters:"),
       choices = c(
+        "None" = "",
         "Georeferenced records" = "georeferenced",
         "APC taxon distribution" = "apc"
       ),
-      selected = character(0)
+      selected = ""
     ),
 
     conditionalPanel(
@@ -120,8 +120,42 @@ mod_filters_ui <- function(id) {
       )
     ),
 
+    conditionalPanel(
+      condition = sprintf('input["%s"] == "georeferenced"', ns("location")),
+      h6("Filter to bounding box (optional)"),
+      numericInput(
+        ns("min_latitude"),
+        label = "Minimum latitude:",
+        value = -10,
+        min = -45,
+        max = -10
+      ),
+      numericInput(
+        ns("max_latitude"),
+        label = "Maximum latitude:",
+        value = -45,
+        min = -45,
+        max = -10
+      ),
+      numericInput(
+        ns("min_longitude"),
+        label = "Minimum longitude:",
+        value = 113,
+        min = 113,
+        max = 154
+      ),
+      numericInput(
+        ns("max_longitude"),
+        label = "Maximum longitude:",
+        value = 154,
+        min = 113,
+        max = 154
+      )
+    ),
+
     h5("Custom Filters"),
 
+    # FILTER 1 - Always visible
     selectizeInput(
       ns("custom_col_1"),
       label = "Filter 1 - Column:",
@@ -129,52 +163,45 @@ mod_filters_ui <- function(id) {
       multiple = FALSE
     ),
 
+      uiOutput(ns("custom_val_1_ui")),
+
+    # FILTER 2 - Shows when Filter 1 has values
     conditionalPanel(
-      condition = sprintf('input["%s"] != "" && input["%s"] != null', ns("custom_col_1"), ns("custom_col_1")),
-      selectizeInput(
-        ns("custom_val_1"),
-        label = "Filter 1 - Values:",
-        choices = NULL,
-        multiple = TRUE
-      ),
+      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0', 
+                        ns("custom_col_1"), ns("custom_col_1"), ns("custom_val_1"), ns("custom_val_1")),
       
-      # Filter 2 appears only when Filter 1 has values
       selectizeInput(
         ns("custom_col_2"),
         label = "Filter 2 - Column:",
         choices = NULL,
         multiple = FALSE
-      )
-    ),
-
-    conditionalPanel(
-      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0', 
-                        ns("custom_col_1"), ns("custom_col_1"), ns("custom_val_1"), ns("custom_val_1")),
-      selectizeInput(
-        ns("custom_val_2"),
-        label = "Filter 2 - Values:",
-        choices = NULL,
-        multiple = TRUE
       ),
       
-      # Filter 3 appears only when Filter 2 has values
+        uiOutput(ns("custom_val_2_ui"))
+    ),
+
+    # FILTER 3 - Shows when Filter 2 has values
+    conditionalPanel(
+      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0 && input["%s"] != null && input["%s"].length > 0', 
+                        ns("custom_col_2"), ns("custom_col_2"), ns("custom_val_1"), ns("custom_val_1"), ns("custom_val_2"), ns("custom_val_2")),
+      
       selectizeInput(
         ns("custom_col_3"),
         label = "Filter 3 - Column:",
         choices = NULL,
         multiple = FALSE
+      ),
+      
+      conditionalPanel(
+        condition = sprintf('input["%s"] != "" && input["%s"] != null', ns("custom_col_3"), ns("custom_col_3")),
+        uiOutput(ns("custom_val_3_ui"))
       )
     ),
 
     conditionalPanel(
       condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0 && input["%s"] != null && input["%s"].length > 0', 
                         ns("custom_col_2"), ns("custom_col_2"), ns("custom_val_1"), ns("custom_val_1"), ns("custom_val_2"), ns("custom_val_2")),
-      selectizeInput(
-        ns("custom_val_3"),
-        label = "Filter 3 - Values:",
-        choices = NULL,
-        multiple = TRUE
-      )
+      uiOutput(ns("custom_val_3_ui"))
     ),
 
     br(),
@@ -274,9 +301,78 @@ mod_filters_server <- function(
         updateSelectizeInput(session, "basis_of_record", selected = NULL)
         updateSelectizeInput(session, "life_stage", selected = NULL)
         updateSelectizeInput(session, "apc_taxon_distribution", selected = NULL)
-        updateSelectizeInput(session, "custom_column", selected = NULL)
-        updateSelectizeInput(session, "custom_values", selected = NULL)
+        updateNumericInput(session, "min_latitude", value = NA)
+        updateNumericInput(session, "max_latitude", value = NA)
+        updateNumericInput(session, "min_longitude", value = NA)
+        updateNumericInput(session, "max_longitude", value = NA)
+        updateSelectizeInput(session, "custom_col_1", selected = character(0))
+        updateSelectizeInput(session, "custom_val_1", selected = character(0))
+        updateSelectizeInput(session, "custom_col_2", selected = character(0))
+        updateSelectizeInput(session, "custom_val_2", selected = character(0))
+        updateSelectizeInput(session, "custom_col_3", selected = character(0))
+        updateSelectizeInput(session, "custom_val_3", selected = character(0))
         filtered_database(NULL)
+      })
+
+      # Dynamic UI for custom value inputs (dropdown vs text input)
+      output$custom_val_1_ui <- renderUI({
+        req(input$custom_col_1)
+        
+        if (input$custom_col_1 %in% controlled_vocab_columns) {
+          selectizeInput(
+            session$ns("custom_val_1"),  # USE session$ns
+            label = "Filter 1 - Values:",
+            choices = NULL,
+            selected = character(0),
+            multiple = TRUE
+          )
+        } else {
+          textInput(
+            session$ns("custom_val_1"),  # USE session$ns
+            label = "Filter 1 - Search text:",
+            placeholder = "Type to search..."
+          )
+        }
+      })
+
+      output$custom_val_2_ui <- renderUI({
+        req(input$custom_col_2)
+        
+        if (input$custom_col_2 %in% controlled_vocab_columns) {
+          selectizeInput(
+            session$ns("custom_val_2"),  # USE session$ns
+            label = "Filter 2 - Values:",
+            selected = character(0),
+            choices = NULL,
+            multiple = TRUE
+          )
+        } else {
+          textInput(
+            session$ns("custom_val_2"),  # USE session$ns
+            label = "Filter 2 - Search text:",
+            placeholder = "Type to search..."
+          )
+        }
+      })
+
+      output$custom_val_3_ui <- renderUI({
+        req(input$custom_col_3)
+        
+        if (input$custom_col_3 %in% controlled_vocab_columns) {
+          selectizeInput(
+            session$ns("custom_val_3"),  # USE session$ns
+            label = "Filter 3 - Values:",
+            selected = character(0),
+            choices = NULL,
+            multiple = TRUE
+          )
+        } else {
+          textInput(
+            session$ns("custom_val_3"),  # USE session$ns
+            label = "Filter 3 - Search text:",
+            placeholder = "Type to search..."
+          )
+        }
       })
 
       # ---- RETURN FILTER STATE TO MAIN SERVER ----
@@ -296,6 +392,10 @@ mod_filters_server <- function(
             life_stage = input$life_stage,
             location = input$location,
             apc_taxon_distribution = input$apc_taxon_distribution,
+            min_latitude = input$min_latitude,
+            max_latitude = input$max_latitude,
+            min_longitude = input$min_longitude,
+            max_longitude = input$max_longitude,
             custom_col_1 = input$custom_col_1,
             custom_val_1 = input$custom_val_1,
             custom_col_2 = input$custom_col_2,

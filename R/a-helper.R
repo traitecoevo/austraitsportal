@@ -65,14 +65,31 @@ apply_filters_categorical <- function(data = austraits, input){
   }
   
   # Apply custom filters (up to 3 individual filters)
+  controlled_vocab <- get("controlled_vocab_columns", envir = .GlobalEnv)
+
   for (i in 1:3) {
     col_name <- paste0("custom_col_", i)
     val_name <- paste0("custom_val_", i)
     
-    if (!is.null(input[[col_name]]) && !is.null(input[[val_name]]) && 
-        length(input[[val_name]]) > 0) {
-      data <- data |>
-        dplyr::filter(!!rlang::sym(input[[col_name]]) %in% input[[val_name]])
+    if (!is.null(input[[col_name]]) && !is.null(input[[val_name]])) {
+      column <- input[[col_name]]
+      values <- input[[val_name]]
+      
+      # Check if it's a controlled vocab or free text column
+      if (column %in% controlled_vocab) {
+        # Controlled vocabulary - exact match with multiple values
+        if (length(values) > 0) {
+          data <- data |>
+            dplyr::filter(!!rlang::sym(column) %in% values)
+        }
+      } else {
+        # Free text - pattern matching (case insensitive)
+        if (nchar(values) > 0) {
+          data <- data |>
+            dplyr::filter(stringr::str_detect(!!rlang::sym(column), 
+                                            regex(values, ignore_case = TRUE)))
+        }
+      }
     }
   }
 
@@ -97,7 +114,32 @@ apply_filters_location <- function(data = austraits, input){
       dplyr::filter(
         !is.na(.data$`latitude (deg)`) & !is.na(.data$`longitude (deg)`)
       )
-  } 
+    
+  # Apply bounding box filter if specified
+  min_lat <- as.numeric(input$min_latitude)
+  if (!is.null(min_lat) && !is.na(min_lat)) {
+    data <- data |> 
+      dplyr::filter(.data$`latitude (deg)` >= min_lat)
+  }
+
+  max_lat <- as.numeric(input$max_latitude)
+  if (!is.null(max_lat) && !is.na(max_lat)) {
+    data <- data |> 
+      dplyr::filter(.data$`latitude (deg)` <= max_lat)
+  }
+
+  min_lon <- as.numeric(input$min_longitude)
+  if (!is.null(min_lon) && !is.na(min_lon)) {
+    data <- data |> 
+      dplyr::filter(.data$`longitude (deg)` >= min_lon)
+  }
+
+  max_lon <- as.numeric(input$max_longitude)
+  if (!is.null(max_lon) && !is.na(max_lon)) {
+    data <- data |> 
+      dplyr::filter(.data$`longitude (deg)` <= max_lon)
+  }
+  }
 
   # Taxon distribution: filter for any of the selected states
   if (input$location == "apc" && !is.null(input$apc_taxon_distribution)) {  
