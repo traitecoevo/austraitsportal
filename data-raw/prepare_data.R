@@ -14,7 +14,13 @@ austraits_6.0.0 <-
   austraits::load_austraits(version = "6.0.0", path = "inst/extdata/austraits", update = FALSE)
 
 austraits_6.0.0 |> 
-  prepare_data_for_portal("inst/extdata/austraits/austraits-6.0.0-full")
+  prepare_data_for_portal("inst/extdata/austraits/austraits-6.0.0-full", overwrite = TRUE)
+
+austraits_7.0.0 <- 
+  austraits::load_austraits(version = "7.0.0", path = "inst/extdata/austraits", update = FALSE)
+
+austraits_7.0.0 |> 
+  prepare_data_for_portal("inst/extdata/austraits/austraits-7.0.0-full")
 
 # Mid version
 
