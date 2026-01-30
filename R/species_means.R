@@ -32,15 +32,11 @@ estimate_species_trait_means <- function(austraits) {
   data_means_numerical <- 
     austraits |>
     estimate_species_trait_means_numerical(
-      traits = traits$numerical$trait_name) # |>
-      # dplyr::mutate(
-      #   dplyr::across(tidyselect::where(is.numeric), as.character)
-      # )
+      traits = traits$numerical$trait_name)
   
   data_means_categorical <-
     austraits |> estimate_species_trait_summary_categorical(
       traits = traits$categorical$trait_name)
-
   
   # Build species means for database
   data_means_numerical |>
