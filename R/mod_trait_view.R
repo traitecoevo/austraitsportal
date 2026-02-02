@@ -71,9 +71,9 @@ trait_profile <- reactive({
           return(list(tags$p("Trait profile unavailable"), NULL, NULL, NULL))
         })
         
-        # Add species averages banner at top
+        # Add species averages banner at top 
         banner <- tags$div(
-          style = "background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px 16px; margin-bottom: 20px; border-radius: 4px;",
+          style = "background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px 16px; margin-bottom: 5px; border-radius: 4px;",
           tags$div(
             style = "display: flex; align-items: center; gap: 8px;",
             icon("info-circle", style = "color: #1976d2;"),
@@ -85,6 +85,10 @@ trait_profile <- reactive({
           tags$p(
             style = "margin: 8px 0 0 0; font-size: 0.9em; color: #424242;",
             "Showing aggregated species-level means. Location data not available."
+          ),
+          tags$p(
+            style = "margin: 8px 0 0 0; font-size: 0.85em; color: #616161; font-style: italic;",
+            "To view individual observations, select 'Raw data' in the filters panel."
           )
         )
         
@@ -95,8 +99,31 @@ trait_profile <- reactive({
         return(list(trait_info_with_banner, NULL, NULL, NULL))
       }
       
-      # For raw data, use full profile
-      generate_trait_profile(filtered_data())
+      raw_profile <- generate_trait_profile(filtered_data())
+      
+      # raw data banner
+      banner <- tags$div(
+        style = "background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px 16px; margin-bottom: 5px; border-radius: 4px;",
+        tags$div(
+          style = "display: flex; align-items: center; gap: 8px;",
+          icon("info-circle", style = "color: #1976d2;"),
+          tags$span(
+            style = "color: #1565c0; font-weight: 500;",
+            "Raw Observation Data"
+          )
+        ),
+        tags$p(
+          style = "margin: 8px 0 0 0; font-size: 0.9em; color: #424242;",
+          "Showing individual observations with full location and measurement details."
+        ),
+        tags$p(
+          style = "margin: 8px 0 0 0; font-size: 0.85em; color: #616161; font-style: italic;",
+          "To view species-level aggregated means, select 'Species averages' in the filters panel."
+        )
+      )
+      
+      trait_info_with_banner <- tagList(banner, raw_profile[[1]])
+      return(list(trait_info_with_banner, raw_profile[[2]], raw_profile[[3]], raw_profile[[4]]))
     })
     
     output$trait_profile <- renderUI({

@@ -112,8 +112,6 @@ mod_filters_ui <- function(id) {
       )
     ),
 
-    conditionalPanel(
-      condition = sprintf('input["%s"] == "raw"', ns("dataset_type")),
       radioButtons(
         ns("location"),
         label = h5("Location filters:"),
@@ -166,8 +164,7 @@ mod_filters_ui <- function(id) {
         min = 113,
         max = 154
       )
-     )
-    ),
+     ),
 
     h5("Custom Filters"),
 
@@ -387,6 +384,31 @@ mod_filters_server <- function(
             session$ns("custom_val_3"),  # USE session$ns
             label = "Filter 3 - Search text:",
             placeholder = "Type to search..."
+          )
+        }
+      })
+    
+      observeEvent(input$dataset_type, {
+        if (input$dataset_type == "species") {
+          updateRadioButtons(
+            session,
+            "location",
+            choices = c(
+              "None" = "",
+              "APC taxon distribution" = "apc"
+            ),
+            selected = if (input$location == "georeferenced") "" else input$location
+          )
+        } else {
+          updateRadioButtons(
+            session,
+            "location",
+            choices = c(
+              "None" = "",
+              "Georeferenced records" = "georeferenced",
+              "APC taxon distribution" = "apc"
+            ),
+            selected = input$location
           )
         }
       })

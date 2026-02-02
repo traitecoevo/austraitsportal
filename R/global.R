@@ -185,7 +185,6 @@ rm(temp_species_ids)
 columns_display_species <- c(
   "dataset_id", "taxon_name", "genus", "family", "trait_name", 
   "value_mean", "value_min", "value_max", "value_median", "unit",
-  "value_type", "observation_id",
-  "value_count", "all_replicates",
+  "value_type", "all_replicates",
   "taxon_rank", "taxon_distribution", "establishment_means"
 )
