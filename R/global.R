@@ -18,7 +18,10 @@ data_path <- "inst/extdata/austraits/austraits-5.0.0-lite"
 # Load the datasets
 austraits <- arrow::open_dataset(file.path(data_path, "austraits-data.parquet"))
 austraits_display <- arrow::open_dataset(file.path(data_path, "austraits-display.parquet"))
+austraits_species_averages <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
+
 trait_definitions <- yaml::read_yaml(file.path(data_path, "definitions.yml"))
+
 trait_groups <- readr::read_csv(
   "inst/extdata/austraits/trait_groups_for_portal.csv",
   col_types = readr::cols(.default = readr::col_character())
@@ -154,6 +157,35 @@ omit_from_custom_filter <- c(
 # Available columns for custom filter
 custom_filter_columns <- c(controlled_vocab_columns, free_text_columns)
 
+# Custom filter columns for SPECIES AVERAGES (only columns that exist)
+custom_filter_columns_species <- c(
+  "dataset_id", "value_type", 
+  "taxon_rank", "establishment_means"
+  # Only controlled vocab columns that exist in species avg
+)
+
 # Custom Github hyperlink icon
 target <- bsplus::shiny_iconlink(name = "github")
 target$attribs$href <- "https://github.com/traitecoevo/austraits.portal"
+
+# Load species averages datasets
+austraits_species <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
+austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits-species-averages-display.parquet"))
+
+# For species averages - split semicolon-separated dataset_id (Get done cause IDs get clubbed, should be understandable)
+temp_species_ids <- austraits_species_display |> 
+  dplyr::select(dataset_id) |> 
+  dplyr::distinct() |> 
+  dplyr::collect() |> 
+  dplyr::pull(dataset_id)
+
+all_dataset_ids_species <- unique(sort(unlist(strsplit(temp_species_ids, "; "))))
+rm(temp_species_ids)
+
+# Columns to display for species averages (different from raw data)
+columns_display_species <- c(
+  "dataset_id", "taxon_name", "genus", "family", "trait_name", 
+  "value_mean", "value_min", "value_max", "value_median", "unit",
+  "value_type", "all_replicates",
+  "taxon_rank", "taxon_distribution", "establishment_means"
+)

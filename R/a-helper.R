@@ -77,8 +77,13 @@ apply_filters_categorical <- function(data = austraits, input){
       
       # Check if it's a controlled vocab or free text column
       if (column %in% controlled_vocab) {
-        # Controlled vocabulary - exact match with multiple values
-        if (length(values) > 0) {
+        # Special case: dataset_id with semicolon-separated values needs partial match
+        if (column == "dataset_id" && length(values) > 0) {
+          pattern <- paste(values, collapse = "|")
+          data <- data |>
+            dplyr::filter(stringr::str_detect(!!rlang::sym(column), pattern))
+        } else if (length(values) > 0) {
+          # Exact match for other controlled vocabulary
           data <- data |>
             dplyr::filter(!!rlang::sym(column) %in% values)
         }
@@ -256,6 +261,33 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
 
     # Sources
     austraits$sources |> RefManageR::WriteBib(file.path(output_dir, "sources.bib"))
+
+    # create species means dataset
+  
+    # list of traits to take means for - core traits only
+    traits <- 
+      readr::read_csv(
+        "inst/extdata/austraits/trait_groups_for_portal.csv", show_col_types = FALSE) |>
+      dplyr::filter(!is.na(core_trait)) |>
+      dplyr::pull(trait)
+
+austraits_species_averages <-
+      austraits_full_flatten |>
+      dplyr::filter(trait_name %in% traits) |>    
+      estimate_species_trait_means() |>
+      # Add row_id after aggregation
+      dplyr::mutate(row_id = dplyr::row_number()) |>
+      # Add source columns (semicolon-separated from all contributing sources)
+      dplyr::group_by(taxon_name, trait_name) |>
+      dplyr::mutate(
+        source_primary_citation = paste(unique(na.omit(source_primary_citation)), collapse = "; "),
+        source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
+      ) |>
+      dplyr::ungroup()
+
+    # Save the species means dataset
+    austraits_species_averages |>
+      arrow::write_parquet(file.path(output_dir, "austraits-species-averages.parquet"))
   }
 }
 

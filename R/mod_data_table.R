@@ -30,7 +30,7 @@ mod_data_table_ui <- function(id){
 #' @param columns_display Vector of column names to display
 #'
 #' @noRd 
-mod_data_table_server <- function(id, filtered_database, filtered_query_cache, columns_display){
+mod_data_table_server <- function(id, filtered_database, filtered_query_cache, columns_display_reactive){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
@@ -48,7 +48,13 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
       total_rows <- attr(display_data, "total_rows")
       if (is.null(total_rows)) total_rows <- nrow(display_data)
       
-      safe_columns_display <- columns_display[columns_display %in% names(display_data)]
+      # Get current columns (reactive)
+      cols_to_show <- if (is.function(columns_display_reactive)) {
+        columns_display_reactive()
+      } else {
+        columns_display_reactive
+      }
+      safe_columns_display <- cols_to_show[cols_to_show %in% names(display_data)]
 
       no_filter_cols <- which(names(display_data) %in% c("replicates"))
       hide_cols <- which(names(display_data) %not_in% safe_columns_display)

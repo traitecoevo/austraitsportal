@@ -11,6 +11,19 @@ mod_filters_ui <- function(id) {
   ns <- NS(id)
 
   sidebar(
+    h5("Dataset"),
+    radioButtons(
+      ns("dataset_type"),
+      label = NULL,
+      choices = c(
+        "Raw data" = "raw",
+        "Species averages" = "species"
+      ),
+      selected = "species"
+    ),
+    
+    hr(),
+  
     h5("Taxonomy"),
 
     radioButtons(
@@ -99,10 +112,10 @@ mod_filters_ui <- function(id) {
       )
     ),
 
-    radioButtons(
-      ns("location"),
-      label = h5("Location filters:"),
-      choices = c(
+      radioButtons(
+        ns("location"),
+        label = h5("Location filters:"),
+        choices = c(
         "None" = "",
         "Georeferenced records" = "georeferenced",
         "APC taxon distribution" = "apc"
@@ -151,7 +164,7 @@ mod_filters_ui <- function(id) {
         min = 113,
         max = 154
       )
-    ),
+     ),
 
     h5("Custom Filters"),
 
@@ -374,11 +387,37 @@ mod_filters_server <- function(
           )
         }
       })
+    
+      observeEvent(input$dataset_type, {
+        if (input$dataset_type == "species") {
+          updateRadioButtons(
+            session,
+            "location",
+            choices = c(
+              "None" = "",
+              "APC taxon distribution" = "apc"
+            ),
+            selected = if (input$location == "georeferenced") "" else input$location
+          )
+        } else {
+          updateRadioButtons(
+            session,
+            "location",
+            choices = c(
+              "None" = "",
+              "Georeferenced records" = "georeferenced",
+              "APC taxon distribution" = "apc"
+            ),
+            selected = input$location
+          )
+        }
+      })
 
       # ---- RETURN FILTER STATE TO MAIN SERVER ----
       return(
         reactive({
           list(
+            dataset_type = input$dataset_type,
             taxon_rank = input$taxon_rank,
             family = input$family,
             genus = input$genus,
