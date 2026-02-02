@@ -172,7 +172,7 @@ observeEvent(input[["filters-clear_filters"]], {
                         choices = cols, 
                         selected = character(0), 
                         server = TRUE)
-  }, ignoreInit = TRUE)
+  })
 
 
   # When column selected, populate values (only for controlled vocab)
