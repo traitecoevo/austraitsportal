@@ -280,16 +280,26 @@ plot_trait_distribution_beeswarm <- function(data,
     parse(text = s2)
   }
 
-  # Define scale on x-axis and transform to log if required
+# Define scale on x-axis and transform to log if required
   if (vals$minimum > 0 & !is.infinite(vals$minimum) & 
       vals$maximum > 0 & !is.infinite(vals$maximum) & 
       range > 20) {
     # log transformation - use a wrapper to ensure breaks and labels match
     make_log_breaks <- function(limits) {
-      breaks_fn <- scales::breaks_log()
+      # Generate breaks
+      breaks_fn <- scales::breaks_log(n = 6)
       breaks <- breaks_fn(limits)
-      # Filter out any breaks outside limits
-      breaks[breaks >= limits[1] & breaks <= limits[2]]
+      
+      # Filter breaks to be within limits and remove NAs/Infs
+      breaks <- breaks[!is.na(breaks) & !is.infinite(breaks)]
+      breaks <- breaks[breaks >= limits[1] & breaks <= limits[2]]
+      
+      # Ensure at least 2 breaks exist
+      if (length(breaks) < 2) {
+        breaks <- c(limits[1], limits[2])
+      }
+      
+      breaks
     }
     
     p1 <- p1 +

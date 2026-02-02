@@ -152,6 +152,29 @@ observeEvent(input[["filters-clear_filters"]], {
                       selected = character(0),
                       server = TRUE)
 
+  # Update custom filter columns based on dataset type
+  observeEvent(input[["filters-dataset_type"]], {
+    cols <- if (input[["filters-dataset_type"]] == "species") {
+      custom_filter_columns_species
+    } else {
+      custom_filter_columns
+    }
+    
+    updateSelectizeInput(session, "filters-custom_col_1", 
+                        choices = cols, 
+                        selected = character(0), 
+                        server = TRUE)
+    updateSelectizeInput(session, "filters-custom_col_2", 
+                        choices = cols, 
+                        selected = character(0), 
+                        server = TRUE)
+    updateSelectizeInput(session, "filters-custom_col_3", 
+                        choices = cols, 
+                        selected = character(0), 
+                        server = TRUE)
+  }, ignoreInit = TRUE)
+
+
   # When column selected, populate values (only for controlled vocab)
   for (i in 1:3) {
     local({
@@ -167,23 +190,32 @@ observeEvent(input[["filters-clear_filters"]], {
           query <- filtered_query_cache()
 
           if (!is.null(query) && column_name %in% names(query)) {
-            # Use full query (not just loaded data)
-            unique_values <- query |>
-              dplyr::select(!!rlang::sym(column_name)) |>
-              dplyr::distinct() |>
-              dplyr::collect() |>
-              dplyr::pull(1) |>
-              na.omit() |>
-              sort()
+            # Special handling for dataset_id in species averages
+            if (column_name == "dataset_id" && filters()$dataset_type == "species") {
+              unique_values <- all_dataset_ids_species
+            } else {
+              # Use full query (not just loaded data)
+              unique_values <- query |>
+                dplyr::select(!!rlang::sym(column_name)) |>
+                dplyr::distinct() |>
+                dplyr::collect() |>
+                dplyr::pull(1) |>
+                na.omit() |>
+                sort()
+            }
           } else {
-            # Fallback to full dataset
-            unique_values <- current_austraits_display() |>
-              dplyr::select(!!rlang::sym(column_name)) |>
-              dplyr::distinct() |>
-              dplyr::collect() |>
-              dplyr::pull(1) |>
-              na.omit() |>
-              sort()
+            # Special handling for dataset_id in species averages
+            if (column_name == "dataset_id" && filters()$dataset_type == "species") {
+              unique_values <- all_dataset_ids_species
+            } else {
+              unique_values <- current_austraits_display() |>
+                dplyr::select(!!rlang::sym(column_name)) |>
+                dplyr::distinct() |>
+                dplyr::collect() |>
+                dplyr::pull(1) |>
+                na.omit() |>
+                sort()
+            }
           }
           
           updateSelectizeInput(session, paste0("filters-custom_val_", num), 

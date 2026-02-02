@@ -19,7 +19,7 @@ mod_filters_ui <- function(id) {
         "Raw data" = "raw",
         "Species averages" = "species"
       ),
-      selected = "raw"
+      selected = "species"
     ),
     
     hr(),
@@ -112,10 +112,12 @@ mod_filters_ui <- function(id) {
       )
     ),
 
-    radioButtons(
-      ns("location"),
-      label = h5("Location filters:"),
-      choices = c(
+    conditionalPanel(
+      condition = sprintf('input["%s"] == "raw"', ns("dataset_type")),
+      radioButtons(
+        ns("location"),
+        label = h5("Location filters:"),
+        choices = c(
         "None" = "",
         "Georeferenced records" = "georeferenced",
         "APC taxon distribution" = "apc"
@@ -164,6 +166,7 @@ mod_filters_ui <- function(id) {
         min = 113,
         max = 154
       )
+     )
     ),
 
     h5("Custom Filters"),
