@@ -73,17 +73,17 @@ profile_links <- function(github = NULL, orcid = NULL) {
         tags$a(href = "https://doi.org/10.5281/zenodo.3568417", target = "_blank", "Zenodo"),
         " as an .rds or .json file."),
       
-      p("This portal is also a place to acknowledge all the ", tags$a(href = "https://doi.org/10.5281/zenodo.3568417", target = "_blank", "researchers and contributors"), " who have shared their data with AusTraits. We thank them for their contributions."),
+      p("The Zenodo repository lists all ", tags$a(href = "https://doi.org/10.5281/zenodo.3568417", target = "_blank", "researchers"), " who have contributed their data to AusTraits. We thank them for being part of this project."),
       
       p("Additional AusTraits Project outputs to wrangle and interpret the data include:"),
       tags$ul(
-        tags$li(tags$a(href = "https://github.com/traitecoevo/austraits", target = "_blank", "Austraits"), " - an R package to explore and wrangle the AusTraits Database"),
+        tags$li(tags$a(href = "https://github.com/traitecoevo/austraits", target = "_blank", "austraits"), " - an R package to explore and wrangle the AusTraits Database"),
         tags$li(tags$a(href = "https://github.com/traitecoevo/APD", target = "_blank", "AusTraits Plant Dictionary"),
           " \u2013 formal definitions of all traits included in the database")
       ),
       
       p("Please visit our ", tags$a(href = "https://www.austraits.org", target = "_blank", "website"), " for more project information."),
-      p("Exciting work is being done using AusTraits data across plant ecology, functional traits research, and biodiversity informatics, from predicting species responses to climate change to understanding ecosystem dynamics at a continental scale. ",),
+      p("The AusTraits database is facilitating research on Australia's diverse flora, including functional traits research, the preservation of Australia's unique plants, predicting species' responses to climate change, and understanding ecosystem dynamics at a continental scale. ",),
       
       tags$hr(),
 
@@ -97,25 +97,27 @@ profile_links <- function(github = NULL, orcid = NULL) {
       ),
       
       p(tags$strong("Dataset type \u2014"),
-        "Raw data or Species averages? Raw data has every individual observation measurement wheras Species averages roll observations into species-level summaries (mean, min, max, median). ",
+        "Raw data or Species averages? Raw data has the individual observations submitted by contributors while Species averages presents species-level summary statistics (mean, min, max, median for numeric traits and value summaries for categorical traits). ",
         "Pick based on the question you're asking."),
       
       p(tags$strong("Taxonomy \u2014"),
-        "Choose a rank - All taxa, Family, Genus, or Taxon name, and select from the dropdown that appears. ",
-        "Family (Fabaceae) is selected by default as a starting point."),
+        "Choose a taxonomic filter - Select All taxa or Family, Genus, or Taxon name (species and infraspecies), then select from the dropdown that appears. ",
+        "Family (Fabaceae) is selected as the default starting point."),
       
       p(tags$strong("Traits \u2014"),
-        "Search or browse the trait dropdown \u2013 you can select more than one at a time. ",
-        "Switch to ", tags$strong("Trait features"), " if you want to narrow things down by grouping, structure, or keywords.",
-        "Recommended to either use Trait name or Trait features at a time."),
+        "Search or browse the trait dropdown \u2013 noting you can select multiple traits at a time. ",
+        "Switch to ", tags$strong("Trait features"), " if you want to search by trait groupings, measured structures, or keywords.",
+        "Enabling trait features filters also refines the trait selection in the dropdown menu, for easier searching."),
+        "Note, Trait features is only enabled if a trait name is not yet selected."
       
       p(tags$strong("Location \u2014"),
-        tags$strong("APC taxon distribution"), " (state/territory) works for both datasets. ",
-        tags$strong("Georeferenced records"), " with a bounding box is raw data only. Useful for zooming into a specific region of Australia for individual observations."),
+        "Data can be filtered by taxon distribution (per the APC) or by observation coordinates. You can opt to display all georeferenced data or specify a bounding box, filtering to data collected within a specific region of Australia.",
+        "The", tags$strong("APC taxon distribution"), " (state/territory) filter works for both raw data and species average data outputs, while the ",
+        tags$strong("Georeferenced records"), " option is only enabled for when Raw data are displayed."),
       
       p(tags$strong("Custom filters \u2014"),
-        "Layer up to three extra filters on top of everything else. ",
-        "Each new slot appears once the one before it has values, allowing multi-level hierarchical filtering. Please use" , tags$strong("|"), "between two free-text filter querys to multi-select "),
+        "Add up to three additional column filters to fine-tune the data displayed.",
+        "An additional filter slot appears once you've filled in a column name and values for the first filter. Columns with a controlled vocabulary (e.g. ", tags$strong("life_stage"), " have a drop-down menu of allowed options, while other columns (e.g. ", tags$strong("context property"), " accept any text. Please use" , tags$strong("|"), "between two free-text filter querys to multi-select. "),
       
       p(tags$strong("Data Preview \u2014"),
         "Your filtered results, viewable 10, 25, 50, or 100 rows at a time. Columns are sortable."),
@@ -126,25 +128,8 @@ profile_links <- function(github = NULL, orcid = NULL) {
       tags$h4(style = hdr, "Usage Guidelines"),
       
       p(tags$strong("Citing AusTraits \u2014"),
-        "If you use data from this portal in a publication or report, please cite both the AusTraits Database and the ",
-        "original source datasets. The ", tags$strong("Citations"), " tab lists all relevant references for your current ",
-        "selection \u2013 grab them before you download."),
-      
-      p(tags$strong("Suggested acknowledgment \u2014"),
-        tags$em("\"Data used in this study were obtained from the AusTraits Database (https://www.austraits.org).\""),
-        " Tailor this to fit your context."),
-      
-      p(tags$strong("BibTeX export \u2014"),
-        "Download also lets you download a .bib file. Drop it straight into LaTeX or import into ",
-        "most reference managers."),
-      
-      p(tags$strong("Redistribution \u2014"),
-        "AusTraits data is freely available for research and educational use. ",
-        "If you share or reuse the data, please include clear attribution to the AusTraits Database and a link to this portal."),
-      
-      p(tags$strong("Commercial use \u2014"),
-        "For any enquiries around commercial use of AusTraits data, please reach out via the ",
-        tags$a(href = "https://www.austraits.org", target = "_blank", "AusTraits website"), "."),
+        "The ", tags$strong("Citations"), " tab indicates the proper attribution for your selected AusTraits data. ",
+        "original source datasets.
       
       p(tags$strong("Feedback \u2014"),
         "Something off? A suggestion bubbling up? We're always keen to hear from people using the portal. ",
