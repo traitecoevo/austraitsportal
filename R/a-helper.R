@@ -231,64 +231,59 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
   filename_data <- file.path(output_dir, "austraits-data.parquet")
   filename_display <- file.path(output_dir, "austraits-display.parquet")
   
-  if (!file.exists(filename_data) | overwrite) {
+  ## Early exit if file already exists
+  if (file.exists(filename_data) & !overwrite) { return()}
 
-    # Flatten the database
-    austraits_full_flatten <-
-      austraits |>
-      austraits::flatten_database() |>
-      dplyr::mutate(row_id = dplyr::row_number()) |>
-      dplyr::mutate(
-        measurement_remarks = iconv(measurement_remarks,
-          from = "", # Let's R guess the current encoding
-          to = "UTF-8", # Convert to UTF-8
-          sub = "" # Remove any bytes that can't be converted
-        )
+  # Flatten the database
+  austraits_full_flatten <-
+    austraits |>
+    austraits::flatten_database() |>
+    dplyr::mutate(row_id = dplyr::row_number()) |>
+    dplyr::mutate(
+      measurement_remarks = iconv(measurement_remarks,
+        from = "", # Let's R guess the current encoding
+        to = "UTF-8", # Convert to UTF-8
+        sub = "" # Remove any bytes that can't be converted
       )
+    )
 
-    ## Save the flattened database
+  # create species means dataset
+  # list of traits to take means for - core traits only
+  traits <- 
+    readr::read_csv(
+      "inst/extdata/austraits/trait_groups_for_portal.csv", show_col_types = FALSE) |>
+    dplyr::filter(!is.na(core_trait)) |>
+    dplyr::pull(trait)
+
+  austraits_species_averages <-
     austraits_full_flatten |>
-      arrow::write_parquet(filename_data)
+    dplyr::filter(trait_name %in% traits) |>    
+    estimate_species_trait_means()
 
-    # Save the display version of the flattened database
-    austraits_full_flatten |>
-      format_database_for_display() |>
-      format_hyperlinks_for_display() |>
-      arrow::write_parquet(filename_display)
-    
-    # Saving definitions
-    austraits$definitions |> yaml::write_yaml(file.path(output_dir, "definitions.yml"))
-
-    # Sources
-    austraits$sources |> RefManageR::WriteBib(file.path(output_dir, "sources.bib"))
-
-    # create species means dataset
+  # Save the flattened database
+  austraits_full_flatten |>
+    arrow::write_parquet(filename_data)
   
-    # list of traits to take means for - core traits only
-    traits <- 
-      readr::read_csv(
-        "inst/extdata/austraits/trait_groups_for_portal.csv", show_col_types = FALSE) |>
-      dplyr::filter(!is.na(core_trait)) |>
-      dplyr::pull(trait)
+  # Save the display version of the flattened database
+  austraits_full_flatten |>
+    format_database_for_display() |>
+    format_hyperlinks_for_display() |>
+    arrow::write_parquet(filename_display)
+  
+  # Save the species averages dataset
+  austraits_species_averages |>
+    arrow::write_parquet(file.path(output_dir, "austraits-species-averages.parquet"))
+  
+  # Save the display version of the species averages dataset
+  austraits_species_averages |>
+    format_hyperlinks_for_display() |>
+    arrow::write_parquet(file.path(output_dir, "austraits-species-averages-display.parquet")) 
+  
+  # Saving definitions
+  austraits$definitions |> yaml::write_yaml(file.path(output_dir, "definitions.yml"))
 
-austraits_species_averages <-
-      austraits_full_flatten |>
-      dplyr::filter(trait_name %in% traits) |>    
-      estimate_species_trait_means() |>
-      # Add row_id after aggregation
-      dplyr::mutate(row_id = dplyr::row_number()) |>
-      # Add source columns (semicolon-separated from all contributing sources)
-      dplyr::group_by(taxon_name, trait_name) |>
-      dplyr::mutate(
-        source_primary_citation = paste(unique(na.omit(source_primary_citation)), collapse = "; "),
-        source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
-      ) |>
-      dplyr::ungroup()
-
-    # Save the species means dataset
-    austraits_species_averages |>
-      arrow::write_parquet(file.path(output_dir, "austraits-species-averages.parquet"))
-  }
+  # Sources
+  austraits$sources |> RefManageR::WriteBib(file.path(output_dir, "sources.bib"))
 }
 
 #' Format flattened database for display

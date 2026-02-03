@@ -39,7 +39,8 @@ estimate_species_trait_means <- function(austraits) {
       traits = traits$categorical$trait_name)
   
   # Build species means for database
-  data_means_numerical |>
+  austraits_species_averages <- 
+    data_means_numerical |>
     # combine the two datasets
     dplyr::bind_rows(data_means_categorical) |>
     # add in the trait type
@@ -51,7 +52,29 @@ estimate_species_trait_means <- function(austraits) {
       austraits |>
         dplyr::select(taxon_name, taxon_rank:scientific_name_id, -taxon_name_alternatives) |>
         dplyr::distinct()
+    ) |>
+    dplyr::relocate("value_count", .before = "value_mean") |>
+    # Add row_id after aggregation
+    dplyr::mutate(row_id = dplyr::row_number())
+
+  # Reorder citations in source columns
+  sources <- austraits |>
+    select(key = source_primary_key, source_primary_citation) |>
+    distinct()
+
+  ids <- austraits_species_averages |> 
+    dplyr::select(source_primary_key) |> 
+    dplyr::distinct() |>
+    dplyr::mutate(key = source_primary_key) |> 
+    tidyr::separate_rows(key, sep = "; ") |>
+    dplyr::left_join(sources, by = c("key")) |>
+    dplyr::group_by(source_primary_key) |>
+    dplyr::summarise(.groups = "drop",
+      source_primary_citation = paste(source_primary_citation, collapse = "; ")
     )
+
+  austraits_species_averages |>
+    dplyr::left_join(ids, by = "source_primary_key")  
 }
 
 #' @keywords internal
@@ -80,6 +103,7 @@ estimate_species_trait_means_numerical <- function(austraits, traits) {
       # record sources
       dataset_id = paste(unique(dataset_id), collapse = "; "),
       observation_id = paste(unique(observation_id), collapse = "; "),
+      source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
     ) |>
     dplyr::distinct()
   
@@ -100,14 +124,16 @@ estimate_species_trait_means_locations <- function(austraits, traits) {
     replicates = 1,
     log10_value = suppressWarnings(log10(value))
   ) |>
+  dplyr::filter(!is.na(value)) |>
   dplyr::group_by(taxon_name, trait_name, dataset_id, location_id, unit) |>
   dplyr::summarise(
     .groups = "drop",
-    dplyr::across(value, list(mean = mean, min = min, max = max, median = median), na.rm = TRUE),
+    dplyr::across(value, list(mean = mean, min = min, max = max, median = median)),
     dplyr::across(c("latitude (deg)", "longitude (deg)", "location_name"), dplyr::first),
     all_replicates = sum(replicates),
     value_geom_mean = 10^mean(log10_value, na.rm= TRUE),
     observation_id = paste(unique(observation_id), collapse = "; "),
+    source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
   ) |>
   dplyr::mutate(
     value_type = "location_mean",
@@ -134,9 +160,11 @@ estimate_species_trait_means_floras <- function(austraits, traits) {
   dplyr::mutate(
     value = as.numeric(value),
   )|>
+  dplyr::filter(!is.na(value)) |>
   dplyr::group_by(taxon_name, trait_name, unit, dataset_id, observation_id, original_name) |> 
-  dplyr::summarise(
-    dplyr::across(value, list(mean = mean, min = min, max = max), na.rm = TRUE), 
+  dplyr::summarise(.groups = "keep",
+    dplyr::across(value, list(mean = mean, min = min, max = max)), 
+    source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
   ) |>
   dplyr::mutate(
     location_replicates = 0,
@@ -163,10 +191,7 @@ traits) {
   ) |>
   dplyr::ungroup() |>
   dplyr::select(-dplyr::all_of(c("tmp_summary", "value"))) |>
-  dplyr::distinct() #|>
-  # dplyr::mutate(
-  #   dplyr::across(tidyselect::where(is.numeric), as.character)
-  # )
+  dplyr::distinct()
 }
 
 #' @keywords internal
@@ -175,7 +200,7 @@ estimate_species_trait_value_summary_categorical <- function(austraits, traits) 
 
   austraits |>
   dplyr::filter(trait_name %in% traits) |>
-  dplyr::select(dplyr::all_of(c("dataset_id", "taxon_name", "trait_name", "location_id", "observation_id", "value")))|>
+  dplyr::select(dplyr::all_of(c("dataset_id", "taxon_name", "trait_name", "location_id", "observation_id", "value", "source_primary_key")))|>
   dplyr::mutate(value = stringr::str_split(value, " ")) |>
   tidyr::unnest_longer(value) |>
   dplyr::mutate(
@@ -186,7 +211,8 @@ estimate_species_trait_value_summary_categorical <- function(austraits, traits) 
     value = first(value),
     all_replicates = sum(all_replicates),
     dataset_id = paste(unique(dataset_id), collapse = "; "),
-    observation_id = paste(unique(observation_id), collapse = "; ")
+    observation_id = paste(unique(observation_id), collapse = "; "),
+    source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
   ) |>
   mutate(
     value_type = "value_count"
