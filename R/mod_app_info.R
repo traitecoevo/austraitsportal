@@ -10,30 +10,162 @@
 mod_app_info_ui <- function(id){
   ns <- NS(id)
   
+profile_links <- function(github = NULL, orcid = NULL) {
+    tagList(
+      if (!is.null(github)) tags$a(href = github, target = "_blank",
+        tags$i(class = "fa-brands fa-github", style = "color: #24292e; font-size: 0.85em;"),
+        title = "GitHub",
+        style = "text-decoration: none;"),
+      if (!is.null(orcid)) tags$a(href = orcid, target = "_blank",
+        tags$i(class = "fa-brands fa-orcid", style = "color: #A6CE39; font-size: 0.85em;"),
+        title = "ORCID",
+        style = "margin-left: 5px; text-decoration: none;")
+    )
+  }
+  
+  # Reusable section header style
+  hdr <- "color: #1565c0; border-bottom: 2px solid #2196f3; padding-bottom: 6px; margin-top: 7px; margin-bottom: 14px;"
+  
   card(
-    card_header("How to Use the App"),
+    card_header("About & Information"),
     card_body(
-      p("This application allows users to filter and explore the AusTraits dataset."),
-      p("Use the sidebar to apply filters based on taxonomy, traits, location, and additional criteria."),
-      p("Filtered data will be displayed in the 'Data Preview' tab."),
-      p("You can download the filtered data using the 'Download displayed data' button."),
-      tags$a(href = "https://www.austraits.org", target = "_blank", "AusTraits Website")
+      # ATTRIBUTION
+      tags$h4(style = hdr, "Attribution"),
+      
+      p("The AusTraits Database Portal was designed by ",
+        tags$strong("Pushkal Garg"), " ", profile_links(github = "https://github.com/Pushkalgithub", orcid = "https://orcid.org/0009-0002-0179-2946"), ", ",
+        tags$strong("Fonti Kar"), " ", profile_links(github = "https://github.com/fontikar", orcid = "https://orcid.org/0000-0002-2760-3974"), ", ",
+        tags$strong("Daniel Falster"), " ", profile_links(github = "https://github.com/dfalster", orcid = "https://orcid.org/0000-0002-9814-092X"), ", ",
+        tags$strong("Elizabeth Wenk"), " ", profile_links(github = "https://github.com/ehwenk", orcid = "https://orcid.org/0000-0001-5640-5910"), ", and ",
+        tags$strong("Ray Miles"), " ", profile_links(github = "https://github.com/raymiles"), "."
+      ),
+      
+      p("The AusTraits Database and design of this portal are supported by an UNSW Research Infrastructure Grant ",
+        "and Australian Research Data Commons co-investment. ",
+        "The ARDC is enabled by the Australian Government's National Collaborative Research Infrastructure Strategy (NCRIS)."),
+      
+      tags$style(".logo-link img { transition: transform 0.2s ease, opacity 0.2s ease; }
+                  .logo-link img:hover { transform: scale(1.08); opacity: 0.75; cursor: pointer; }"),
+      
+      tags$div(
+        style = "display: flex; gap: 24px; align-items: center; justify-content: center; padding: 24px 0; flex-wrap: wrap;",
+        tags$a(href = "https://www.austraits.org", target = "_blank", class = "logo-link",
+          tags$img(src = "https://austraits.org/images/austraits_hex.png", height = "70px", alt = "AUSTRAITS", style = "max-width: 140px;")),
+        tags$a(href = "https://www.unsw.edu.au", target = "_blank", class = "logo-link",
+          tags$img(src = "https://austraits.org/images/UNSW.png", height = "70px", alt = "UNSW")),
+        tags$a(href = "https://www.wsu.edu.au", target = "_blank", class = "logo-link",
+          tags$img(src = "https://upload.wikimedia.org/wikipedia/en/f/f0/Western_Sydney_University_Crest.png", height = "70px", alt = "Western Sydney University", style = "max-width: 140px;")),
+        tags$a(href = "https://www.botanicgardens.org.au", target = "_blank", class = "logo-link",
+          tags$img(src = "https://austraits.org/images/RBG.png", height = "70px", alt = "Royal Botanic Garden Sydney", style = "max-width: 140px;")),
+        tags$a(href = "https://ardc.edu.au", target = "_blank", class = "logo-link",
+          tags$img(src = "https://austraits.org/images/ARDC2.png", height = "70px", alt = "ARDC")),
+        tags$a(href = "https://www.education.gov.au/ncris", target = "_blank", class = "logo-link",
+          tags$img(src = "https://bioplatforms.com/wp-content/uploads/2024/03/afb87787085b2b5c5a7814a28971e5aa-1.png", height = "70px", alt = "NCRIS", style = "max-width: 140px;"))
+      ),
+            
+      tags$hr(),
+      
+      # BACKGROUND
+      tags$h4(style = hdr, "Background"),
+      
+      p("The AusTraits Database Portal offers a web-based interface to filter, view and download subsets of the AusTraits Database. ",
+        "The full database can also be downloaded from ",
+        tags$a(href = "https://doi.org/10.5281/zenodo.3568417", target = "_blank", "Zenodo"),
+        " as an .rds or .json file."),
+      
+      p("This portal is also a place to acknowledge all the ", tags$a(href = "https://doi.org/10.5281/zenodo.3568417", target = "_blank", "researchers and contributors"), " who have shared their data with AusTraits. We thank them for their contributions."),
+      
+      p("Additional AusTraits Project outputs to wrangle and interpret the data include:"),
+      tags$ul(
+        tags$li(tags$a(href = "https://github.com/traitecoevo/austraits", target = "_blank", "Austraits"), " - an R package to explore and wrangle the AusTraits Database"),
+        tags$li(tags$a(href = "https://github.com/traitecoevo/APD", target = "_blank", "AusTraits Plant Dictionary"),
+          " \u2013 formal definitions of all traits included in the database")
+      ),
+      
+      p("Please visit our ", tags$a(href = "https://www.austraits.org", target = "_blank", "website"), " for more project information."),
+      p("Exciting work is being done using AusTraits data across plant ecology, functional traits research, and biodiversity informatics, from predicting species responses to climate change to understanding ecosystem dynamics at a continental scale. ",),
+      
+      tags$hr(),
+
+      # HOW TO USE
+      tags$h4(style = hdr, "How to Use"),
+      
+      tags$div(
+        style = "background: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px 15px; border-radius: 4px; margin-bottom: 18px;",
+        tags$strong("Quick start:"),
+        " Select a dataset type \u2192 set your taxonomy \u2192 pick a trait (optional) \u2192 explore."
+      ),
+      
+      p(tags$strong("Dataset type \u2014"),
+        "Raw data or Species averages? Raw data has every individual observation measurement wheras Species averages roll observations into species-level summaries (mean, min, max, median). ",
+        "Pick based on the question you're asking."),
+      
+      p(tags$strong("Taxonomy \u2014"),
+        "Choose a rank - All taxa, Family, Genus, or Taxon name, and select from the dropdown that appears. ",
+        "Family (Fabaceae) is selected by default as a starting point."),
+      
+      p(tags$strong("Traits \u2014"),
+        "Search or browse the trait dropdown \u2013 you can select more than one at a time. ",
+        "Switch to ", tags$strong("Trait features"), " if you want to narrow things down by grouping, structure, or keywords.",
+        "Recommended to either use Trait name or Trait features at a time."),
+      
+      p(tags$strong("Location \u2014"),
+        tags$strong("APC taxon distribution"), " (state/territory) works for both datasets. ",
+        tags$strong("Georeferenced records"), " with a bounding box is raw data only. Useful for zooming into a specific region of Australia for individual observations."),
+      
+      p(tags$strong("Custom filters \u2014"),
+        "Layer up to three extra filters on top of everything else. ",
+        "Each new slot appears once the one before it has values, allowing multi-level hierarchical filtering. Please use" , tags$strong("|"), "between two free-text filter querys to multi-select "),
+      
+      p(tags$strong("Data Preview \u2014"),
+        "Your filtered results, viewable 10, 25, 50, or 100 rows at a time. Columns are sortable."),
+      
+      tags$hr(),
+      
+      # USAGE GUIDELINES
+      tags$h4(style = hdr, "Usage Guidelines"),
+      
+      p(tags$strong("Citing AusTraits \u2014"),
+        "If you use data from this portal in a publication or report, please cite both the AusTraits Database and the ",
+        "original source datasets. The ", tags$strong("Citations"), " tab lists all relevant references for your current ",
+        "selection \u2013 grab them before you download."),
+      
+      p(tags$strong("Suggested acknowledgment \u2014"),
+        tags$em("\"Data used in this study were obtained from the AusTraits Database (https://www.austraits.org).\""),
+        " Tailor this to fit your context."),
+      
+      p(tags$strong("BibTeX export \u2014"),
+        "Download also lets you download a .bib file. Drop it straight into LaTeX or import into ",
+        "most reference managers."),
+      
+      p(tags$strong("Redistribution \u2014"),
+        "AusTraits data is freely available for research and educational use. ",
+        "If you share or reuse the data, please include clear attribution to the AusTraits Database and a link to this portal."),
+      
+      p(tags$strong("Commercial use \u2014"),
+        "For any enquiries around commercial use of AusTraits data, please reach out via the ",
+        tags$a(href = "https://www.austraits.org", target = "_blank", "AusTraits website"), "."),
+      
+      p(tags$strong("Feedback \u2014"),
+        "Something off? A suggestion bubbling up? We're always keen to hear from people using the portal. ",
+        "Get in touch through the ", tags$a(href = "https://www.austraits.org", target = "_blank", "AusTraits website"), ".")
+      
     )
   )
 }
-    
+
 #' app_info Server Functions
 #'
 #' @noRd 
 mod_app_info_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
-    # No server logic needed - just static content
+    # No server logic needed — static content
   })
 }
-    
+
 ## To be copied in the UI
 # mod_app_info_ui("app_info_1")
-    
+
 ## To be copied in the server
 # mod_app_info_server("app_info_1")
