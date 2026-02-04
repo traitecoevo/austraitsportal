@@ -108,7 +108,7 @@ profile_links <- function(github = NULL, orcid = NULL) {
         "Search or browse the trait dropdown \u2013 noting you can select multiple traits at a time. ",
         "Switch to ", tags$strong("Trait features"), " if you want to search by trait groupings, measured structures, or keywords.",
         "Enabling trait features filters also refines the trait selection in the dropdown menu, for easier searching."),
-        "Note, Trait features is only enabled if a trait name is not yet selected."
+        "Note, Trait features is only enabled if a trait name is not yet selected."),
       
       p(tags$strong("Location \u2014"),
         "Data can be filtered by taxon distribution (per the APC) or by observation coordinates. You can opt to display all georeferenced data or specify a bounding box, filtering to data collected within a specific region of Australia.",
@@ -164,14 +164,12 @@ profile_links <- function(github = NULL, orcid = NULL) {
       
       p(tags$strong("Citing AusTraits \u2014"),
         "The ", tags$strong("Citations"), " tab indicates the proper attribution for your selected AusTraits data. ",
-        "original source datasets.
+        "original source datasets."),
       
       p(tags$strong("Feedback \u2014"),
         "Something off? A suggestion bubbling up? We're always keen to hear from people using the portal. ",
         "Get in touch through the ", tags$a(href = "https://www.austraits.org", target = "_blank", "AusTraits website"), ".")
-      
     )
-  )
 }
 
 #' app_info Server Functions
