@@ -83,7 +83,8 @@ profile_links <- function(github = NULL, orcid = NULL) {
       ),
       
       p("Please visit our ", tags$a(href = "https://www.austraits.org", target = "_blank", "website"), " for more project information."),
-      p("The AusTraits database is facilitating research on Australia's diverse flora, including functional traits research, the preservation of Australia's unique plants, predicting species' responses to climate change, and understanding ecosystem dynamics at a continental scale. ",),
+      
+      p("The AusTraits database is facilitating research on Australia's diverse flora, including functional traits research, the preservation of Australia's unique plants, predicting species' responses to climate change, and understanding ecosystem dynamics at a continental scale."),
       
       tags$hr(),
 
@@ -106,35 +107,68 @@ profile_links <- function(github = NULL, orcid = NULL) {
       
       p(tags$strong("Traits \u2014"),
         "Search or browse the trait dropdown \u2013 noting you can select multiple traits at a time. ",
-        "Switch to ", tags$strong("Trait features"), " if you want to search by trait groupings, measured structures, or keywords.",
-        "Enabling trait features filters also refines the trait selection in the dropdown menu, for easier searching."),
-        "Note, Trait features is only enabled if a trait name is not yet selected."
+        "Switch to ", tags$strong("Trait features"), " if you want to search by trait groupings, measured structures, or keywords. ",
+        "Enabling trait features filters also refines the trait selection in the dropdown menu, for easier searching. ",
+        "Note, Trait features is only enabled if a trait name is not yet selected."),
       
       p(tags$strong("Location \u2014"),
-        "Data can be filtered by taxon distribution (per the APC) or by observation coordinates. You can opt to display all georeferenced data or specify a bounding box, filtering to data collected within a specific region of Australia.",
-        "The", tags$strong("APC taxon distribution"), " (state/territory) filter works for both raw data and species average data outputs, while the ",
-        tags$strong("Georeferenced records"), " option is only enabled for when Raw data are displayed."),
+        "Data can be filtered by taxon distribution (per the APC) or by observation coordinates. You can opt to display all georeferenced data or specify a bounding box, filtering to data collected within a specific region of Australia. ",
+        "The ", tags$strong("APC taxon distribution"), " (state/territory) filter works for both raw data and species average data outputs, while the ",
+        tags$strong("Georeferenced records"), " option is only enabled when Raw data are displayed."),
       
       p(tags$strong("Custom filters \u2014"),
-        "Add up to three additional column filters to fine-tune the data displayed.",
-        "An additional filter slot appears once you've filled in a column name and values for the first filter. Columns with a controlled vocabulary (e.g. ", tags$strong("life_stage"), " have a drop-down menu of allowed options, while other columns (e.g. ", tags$strong("context property"), " accept any text. Please use" , tags$strong("|"), "between two free-text filter querys to multi-select. "),
+        "Add up to three additional column filters to fine-tune the data displayed. ",
+        "An additional filter slot appears once you've filled in a column name and values for the first filter. Columns with a controlled vocabulary (e.g. ", tags$strong("life_stage"), ") have a drop-down menu of allowed options, while other columns (e.g. ", tags$strong("context property"), ") accept any text. Please use ", tags$strong("|"), " between two free-text filter queries to multi-select."),
       
       p(tags$strong("Data Preview \u2014"),
         "Your filtered results, viewable 10, 25, 50, or 100 rows at a time. Columns are sortable."),
       
       tags$hr(),
       
+      # USAGE METRICS
+      tags$h4(style = hdr, "Portal Usage"),
+
+      # Metric cards row
+      tags$div(
+        style = "display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;",
+        
+        # Sessions card
+        tags$div(
+          style = "flex: 1; min-width: 140px; background: #e3f2fd; border-radius: 10px; padding: 18px; text-align: center;",
+          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #1565c0;", uiOutput(ns("metric_sessions"))),
+          tags$div(style = "font-size: 0.82em; color: #546e7a; margin-top: 4px;",
+            icon("users", style = "color: #1976d2;"), " Total Sessions")
+        ),
+        
+        # Searches card
+        tags$div(
+          style = "flex: 1; min-width: 140px; background: #f3e5f5; border-radius: 10px; padding: 18px; text-align: center;",
+          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #6a1b9a;", uiOutput(ns("metric_searches"))),
+          tags$div(style = "font-size: 0.82em; color: #546e7a; margin-top: 4px;",
+            icon("search", style = "color: #7b1fa2;"), " Searches")
+        ),
+        
+        # Downloads card
+        tags$div(
+          style = "flex: 1; min-width: 140px; background: #e8f5e9; border-radius: 10px; padding: 18px; text-align: center;",
+          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #2e7d32;", uiOutput(ns("metric_downloads"))),
+          tags$div(style = "font-size: 0.82em; color: #546e7a; margin-top: 4px;",
+            icon("download", style = "color: #388e3c;"), " Downloads")
+        )
+      ),
+
+      tags$p(style = "font-size: 0.8em; color: #90a4ae;", 
+        "Metrics are updated in real time and reflect cumulative portal activity."),      
+
       # USAGE GUIDELINES
       tags$h4(style = hdr, "Usage Guidelines"),
       
       p(tags$strong("Citing AusTraits \u2014"),
-        "The ", tags$strong("Citations"), " tab indicates the proper attribution for your selected AusTraits data. ",
-        "original source datasets.
+        "The ", tags$strong("Citations"), " tab indicates the proper attribution for your selected AusTraits data."),
       
       p(tags$strong("Feedback \u2014"),
         "Something off? A suggestion bubbling up? We're always keen to hear from people using the portal. ",
         "Get in touch through the ", tags$a(href = "https://www.austraits.org", target = "_blank", "AusTraits website"), ".")
-      
     )
   )
 }
@@ -145,12 +179,40 @@ profile_links <- function(github = NULL, orcid = NULL) {
 mod_app_info_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
-    # No server logic needed — static content
+
+    # Read telemetry data every 60 seconds
+    metrics <- reactive({
+      shiny::reactiveTimer(60000)()  # Refresh every 60 sec
+      
+      tryCatch({
+        telemetry$data_storage$read_event_data(
+          "2020-01-01", 
+          as.character(Sys.Date() + 1)
+        )
+      }, error = function(e) {
+        tibble::tibble()  # Empty if no data yet
+      })
+    })
+
+    # Total sessions
+    output$metric_sessions <- renderUI({
+      data <- metrics()
+      count <- if (nrow(data) > 0) sum(data$type == "login", na.rm = TRUE) else 0
+      tags$span(format(count, big.mark = ","))
+    })
+
+    # Total searches
+    output$metric_searches <- renderUI({
+      data <- metrics()
+      count <- if (nrow(data) > 0) sum(data$type == "search", na.rm = TRUE) else 0
+      tags$span(format(count, big.mark = ","))
+    })
+
+    # Total downloads
+    output$metric_downloads <- renderUI({
+      data <- metrics()
+      count <- if (nrow(data) > 0) sum(data$type == "download", na.rm = TRUE) else 0
+      tags$span(format(count, big.mark = ","))
+    })
   })
 }
-
-## To be copied in the UI
-# mod_app_info_ui("app_info_1")
-
-## To be copied in the server
-# mod_app_info_server("app_info_1")

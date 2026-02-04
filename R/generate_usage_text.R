@@ -27,7 +27,7 @@ generate_usage_and_citations_text <- function(data) {
 
   usage_text <- 
     sprintf(
-"The AusTraits dataset is available at [doi: %s](http://doi.org/%s). AusTraits data is distributed under the CC BY 4.0 license (<https://creativecommons.org/licenses/by/4.0/>). The data is provided 'as is' without any warranties or guarantees of any kind. The AusTraits database is described in Falster et al. 2021, %s, drawing from many the contributed datasets. Publications using AusTraits data should cite the AusTraits data paper and relevant datasets.
+"The AusTraits dataset is available at [doi: %s](http://doi.org/%s). AusTraits data is distributed under the CC BY 4.0 license (<https://creativecommons.org/licenses/by/4.0/>). The data is provided 'as is' without any warranties or guarantees of any kind. The AusTraits database is described in Falster et al. 2021, drawing from many the contributed datasets. Publications using AusTraits data should cite the AusTraits data paper and relevant datasets.
 
 Taxa were aligned against the Australian Plant Census (APC, <https://biodiversity.org.au/nsl/services/search/taxonomy>) using the R package {APCalign} (Wenk et al 2024a), by first, searching for alignments with known names (via exact, then fuzzy matching), and then using known alignments to update taxon names to the currently accepted name. Original taxon names attributed by the data collectors are included. 
 
@@ -44,14 +44,13 @@ References
 - Wenk EH et al. (2024a) APCalign: an R package workflow and app for aligning and updating flora names to the Australian Plant Census. Australian Journal of Botany 72 BT24014. doi: [10.1071/BT24014](http://doi.org/10.1071/BT24014)
 - Wenk EH et al. (2024b) The AusTraits plant dictionary. Scientific Data 11: 537. doi: [10.1038/s41597-024-03368-z](http://doi.org/10.1038/s41597-024-03368-z)
 %s",
-    version,
-    date |> stringr::str_sub(1,4),
-    keys |> paste(collapse = ", " ),
-    concept_doi, concept_doi,
-    version,
-    date |> stringr::str_sub(1,4),
-    doi, doi,
-    paste("- ", references) |> paste(collapse = "\n" )
+    concept_doi, concept_doi,    # First paragraph DOI links
+    concept_doi, concept_doi,    # "full dataset" DOI links
+    keys |> paste(collapse = ", "),  # Dataset list
+    date |> stringr::str_sub(1,4),   # Year for Falster et al
+    version,                          # Version number
+    doi, doi,                         # Zenodo DOI links
+    paste("- ", references) |> paste(collapse = "\n")  # References list
   )
 
   usage_text |> commonmark::markdown_html() |> add_target_blank() |> HTML()

@@ -11,14 +11,14 @@ options(shiny.launch.browser = TRUE)
 
 # set the path to the data
 data_path <- "inst/extdata/austraits/austraits-5.0.0-lite"
-#data_path <- "inst/extdata/austraits/austraits-6.0.0-mid"
-#data_path <- "inst/extdata/austraits/austraits-6.0.0-full"
 #data_path <- "inst/extdata/austraits/austraits-7.0.0-full"
 
 # Load the datasets
 austraits <- arrow::open_dataset(file.path(data_path, "austraits-data.parquet"))
 austraits_display <- arrow::open_dataset(file.path(data_path, "austraits-display.parquet"))
 austraits_species_averages <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
+austraits_species <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
+austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits-species-averages-display.parquet"))
 
 trait_definitions <- yaml::read_yaml(file.path(data_path, "definitions.yml"))
 
@@ -168,9 +168,6 @@ custom_filter_columns_species <- c(
 target <- bsplus::shiny_iconlink(name = "github")
 target$attribs$href <- "https://github.com/traitecoevo/austraits.portal"
 
-# Load species averages datasets
-austraits_species <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
-austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits-species-averages-display.parquet"))
 
 # For species averages - split semicolon-separated dataset_id (Get done cause IDs get clubbed, should be understandable)
 temp_species_ids <- austraits_species_display |> 
@@ -186,6 +183,44 @@ rm(temp_species_ids)
 columns_display_species <- c(
   "dataset_id", "taxon_name", "genus", "family", "trait_name", 
   "value_mean", "value_min", "value_max", "value_median", "unit",
-  "value_type", "all_replicates",
+  "value_count", "all_replicates",
   "taxon_rank", "taxon_distribution", "establishment_means"
+)
+
+# TELEMETRY - Usage tracking via shiny.telemetry
+library(shiny.telemetry)
+
+# Global telemetry object — PostgreSQL for persistent storage
+if(FALSE) {
+
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(shiny.telemetry)
+library(RPostgreSQL)
+
+Sys.setenv(POSTGRES_HOST = "aws-1-ap-southeast-2.pooler.supabase.com")
+Sys.setenv(POSTGRES_DB = "postgres")
+Sys.setenv(POSTGRES_PORT = "6543")
+# Sys.setenv(POSTGRES_USER = "YOUR_USERNAME_HERE")
+# Sys.setenv(POSTGRES_PASSWORD = "YOUR_PASSWORD_HERE")
+
+telemetry <- shiny.telemetry::Telemetry$new(
+  app_name = "austraits_portal",
+  data_storage = shiny.telemetry::DataStoragePostgreSQL$new(
+    user = Sys.getenv("POSTGRES_USER"),
+    password = Sys.getenv("POSTGRES_PASSWORD"),
+    host = Sys.getenv("POSTGRES_HOST"),
+    dbname = Sys.getenv("POSTGRES_DB"),
+    port = as.integer(Sys.getenv("POSTGRES_PORT", "5432"))
+  )
+)
+}
+
+dir.create("inst/telemetry")
+telemetry <- shiny.telemetry::Telemetry$new(
+  app_name = "austraits_portal",
+  data_storage = shiny.telemetry::DataStorageSQLite$new(
+    db_path = "inst/telemetry/telemetry.db"
+  )
 )
