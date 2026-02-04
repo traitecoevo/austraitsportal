@@ -192,6 +192,19 @@ library(shiny.telemetry)
 
 # Global telemetry object — PostgreSQL for persistent storage
 if(FALSE) {
+
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(shiny.telemetry)
+library(RPostgreSQL)
+
+Sys.setenv(POSTGRES_HOST = "aws-1-ap-southeast-2.pooler.supabase.com")
+Sys.setenv(POSTGRES_DB = "postgres")
+Sys.setenv(POSTGRES_PORT = "6543")
+# Sys.setenv(POSTGRES_USER = "YOUR_USERNAME_HERE")
+# Sys.setenv(POSTGRES_PASSWORD = "YOUR_PASSWORD_HERE")
+
 telemetry <- shiny.telemetry::Telemetry$new(
   app_name = "austraits_portal",
   data_storage = shiny.telemetry::DataStoragePostgreSQL$new(
