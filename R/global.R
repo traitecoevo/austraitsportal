@@ -218,7 +218,7 @@ telemetry <- shiny.telemetry::Telemetry$new(
 )
 }
 
-dir.create("inst/telemetry")
+dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
 telemetry <- shiny.telemetry::Telemetry$new(
   app_name = "austraits_portal",
   data_storage = shiny.telemetry::DataStorageSQLite$new(
