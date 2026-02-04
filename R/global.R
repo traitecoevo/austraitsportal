@@ -15,17 +15,10 @@ data_path <- "inst/extdata/austraits/austraits-5.0.0-lite"
 
 # Load the datasets
 austraits <- arrow::open_dataset(file.path(data_path, "austraits-data.parquet"))
-
-# Display version of the flattened database
-austraits_display <- austraits |>
-  format_database_for_display() |>
-  format_hyperlinks_for_display()
-
+austraits_display <- arrow::open_dataset(file.path(data_path, "austraits-display.parquet"))
 austraits_species_averages <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
-
 austraits_species <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
-austraits_species_display <- austraits_species |>
-  format_hyperlinks_for_display()
+austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits-species-averages-display.parquet"))
 
 trait_definitions <- yaml::read_yaml(file.path(data_path, "definitions.yml"))
 

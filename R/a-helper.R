@@ -264,9 +264,20 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
   austraits_full_flatten |>
     arrow::write_parquet(filename_data)
   
+  # Save the display version of the flattened database
+  austraits_full_flatten |>
+    format_database_for_display() |>
+    format_hyperlinks_for_display() |>
+    arrow::write_parquet(filename_display)
+  
   # Save the species averages dataset
   austraits_species_averages |>
     arrow::write_parquet(file.path(output_dir, "austraits-species-averages.parquet"))
+  
+  # Save the display version of the species averages dataset
+  austraits_species_averages |>
+    format_hyperlinks_for_display() |>
+    arrow::write_parquet(file.path(output_dir, "austraits-species-averages-display.parquet")) 
   
   # Saving definitions
   austraits$definitions |> yaml::write_yaml(file.path(output_dir, "definitions.yml"))
