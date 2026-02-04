@@ -45,8 +45,14 @@ app_server <- function(input, output, session) {
   family_choices <- reactive({
     all_family
   })
-  
-  # Update the appropriate selectizeInput when radio button changes
+
+  # Start telemetry session
+  telemetry$start_session(
+    track_inputs = FALSE, 
+    navigation_input_id = "main_tabs"  
+  )
+
+# Update the appropriate selectizeInput when radio button changes
 filters <- mod_filters_server(
   "filters",
   filtered_database,
@@ -430,10 +436,16 @@ observeEvent(input[["filters-clear_filters"]], {
   # Data table module
   data_table_outputs <- mod_data_table_server("data_table", filtered_database, filtered_query_cache, current_columns_display)
 
-  # Reset pagination whenever filtered data changes (e.g. new filter)
+# Reset pagination whenever filtered data changes (e.g. new filter)
   observeEvent(filtered_database(), {
     req(filtered_database())
     data_table_outputs$set_start(0)
+
+    # Log search event
+    telemetry$log_custom_event("search", details = list(
+      dataset_type = filters()$dataset_type,
+      trait = filters()$trait_name
+    ))
   }, ignoreInit = TRUE)
 
   # Handle loading more data - with throttle to prevent rapid firing
@@ -672,7 +684,11 @@ observeEvent(input[["filters-clear_filters"]], {
         writeLines("<h3>Usage Information</h3><p>For large datasets, please refer to the AusTraits documentation at <a href='https://traitecoevo.github.io/austraits/'>https://traitecoevo.github.io/austraits/</a></p>", html_file)
       }
       }
-
+        # Log download event
+        telemetry$log_custom_event("download", details = list(
+          dataset_type = filters()$dataset_type,
+          trait = filters()$trait_name
+        ))
       showNotification("Downloading filtered data...",
                       type = "message",
                       duration = 3)

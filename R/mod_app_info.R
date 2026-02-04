@@ -122,6 +122,41 @@ profile_links <- function(github = NULL, orcid = NULL) {
       
       tags$hr(),
       
+      # USAGE METRICS
+      tags$h4(style = hdr, "Portal Usage"),
+
+      # Metric cards row
+      tags$div(
+        style = "display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;",
+        
+        # Sessions card
+        tags$div(
+          style = "flex: 1; min-width: 140px; background: #e3f2fd; border-radius: 10px; padding: 18px; text-align: center;",
+          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #1565c0;", uiOutput(ns("metric_sessions"))),
+          tags$div(style = "font-size: 0.82em; color: #546e7a; margin-top: 4px;",
+            icon("users", style = "color: #1976d2;"), " Total Sessions")
+        ),
+        
+        # Searches card
+        tags$div(
+          style = "flex: 1; min-width: 140px; background: #f3e5f5; border-radius: 10px; padding: 18px; text-align: center;",
+          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #6a1b9a;", uiOutput(ns("metric_searches"))),
+          tags$div(style = "font-size: 0.82em; color: #546e7a; margin-top: 4px;",
+            icon("search", style = "color: #7b1fa2;"), " Searches")
+        ),
+        
+        # Downloads card
+        tags$div(
+          style = "flex: 1; min-width: 140px; background: #e8f5e9; border-radius: 10px; padding: 18px; text-align: center;",
+          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #2e7d32;", uiOutput(ns("metric_downloads"))),
+          tags$div(style = "font-size: 0.82em; color: #546e7a; margin-top: 4px;",
+            icon("download", style = "color: #388e3c;"), " Downloads")
+        )
+      ),
+
+      tags$p(style = "font-size: 0.8em; color: #90a4ae;", 
+        "Metrics are updated in real time and reflect cumulative portal activity."),      
+
       # USAGE GUIDELINES
       tags$h4(style = hdr, "Usage Guidelines"),
       
@@ -160,7 +195,41 @@ profile_links <- function(github = NULL, orcid = NULL) {
 mod_app_info_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
-    # No server logic needed — static content
+
+    # Read telemetry data every 60 seconds
+    metrics <- reactive({
+      shiny::reactiveTimer(60000)()  # Refresh every 60 sec
+      
+      tryCatch({
+        telemetry$data_storage$read_event_data(
+          "2020-01-01", 
+          as.character(Sys.Date() + 1)
+        )
+      }, error = function(e) {
+        tibble::tibble()  # Empty if no data yet
+      })
+    })
+
+    # Total sessions
+    output$metric_sessions <- renderUI({
+      data <- metrics()
+      count <- if (nrow(data) > 0) sum(data$type == "login", na.rm = TRUE) else 0
+      tags$span(format(count, big.mark = ","))
+    })
+
+    # Total searches
+    output$metric_searches <- renderUI({
+      data <- metrics()
+      count <- if (nrow(data) > 0) sum(data$type == "search", na.rm = TRUE) else 0
+      tags$span(format(count, big.mark = ","))
+    })
+
+    # Total downloads
+    output$metric_downloads <- renderUI({
+      data <- metrics()
+      count <- if (nrow(data) > 0) sum(data$type == "download", na.rm = TRUE) else 0
+      tags$span(format(count, big.mark = ","))
+    })
   })
 }
 

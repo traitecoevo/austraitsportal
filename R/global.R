@@ -186,3 +186,18 @@ columns_display_species <- c(
   "value_count", "all_replicates",
   "taxon_rank", "taxon_distribution", "establishment_means"
 )
+
+# TELEMETRY - Usage tracking via shiny.telemetry
+library(shiny.telemetry)
+
+# Global telemetry object — PostgreSQL for persistent storage
+telemetry <- shiny.telemetry::Telemetry$new(
+  app_name = "austraits_portal",
+  data_storage = shiny.telemetry::DataStoragePostgreSQL$new(
+    user = Sys.getenv("POSTGRES_USER"),
+    password = Sys.getenv("POSTGRES_PASSWORD"),
+    host = Sys.getenv("POSTGRES_HOST"),
+    dbname = Sys.getenv("POSTGRES_DB"),
+    port = as.integer(Sys.getenv("POSTGRES_PORT", "5432"))
+  )
+)

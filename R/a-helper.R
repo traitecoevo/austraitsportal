@@ -329,7 +329,11 @@ format_hyperlinks_for_display <- function(database){
     source_primary_citation_URL = stringr::str_match(.data$source_primary_citation, "\\((https?://[^\\s)]+)\\)")[,2], # Extract URL
     source_primary_citation = gsub("\\[([^]]+)\\]\\([^)]+\\)", "\\1", .data$source_primary_citation), # Remove DOI MD link structure
     source_primary_citation = gsub("_([^_]+)_", "<i>\\1</i>", .data$source_primary_citation), # Replace MD italics with HTML italics
-    source_primary_citation = paste0('<a href="', .data$source_primary_citation_URL, '" target="_blank">', .data$source_primary_citation, '</a>') # Replaces the original source_primary_citation with a HTML version
+    source_primary_citation = dplyr::if_else(
+      !is.na(.data$source_primary_citation_URL),
+      paste0('<a href="', .data$source_primary_citation_URL, '" target="_blank">', .data$source_primary_citation, '</a>'),
+      .data$source_primary_citation
+    )
   ) |>
   dplyr::select(
     -"source_primary_citation_URL"
