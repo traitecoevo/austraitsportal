@@ -11,7 +11,7 @@ options(shiny.launch.browser = TRUE)
 
 # set the path to the data
 data_path <- "inst/extdata/austraits/austraits-5.0.0-lite"
-#data_path <- "inst/extdata/austraits/austraits-7.0.0-full"
+data_path <- "inst/extdata/austraits/austraits-7.0.0-full"
 
 # Load the datasets
 austraits <- arrow::open_dataset(file.path(data_path, "austraits-data.parquet"))
@@ -191,6 +191,7 @@ columns_display_species <- c(
 library(shiny.telemetry)
 
 # Global telemetry object — PostgreSQL for persistent storage
+if(FALSE) {
 telemetry <- shiny.telemetry::Telemetry$new(
   app_name = "austraits_portal",
   data_storage = shiny.telemetry::DataStoragePostgreSQL$new(
@@ -199,5 +200,14 @@ telemetry <- shiny.telemetry::Telemetry$new(
     host = Sys.getenv("POSTGRES_HOST"),
     dbname = Sys.getenv("POSTGRES_DB"),
     port = as.integer(Sys.getenv("POSTGRES_PORT", "5432"))
+  )
+)
+}
+
+dir.create("inst/telemetry")
+telemetry <- shiny.telemetry::Telemetry$new(
+  app_name = "austraits_portal",
+  data_storage = shiny.telemetry::DataStorageSQLite$new(
+    db_path = "inst/telemetry/telemetry.db"
   )
 )
