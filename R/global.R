@@ -19,6 +19,7 @@ austraits_display <- arrow::open_dataset(file.path(data_path, "austraits-display
 austraits_species_averages <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
 austraits_species <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
 austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits-species-averages-display.parquet"))
+sources <- readr::read_csv(file.path(data_path, "sources.csv"), show_col_types = FALSE)
 
 trait_definitions <- yaml::read_yaml(file.path(data_path, "definitions.yml"))
 

@@ -4,7 +4,6 @@ library(dplyr)
 source("R/a-helper.R")
 source("R/species_means.R")
 
-
 # Prepare the data for the portal
 
 # Lite version
