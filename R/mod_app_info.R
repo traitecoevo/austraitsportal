@@ -83,7 +83,8 @@ profile_links <- function(github = NULL, orcid = NULL) {
       ),
       
       p("Please visit our ", tags$a(href = "https://www.austraits.org", target = "_blank", "website"), " for more project information."),
-      p("The AusTraits database is facilitating research on Australia's diverse flora, including functional traits research, the preservation of Australia's unique plants, predicting species' responses to climate change, and understanding ecosystem dynamics at a continental scale. ",),
+      
+      p("The AusTraits database is facilitating research on Australia's diverse flora, including functional traits research, the preservation of Australia's unique plants, predicting species' responses to climate change, and understanding ecosystem dynamics at a continental scale."),
       
       tags$hr(),
 
@@ -106,18 +107,18 @@ profile_links <- function(github = NULL, orcid = NULL) {
       
       p(tags$strong("Traits \u2014"),
         "Search or browse the trait dropdown \u2013 noting you can select multiple traits at a time. ",
-        "Switch to ", tags$strong("Trait features"), " if you want to search by trait groupings, measured structures, or keywords.",
-        "Enabling trait features filters also refines the trait selection in the dropdown menu, for easier searching."),
+        "Switch to ", tags$strong("Trait features"), " if you want to search by trait groupings, measured structures, or keywords. ",
+        "Enabling trait features filters also refines the trait selection in the dropdown menu, for easier searching. ",
         "Note, Trait features is only enabled if a trait name is not yet selected."),
       
       p(tags$strong("Location \u2014"),
-        "Data can be filtered by taxon distribution (per the APC) or by observation coordinates. You can opt to display all georeferenced data or specify a bounding box, filtering to data collected within a specific region of Australia.",
-        "The", tags$strong("APC taxon distribution"), " (state/territory) filter works for both raw data and species average data outputs, while the ",
-        tags$strong("Georeferenced records"), " option is only enabled for when Raw data are displayed."),
+        "Data can be filtered by taxon distribution (per the APC) or by observation coordinates. You can opt to display all georeferenced data or specify a bounding box, filtering to data collected within a specific region of Australia. ",
+        "The ", tags$strong("APC taxon distribution"), " (state/territory) filter works for both raw data and species average data outputs, while the ",
+        tags$strong("Georeferenced records"), " option is only enabled when Raw data are displayed."),
       
       p(tags$strong("Custom filters \u2014"),
-        "Add up to three additional column filters to fine-tune the data displayed.",
-        "An additional filter slot appears once you've filled in a column name and values for the first filter. Columns with a controlled vocabulary (e.g. ", tags$strong("life_stage"), " have a drop-down menu of allowed options, while other columns (e.g. ", tags$strong("context property"), " accept any text. Please use" , tags$strong("|"), "between two free-text filter querys to multi-select. "),
+        "Add up to three additional column filters to fine-tune the data displayed. ",
+        "An additional filter slot appears once you've filled in a column name and values for the first filter. Columns with a controlled vocabulary (e.g. ", tags$strong("life_stage"), ") have a drop-down menu of allowed options, while other columns (e.g. ", tags$strong("context property"), ") accept any text. Please use ", tags$strong("|"), " between two free-text filter queries to multi-select."),
       
       p(tags$strong("Data Preview \u2014"),
         "Your filtered results, viewable 10, 25, 50, or 100 rows at a time. Columns are sortable."),
@@ -163,13 +164,13 @@ profile_links <- function(github = NULL, orcid = NULL) {
       tags$h4(style = hdr, "Usage Guidelines"),
       
       p(tags$strong("Citing AusTraits \u2014"),
-        "The ", tags$strong("Citations"), " tab indicates the proper attribution for your selected AusTraits data. ",
-        "original source datasets."),
+        "The ", tags$strong("Citations"), " tab indicates the proper attribution for your selected AusTraits data."),
       
       p(tags$strong("Feedback \u2014"),
         "Something off? A suggestion bubbling up? We're always keen to hear from people using the portal. ",
         "Get in touch through the ", tags$a(href = "https://www.austraits.org", target = "_blank", "AusTraits website"), ".")
     )
+  )
 }
 
 #' app_info Server Functions
@@ -215,9 +216,3 @@ mod_app_info_server <- function(id){
     })
   })
 }
-
-## To be copied in the UI
-# mod_app_info_ui("app_info_1")
-
-## To be copied in the server
-# mod_app_info_server("app_info_1")

@@ -68,7 +68,7 @@ Imports:
     leaflet,
     plotly,
     scales,
-    shiny.telemetry, 
+    shiny.telemetry,
     RPostgreSQL    
 Remotes:
     traitecoevo/austraits
