@@ -25,5 +25,13 @@ The goal of austraits.portal is to create a code-free interface for users to acc
 ```{r example, eval=FALSE}
 devtools::load_all()
 
+Sys.setenv(POSTGRES_HOST = "aws-1-ap-southeast-2.pooler.supabase.com")
+Sys.setenv(POSTGRES_DB = "postgres")
+Sys.setenv(POSTGRES_USER = "postgres.oownhtyvuegjtdirryat")
+Sys.setenv(POSTGRES_PASSWORD = ".r3N&.g+C3v/4jU")
+Sys.setenv(POSTGRES_PORT = "5432")
+
+shiny::runApp()
+
 open_data_portal()
 ```
