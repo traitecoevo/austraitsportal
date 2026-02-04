@@ -27,7 +27,15 @@ generate_usage_and_citations_text <- function(data) {
 
   usage_text <- 
     sprintf(
-"Trait data is sourced from AusTraits %s (Falster et al. 2021, %s), drawing from contributions from the following datasets: %s. Taxa were aligned against the Australian Plant Census (APC, <https://biodiversity.org.au/nsl/services/search/taxonomy>) using the R package {APCalign} (Wenk et al 2024a), by first, searching for alignments with known names (via fuzzy matching), and then using known alignments to update taxon names to the latest. Original taxon names attributed by the data collectors are included. Trait names were harmonised against the AusTraits Plant Dictionary (APD) (Wenk et al 2024b). Note that trait values were scored at different levels (individual, population or species), according to source; individual and population level values might not be representative of the trait values displayed by a species in other parts of its range. The full dataset is available at [doi: %s](http://doi.org/%s) and is made available under the CC BY 4.0 license (<https://creativecommons.org/licenses/by/4.0/>). The data is provided 'as is' without any warranties or guarantees of any kind.
+"The AusTraits dataset is available at [doi: %s](http://doi.org/%s). AusTraits data is distributed under the CC BY 4.0 license (<https://creativecommons.org/licenses/by/4.0/>). The data is provided 'as is' without any warranties or guarantees of any kind. The AusTraits database is described in Falster et al. 2021, %s, drawing from many the contributed datasets. Publications using AusTraits data should cite the AusTraits data paper and relevant datasets.
+
+Taxa were aligned against the Australian Plant Census (APC, <https://biodiversity.org.au/nsl/services/search/taxonomy>) using the R package {APCalign} (Wenk et al 2024a), by first, searching for alignments with known names (via exact, then fuzzy matching), and then using known alignments to update taxon names to the currently accepted name. Original taxon names attributed by the data collectors are included. 
+
+Trait names were harmonised against the AusTraits Plant Dictionary (APD) (Wenk et al 2024b). 
+
+Note that trait values were scored at different levels (individual, population or species), according to source; individual and population level values might not be representative of the trait values displayed by a species in other parts of its range. The full dataset is available at [doi: %s](http://doi.org/%s)
+
+The following datasets contributed data included in the selected search: %s
   
 References
 
