@@ -496,7 +496,7 @@ observeEvent(input[["filters-clear_filters"]], {
   }, ignoreInit = TRUE)
 
   # Citations module
-  usage_text_reactive <- mod_citations_server("citations", filtered_database)
+  usage_text_reactive <- mod_citations_server("citations", filtered_query_cache)
 
   # App info module
   mod_app_info_server("app_info")
@@ -505,7 +505,7 @@ observeEvent(input[["filters-clear_filters"]], {
   mod_taxon_view_server("taxon_view", filters, filtered_database, reactive(input$main_tabs))
 
   # Trait view module
-  mod_trait_view_server("trait_view", filtered_database, filters)
+  mod_trait_view_server("trait_view", filtered_query_cache, filters)
 
   # URL Query Parameter Handler - Load filters from URL on app startup
   url_processed <- reactiveVal(FALSE)

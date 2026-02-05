@@ -21,10 +21,10 @@ mod_citations_ui <- function(id){
 #' citations Server Functions
 #'
 #' @param id Internal parameter for {shiny}
-#' @param filtered_database Reactive containing filtered data
+#' @param filtered_query_cache Reactive containing full arrow query (not paginated display data)
 #'
 #' @noRd 
-mod_citations_server <- function(id, filtered_database){
+mod_citations_server <- function(id, filtered_query_cache){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
@@ -32,9 +32,20 @@ mod_citations_server <- function(id, filtered_database){
     
     # Update usage text when filtered data changes
     observe({
-      data <- filtered_database()
-      if (!is.null(data) && nrow(data) > 0) {
-        usage_text(generate_usage_and_citations_text(data))
+      query_data <- filtered_query_cache()
+      
+      if (!is.null(query_data)) {
+        # Collect ALL rows for citations (not just display limit)
+        data_collected <- query_data |> 
+          dplyr::select(source_primary_citation, source_primary_key) |>
+          dplyr::distinct() |>
+          dplyr::collect()
+        
+        if (nrow(data_collected) > 0) {
+          usage_text(generate_usage_and_citations_text(data_collected))
+        } else {
+          usage_text(NULL)
+        }
       } else {
         usage_text(NULL)
       }

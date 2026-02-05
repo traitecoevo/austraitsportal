@@ -53,7 +53,7 @@ profile_links <- function(github = NULL, orcid = NULL) {
           tags$img(src = "https://austraits.org/images/austraits_hex.png", height = "70px", alt = "AUSTRAITS", style = "max-width: 140px;")),
         tags$a(href = "https://www.unsw.edu.au", target = "_blank", class = "logo-link",
           tags$img(src = "https://austraits.org/images/UNSW.png", height = "70px", alt = "UNSW")),
-        tags$a(href = "https://www.wsu.edu.au", target = "_blank", class = "logo-link",
+        tags$a(href = "https://www.westernsydney.edu.au/", target = "_blank", class = "logo-link",
           tags$img(src = "https://upload.wikimedia.org/wikipedia/en/f/f0/Western_Sydney_University_Crest.png", height = "70px", alt = "Western Sydney University", style = "max-width: 140px;")),
         tags$a(href = "https://www.botanicgardens.org.au", target = "_blank", class = "logo-link",
           tags$img(src = "https://austraits.org/images/RBG.png", height = "70px", alt = "Royal Botanic Garden Sydney", style = "max-width: 140px;")),

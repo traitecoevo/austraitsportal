@@ -53,15 +53,18 @@ mod_trait_view_server <- function(id, filtered_data, filters){
     })
     
 trait_profile <- reactive({
-      req(filtered_data())
-      
-      if (is_species_avg()) {
-        # Add dummy location columns to prevent crash
-        data_with_location <- filtered_data() |>
-          dplyr::mutate(
-            `latitude (deg)` = NA_real_,
-            `longitude (deg)` = NA_real_
-          )
+  req(filtered_data())
+  
+  # Collect ALL data for profile generation
+  full_data <- filtered_data() |> dplyr::collect()
+  
+  if (is_species_avg()) {
+    # Add dummy location columns to prevent crash
+    data_with_location <- full_data |>
+      dplyr::mutate(
+        `latitude (deg)` = NA_real_,
+        `longitude (deg)` = NA_real_
+      )
         
         # Generate full profile (works now with dummy location)
         full_profile <- tryCatch({
@@ -99,7 +102,7 @@ trait_profile <- reactive({
         return(list(trait_info_with_banner, NULL, NULL, NULL))
       }
       
-      raw_profile <- generate_trait_profile(filtered_data())
+      raw_profile <- generate_trait_profile(full_data)
       
       # raw data banner
       banner <- tags$div(
@@ -144,10 +147,11 @@ trait_profile <- reactive({
       }
     })
     
-output$trait_beeswarm_plot <- plotly::renderPlotly({
+    output$trait_beeswarm_plot <- plotly::renderPlotly({
       req(filtered_data(), filters()$trait_name)
       
-      data <- filtered_data()
+      data <- filtered_data() |>
+        dplyr::collect()
       
       # For species averages, use value_mean instead of value
       if (is_species_avg()) {

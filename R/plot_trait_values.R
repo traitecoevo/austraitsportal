@@ -9,6 +9,15 @@
 #' @param ... Additional arguments passed to the function.
 #' 
 plot_trait_distribution <- function(data, trait, ...) {
+  
+  # For empty data
+  if (is.null(data) || nrow(data) == 0) {
+    return(ggplot2::ggplot() + 
+           ggplot2::annotate("text", x = 0.5, y = 0.5, 
+                            label = "No data available for this trait",
+                            size = 6) +
+           ggplot2::theme_void())
+  }
 
   if(is.na(data$unit[1]))
     return(plot_categorical_trait_distribution(data, trait, family_count = 50))
@@ -176,6 +185,14 @@ plot_trait_distribution_beeswarm <- function(data,
                                              y_axis_category,
                                              highlight = NA,
                                              hide_ids = FALSE) {
+  if (is.null(data) || nrow(data) == 0) {
+    return(ggplot2::ggplot() + 
+           ggplot2::annotate("text", x = 0.5, y = 0.5, 
+                            label = "No data available",
+                            size = 6) +
+           ggplot2::theme_void())
+  }
+  
   my_shapes <- c("_min" = 60, "_mean" = 16, "_max" = 62, "unknown" = 18)
 
   as_shape <- function(value_type) {
@@ -284,37 +301,33 @@ plot_trait_distribution_beeswarm <- function(data,
   if (vals$minimum > 0 & !is.infinite(vals$minimum) & 
       vals$maximum > 0 & !is.infinite(vals$maximum) & 
       range > 20) {
-    # log transformation - use a wrapper to ensure breaks and labels match
-    make_log_breaks <- function(limits) {
-      # Generate breaks
-      breaks_fn <- scales::breaks_log(n = 6)
-      breaks <- breaks_fn(limits)
-      
-      # Filter breaks to be within limits and remove NAs/Infs
-      breaks <- breaks[!is.na(breaks) & !is.infinite(breaks)]
-      breaks <- breaks[breaks >= limits[1] & breaks <= limits[2]]
-      
-      # Ensure at least 2 breaks exist
-      if (length(breaks) < 2) {
-        breaks <- c(limits[1], limits[2])
-      }
-      
-      breaks
+    
+    limits <- c(vals$minimum, vals$maximum)
+    breaks_fn <- scales::breaks_log(n = 6)
+    my_breaks <- breaks_fn(limits)
+    
+    my_breaks <- my_breaks[!is.na(my_breaks) & !is.infinite(my_breaks)]
+    my_breaks <- my_breaks[my_breaks >= limits[1] & my_breaks <= limits[2]]
+    
+    if (length(my_breaks) < 2) {
+      my_breaks <- c(limits[1], limits[2])
     }
+    
+    my_labels <- scientific_10(my_breaks)
     
     p1 <- p1 +
       ggplot2::scale_x_log10(
         name = "",
-        breaks = make_log_breaks,
-        labels = scientific_10,
-        limits = c(vals$minimum, vals$maximum)
+        breaks = my_breaks,
+        labels = my_labels,
+        limits = limits
       )
     p2 <- p2 +
       ggplot2::scale_x_log10(
         name = paste(trait_name, " (", data$unit[1], ")"),
-        breaks = make_log_breaks,
-        labels = scientific_10,
-        limits = c(vals$minimum, vals$maximum)
+        breaks = my_breaks,
+        labels = my_labels,
+        limits = limits
       )
   } else {
     p1 <- p1 + ggplot2::scale_x_continuous(limits = c(vals$minimum, vals$maximum))
