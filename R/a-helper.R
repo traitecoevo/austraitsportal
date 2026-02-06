@@ -333,12 +333,73 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
   
   # Saving definitions
   austraits$definitions |> yaml::write_yaml(file.path(output_dir, "definitions.yml"))
+  saveRDS(austraits$definitions, file.path(output_dir, "definitions.rds"))
 
   # Sources
   austraits$sources |> RefManageR::WriteBib(file.path(output_dir, "sources.bib"))
-  austraits_full_flatten |> select(source_primary_key, source_primary_citation, source_primary_key) |>
-    dplyr::distinct() |>
-    readr::write_csv(file.path(output_dir, "sources.csv"))
+  sources_df <- austraits_full_flatten |> 
+    select(source_primary_key, source_primary_citation) |>
+    dplyr::distinct()
+  sources_df |> readr::write_csv(file.path(output_dir, "sources.csv"))
+  saveRDS(sources_df, file.path(output_dir, "sources.rds"))
+  
+  # Cache dropdown values for faster app startup
+  message("Caching dropdown values...")
+  
+  # Load trait groups for processing
+  trait_groups <- readr::read_csv(
+    "inst/extdata/austraits/trait_groups_for_portal.csv", 
+    show_col_types = FALSE,
+    col_types = readr::cols(.default = readr::col_character())
+  )
+  
+  dropdown_cache <- list(
+    all_family = austraits_full_flatten |> dplyr::distinct(family) |> dplyr::pull() |> sort(),
+    all_genus = austraits_full_flatten |> dplyr::distinct(genus) |> dplyr::pull() |> sort(),
+    all_taxon_names = austraits_full_flatten |> dplyr::distinct(taxon_name) |> dplyr::pull() |> sort(),
+    all_traits = austraits_full_flatten |> dplyr::distinct(trait_name) |> dplyr::pull() |> sort(),
+    all_bor = austraits_full_flatten |> dplyr::distinct(basis_of_record) |> dplyr::pull() |> sort(),
+    all_age = austraits_full_flatten |> dplyr::distinct(life_stage) |> dplyr::pull() |> sort()
+  )
+  
+  # Process states/territories
+  dropdown_cache$all_states_territories <- austraits_full_flatten |> 
+    dplyr::distinct(taxon_distribution) |> 
+    dplyr::pull() |> 
+    paste(collapse = ", ") |> 
+    stringr::str_split(",") |> 
+    purrr::map(~trimws(.x)) |> 
+    purrr::list_c() |>
+    unique() |> 
+    stringr::word(1) |> 
+    unique() |> 
+    sort()
+  
+  # Add trait groupings and keywords
+  dropdown_cache$all_trait_groupings <- trait_groups |>
+    dplyr::pull(trait_group_for_portal) |>
+    unique() |>
+    sort()
+  
+  dropdown_cache$all_structure_measured <- trait_groups |>
+    dplyr::pull(structure_measured) |>
+    stringr::str_remove_all("\\[.*?\\]") |> 
+    stringr::str_split("; |,") |>              
+    unlist() |>                              
+    stringr::str_trim() |>
+    unique() |>
+    sort()
+  
+  dropdown_cache$all_keywords <- trait_groups |>
+    dplyr::pull(keywords) |>
+    stringr::str_split("; |,") |>
+    unlist() |>
+    stringr::str_trim() |>
+    unique() |>
+    sort()
+  
+  saveRDS(dropdown_cache, file.path(output_dir, "dropdown_cache.rds"))
+  message("✓ Dropdown cache saved")
 }
 
 #' Format flattened database for display

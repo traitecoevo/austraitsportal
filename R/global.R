@@ -32,9 +32,12 @@ austraits_display <- arrow::open_dataset(file.path(data_path, "austraits-display
 austraits_species_averages <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
 austraits_species <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
 austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits-species-averages-display.parquet"))
-sources <- readr::read_csv(file.path(data_path, "sources.csv"), show_col_types = FALSE)
 
-trait_definitions <- yaml::read_yaml(file.path(data_path, "definitions.yml"))
+# Load sources (RDS faster than CSV)
+sources <- readRDS(file.path(data_path, "sources.rds"))
+
+# Load trait definitions (RDS faster than YAML)
+trait_definitions <- readRDS(file.path(data_path, "definitions.rds"))
 
 trait_groups <- readr::read_csv(
   "inst/extdata/austraits/trait_groups_for_portal.csv",
@@ -54,51 +57,27 @@ columns_display <- c(
 )
 
 # Set up possible values for selectize menus
-## Taxonomy
-### Unique values of family
-all_family <- austraits |>
-  extract_distinct_values(family)
+# Load precomputed dropdown values for faster startup
+dropdown_cache_path <- file.path(data_path, "dropdown_cache.rds")
 
-### Unique values of genus
-all_genus <- austraits |>
-  extract_distinct_values(genus)
-
-## Unique values of taxon_name
-all_taxon_names <- austraits |>
-  extract_distinct_values(taxon_name)
+# Load from cache (much faster)
+dropdown_cache <- readRDS(dropdown_cache_path)
+all_family <- dropdown_cache$all_family
+all_genus <- dropdown_cache$all_genus
+all_taxon_names <- dropdown_cache$all_taxon_names
+all_states_territories <- dropdown_cache$all_states_territories
+all_traits <- dropdown_cache$all_traits
+all_bor <- dropdown_cache$all_bor
+all_age <- dropdown_cache$all_age
+all_trait_groupings <- dropdown_cache$all_trait_groupings
+all_structure_measured <- dropdown_cache$all_structure_measured
+all_keywords <- dropdown_cache$all_keywords
 
 ## Location
 # TODO: Not yet implemented.
 ### Coordinates - circle/bbox around coordinates?
 
 ### States by location properties
-
-
-### APC distribution - May need APCalign::create_species_state_origin_matrix()
-all_states_territories <- austraits  |> 
-  extract_distinct_values(taxon_distribution) |> 
-  paste(collapse = ", ")  |> 
-  stringr::str_split(",")  |> 
-  purrr::map(~trimws(.x))  |> 
-  purrr::list_c() |>
-  unique()  |> 
-  stringr::word(1)  |> 
-  unique()  |> 
-  sort()
-
-## Traits
-### Unique values of taxon_name
-all_traits <- austraits |>
-  extract_distinct_values(trait_name)
-
-## Other sidebar values
-### Unique values of BoR
-all_bor <- austraits |>
-  extract_distinct_values(basis_of_record)
-
-## Unique values of age/lifestage
-all_age <- austraits |>
-  extract_distinct_values(life_stage)
 
 # Load state flora link mappings
 atrp_links <- readr::read_csv(
@@ -122,28 +101,6 @@ vic_links <- readr::read_csv(
 ) |>
   dplyr::select(taxon_name, url) |> 
   dplyr::filter(!is.na(url), url != "")
-## Trait groupings and keywords
-all_trait_groupings <- trait_groups |>
-  dplyr::pull(trait_group_for_portal) |>
-  unique() |>
-  sort()
-
-all_structure_measured <- trait_groups |>
-  dplyr::pull(structure_measured) |>
-  stringr::str_remove_all("\\[.*?\\]") |> 
-  stringr::str_split("; |,") |>              
-  unlist() |>                              
-  stringr::str_trim() |>
-  unique() |>
-  sort()
-
-all_keywords <- trait_groups |>
-    dplyr::pull(keywords) |>
-    stringr::str_split("; |,") |>
-    unlist() |>
-    stringr::str_trim() |>
-    unique() |>
-    sort()
 
 # Define controlled vocabulary columns (dropdown)
 controlled_vocab_columns <- c(
