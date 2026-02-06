@@ -22,8 +22,9 @@ generate_usage_and_citations_text <- function(data) {
   date <- metatdata$hits$hits[[1]]$metadata$publication_date
   concept_doi <- metatdata$hits$hits[[1]]$conceptdoi
 
-  references <- data$source_primary_citation |> unique()
-  keys <- data$source_primary_key |> unique()
+  keys <- data$source_primary_key |> stringr::str_split(pattern = "; ") |> unlist() |> sort() |> unique()
+  # then get the references. Taking these from the sources data frame loaded in global.R instead of data frame, as species means have multiple sources pasted together (so complicated to parse)
+  references <- sources |> dplyr::filter(source_primary_key %in% keys) |> dplyr::pull(source_primary_citation)
 
   usage_text <- 
     sprintf(
@@ -37,12 +38,16 @@ Note that trait values were scored at different levels (individual, population o
 
 The following datasets contributed data included in the selected search: %s
   
-References
+**General AusTraits references**
 
 - Falster et al %s. AusTraits %s [Data set]. Zenodo. doi: [%s](https://doi.org/%s)
 - Falster et al 2021. AusTraits, a curated plant trait database for the Australian flora. Scientific Data 8, 254. doi: [10.1038/s41597-021-01006-6](http://doi.org/10.1038/s41597-021-01006-6)
 - Wenk EH et al. (2024a) APCalign: an R package workflow and app for aligning and updating flora names to the Australian Plant Census. Australian Journal of Botany 72 BT24014. doi: [10.1071/BT24014](http://doi.org/10.1071/BT24014)
 - Wenk EH et al. (2024b) The AusTraits plant dictionary. Scientific Data 11: 537. doi: [10.1038/s41597-024-03368-z](http://doi.org/10.1038/s41597-024-03368-z)
+
+**Primary dataset sources**\n
+(subset, for large datasets full list is provided in the download)
+
 %s",
     concept_doi, concept_doi,    # First paragraph DOI links
     concept_doi, concept_doi,    # "full dataset" DOI links

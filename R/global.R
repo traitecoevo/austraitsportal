@@ -11,7 +11,7 @@ options(shiny.launch.browser = TRUE)
 
 # set the path to the data
 data_path <- "inst/extdata/austraits/austraits-5.0.0-lite"
-#data_path <- "inst/extdata/austraits/austraits-7.0.0-full"
+data_path <- "inst/extdata/austraits/austraits-7.0.0-full"
 
 # Load the datasets
 austraits <- arrow::open_dataset(file.path(data_path, "austraits-data.parquet"))
@@ -19,6 +19,7 @@ austraits_display <- arrow::open_dataset(file.path(data_path, "austraits-display
 austraits_species_averages <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
 austraits_species <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
 austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits-species-averages-display.parquet"))
+sources <- readr::read_csv(file.path(data_path, "sources.csv"), show_col_types = FALSE)
 
 trait_definitions <- yaml::read_yaml(file.path(data_path, "definitions.yml"))
 
@@ -217,7 +218,7 @@ telemetry <- shiny.telemetry::Telemetry$new(
 )
 }
 
-dir.create("inst/telemetry")
+dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
 telemetry <- shiny.telemetry::Telemetry$new(
   app_name = "austraits_portal",
   data_storage = shiny.telemetry::DataStorageSQLite$new(

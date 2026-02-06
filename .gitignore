@@ -12,3 +12,4 @@ data
 *.html
 *.out
 *.swp
+inst/extdata/austraits/austraits-7.0.0-full/*

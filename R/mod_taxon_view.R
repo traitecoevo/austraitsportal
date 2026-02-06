@@ -85,7 +85,7 @@ mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
         }
         
         # Generate taxon text
-        txt <- generate_taxon_text(data, selected_taxon)
+        txt <- generate_taxon_text(selected_taxon)
         
         # Collapse if it's a vector, check if empty
         if (is.null(txt) || length(txt) == 0 || all(nchar(txt) == 0)) {

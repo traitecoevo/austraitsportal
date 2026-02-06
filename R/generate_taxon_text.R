@@ -3,20 +3,21 @@
 #'
 #' Creates a textual summary for a specified taxon based on the provided data.
 #'
-#' @param data A data frame or tibble containing taxonomic and trait information.
 #' @param taxon A character string specifying the name of the taxon to summarize.
 #'
 #' @return A character string containing the generated summary for the specified taxon.
 #'
 #' @examples
 #' \dontrun{
-#' generate_taxon_text(austraits_data, "Eucalyptus globulus")
+#' generate_taxon_text("Eucalyptus globulus")
 #' }
 
-generate_taxon_text <- function(data, taxon) {
+generate_taxon_text <- function(taxon) {
 
-  data_taxon <- data |>
-    dplyr::filter(taxon_name == taxon)
+  # Todo -- likely inefficient to collect all the data here. Optimize later.
+  data_taxon <- austraits_display |>
+    dplyr::filter(taxon_name == taxon) |>
+    dplyr::collect()
 
   data_taxon_trait_means <- austraits_species_averages |>
     dplyr::filter(taxon_name == taxon) |>
@@ -102,6 +103,8 @@ generate_taxon_text <- function(data, taxon) {
     dplyr::relocate(reference, .after = text) |>
     dplyr::arrange(desc(n_records))
 
+  data_taxon_summary_dataset |> dplyr::slice_head(n=1) |> dplyr::pull(text) |> paste(collapse = ", ")
+
   # Generate the taxon description for display
   taxon_description <- 
     sprintf(
@@ -116,8 +119,6 @@ generate_taxon_text <- function(data, taxon) {
 **Profiles**: %s
 
 ## Traits 
-
-**Download**: (not active) [species summary](%s), [full data](%s)
 
 **Top source datasets**: %s.     See below for a full list of sources.<br>
 **Summary**: AusTraits contains %s traits from %s records in %s datasets.<br>
@@ -137,8 +138,7 @@ generate_taxon_text <- function(data, taxon) {
     taxon_info$scientific_name, 
     taxon_info$taxon_distribution,
     sprintf("[%s](%s)", portal_links$source, portal_links$url) |> paste(collapse = ", "),
-    "link", "link", 
-    data_taxon_summary_dataset |> dplyr::slice_head(n=5) |> dplyr::pull(text) |> paste(collapse = ", "), 
+    data_taxon_summary_dataset |> dplyr::slice(1) |> dplyr::pull(text) |> paste(collapse = ", "), 
     dplyr::n_distinct(data_taxon$trait_name),
     nrow(data_taxon),
     dplyr::n_distinct(data_taxon$dataset_id), 

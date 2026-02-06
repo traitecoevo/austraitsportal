@@ -284,6 +284,9 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
 
   # Sources
   austraits$sources |> RefManageR::WriteBib(file.path(output_dir, "sources.bib"))
+  austraits_full_flatten |> select(source_primary_key, source_primary_citation, source_primary_key) |>
+    dplyr::distinct() |>
+    readr::write_csv(file.path(output_dir, "sources.csv"))
 }
 
 #' Format flattened database for display

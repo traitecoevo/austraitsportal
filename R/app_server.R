@@ -496,7 +496,7 @@ observeEvent(input[["filters-clear_filters"]], {
   }, ignoreInit = TRUE)
 
   # Citations module
-  usage_text_reactive <- mod_citations_server("citations", filtered_database)
+  usage_text_reactive <- mod_citations_server("citations", filtered_query_cache)
 
   # App info module
   mod_app_info_server("app_info")
@@ -505,7 +505,7 @@ observeEvent(input[["filters-clear_filters"]], {
   mod_taxon_view_server("taxon_view", filters, filtered_database, reactive(input$main_tabs))
 
   # Trait view module
-  mod_trait_view_server("trait_view", filtered_database, filters)
+  mod_trait_view_server("trait_view", filtered_query_cache, filters)
 
   # URL Query Parameter Handler - Load filters from URL on app startup
   url_processed <- reactiveVal(FALSE)
@@ -642,6 +642,7 @@ observeEvent(input[["filters-clear_filters"]], {
       dir.create(tmpdir)
       csv_file <- file.path(tmpdir, "austraits-data.csv")
       bib_file <- file.path(tmpdir, "sources.bib")
+      sources_file <- file.path(tmpdir, "sources.csv")
       html_file <- file.path(tmpdir, "usage.html")
 
       data_query <- download_data_table()
@@ -655,16 +656,19 @@ observeEvent(input[["filters-clear_filters"]], {
         arrow::write_csv_arrow(data_query, csv_file)
         
       # Only collect distinct keys, not full dataset
-      keys_data <- data_query |> 
+      keys <- data_query |> 
         dplyr::select(source_primary_key) |> 
         dplyr::distinct() |> 
-        dplyr::collect()
+        dplyr::collect() |> 
+        dplyr::pull(source_primary_key) |>
+        # This handles multiple keys pasted together with "; ", an issue for species averages
+        stringr::str_split(pattern = "; ") |> unlist() |> sort() |> unique()
 
-      keys <- keys_data$source_primary_key |> unique()
+      sources |>
+        dplyr::filter(source_primary_key %in% keys) |>
+        arrow::write_csv_arrow(sources_file)
 
-      rm(keys_data)  # Immediately free memory
-      gc()  # Force cleanup
-        export_bibtex_for_data(keys, bib_file)
+      export_bibtex_for_data(keys, bib_file)
         
       # Only collect a small sample for usage text to avoid memory crash
       total_rows <- attr(filtered_database(), "total_rows")
