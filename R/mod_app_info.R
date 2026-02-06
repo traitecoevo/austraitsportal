@@ -180,39 +180,47 @@ mod_app_info_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    # Read telemetry data every 60 seconds
-    metrics <- reactive({
-      shiny::reactiveTimer(60000)()  # Refresh every 60 sec
-      
-      tryCatch({
-        telemetry$data_storage$read_event_data(
-          "2020-01-01", 
-          as.character(Sys.Date() + 1)
-        )
-      }, error = function(e) {
-        tibble::tibble()  # Empty if no data yet
-      })
-    })
+# Refreshing using Supabase REST API
+metrics <- reactive({
+  # Auto-refresh every 60 seconds
+  invalidateLater(60000, session)
+  
+  tryCatch({
+    # Read all telemetry data from Supabase
+    data <- read_telemetry_metrics("2020-01-01", as.character(Sys.Date() + 1))
+    
+    if (nrow(data) > 0) {
+      # Count by event type
+      list(
+        sessions = sum(data$type == "login", na.rm = TRUE),
+        searches = sum(data$type == "search", na.rm = TRUE),
+        downloads = sum(data$type == "download", na.rm = TRUE)
+      )
+    } else {
+      list(sessions = 0, searches = 0, downloads = 0)
+    }
+  }, error = function(e) {
+    message("Metrics read error: ", e$message)
+    list(sessions = 0, searches = 0, downloads = 0)
+  })
+})
 
-    # Total sessions
-    output$metric_sessions <- renderUI({
-      data <- metrics()
-      count <- if (nrow(data) > 0) sum(data$type == "login", na.rm = TRUE) else 0
-      tags$span(format(count, big.mark = ","))
-    })
+# Total sessions
+output$metric_sessions <- renderUI({
+  m <- metrics()
+  tags$span(format(m$sessions, big.mark = ","))
+})
 
-    # Total searches
-    output$metric_searches <- renderUI({
-      data <- metrics()
-      count <- if (nrow(data) > 0) sum(data$type == "search", na.rm = TRUE) else 0
-      tags$span(format(count, big.mark = ","))
-    })
+# Total searches
+output$metric_searches <- renderUI({
+  m <- metrics()
+  tags$span(format(m$searches, big.mark = ","))
+})
 
-    # Total downloads
-    output$metric_downloads <- renderUI({
-      data <- metrics()
-      count <- if (nrow(data) > 0) sum(data$type == "download", na.rm = TRUE) else 0
-      tags$span(format(count, big.mark = ","))
-    })
+# Total downloads
+output$metric_downloads <- renderUI({
+  m <- metrics()
+  tags$span(format(m$downloads, big.mark = ","))
+})
   })
 }
