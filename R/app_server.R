@@ -17,7 +17,7 @@ app_server <- function(input, output, session) {
     } else {
       austraits
     }
-  })
+  }) |> bindCache(filters()$dataset_type)
 
   current_austraits_display <- reactive({
     if (filters()$dataset_type == "species") {
@@ -25,7 +25,7 @@ app_server <- function(input, output, session) {
     } else {
       austraits_display
     }
-  })
+  }) |> bindCache(filters()$dataset_type)
 
   current_columns_display <- reactive({
     if (filters()$dataset_type == "species") {
@@ -33,7 +33,7 @@ app_server <- function(input, output, session) {
     } else {
       columns_display
     }
-  })
+  }) |> bindCache(filters()$dataset_type)
   
   # Initialize dropdown choices
   taxon_name_choices <- reactive({
