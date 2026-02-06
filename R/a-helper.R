@@ -253,16 +253,6 @@ apply_trait_metadata_filters <- function(data, input, trait_groups) {
   return(data)
 }
 
-#' Find distinct values for a given variable
-#' @keywords internal
-extract_distinct_values <- function(data, var_name){
-  data |> 
-    dplyr::distinct({{var_name}}) |> 
-    dplyr::filter(!is.na({{var_name}})) |> 
-    dplyr::arrange({{var_name}}) |> 
-    dplyr::collect() |> 
-    dplyr::pull()
-}
 
 
 #' Prepare Austraits data for the portal

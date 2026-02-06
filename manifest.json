@@ -4075,9 +4075,6 @@
     "man/export_bibtex_for_data.Rd": {
       "checksum": "60f9be5fa77d999ca297cfb7c6e2ff20"
     },
-    "man/extract_distinct_values.Rd": {
-      "checksum": "a364e0a0526cf1c3d853262f21a5f600"
-    },
     "man/generate_taxon_text.Rd": {
       "checksum": "a9ecbdd01cc5cad1f7cc1746d3c131fc"
     },
