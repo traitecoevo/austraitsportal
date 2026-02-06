@@ -188,40 +188,26 @@ columns_display_species <- c(
   "taxon_rank", "taxon_distribution", "establishment_means"
 )
 
-# TELEMETRY - Usage tracking via shiny.telemetry
-library(shiny.telemetry)
+# TELEMETRY - Supabase
+library(httr2)
+source("R/telemetry_supabase.R")
 
-# Global telemetry object — PostgreSQL for persistent storage
-if(FALSE) {
+Sys.setenv(SUPABASE_URL = "https://oownhtyvuegjtdirryat.supabase.co")
+Sys.setenv(SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vd25odHl2dWVnanRkaXJyeWF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNDM5NTYsImV4cCI6MjA4NTcxOTk1Nn0.fwTNo09bSbdYiQ6N8iXNOgp4gezINh1qVIZhXTWn16E")
 
-library(dplyr)
-library(tidyr)
-library(stringr)
-library(shiny.telemetry)
-library(RPostgreSQL)
+supabase_url <- Sys.getenv("SUPABASE_URL")
+supabase_key <- Sys.getenv("SUPABASE_KEY")
 
-Sys.setenv(POSTGRES_HOST = "aws-1-ap-southeast-2.pooler.supabase.com")
-Sys.setenv(POSTGRES_DB = "postgres")
-Sys.setenv(POSTGRES_PORT = "6543")
-# Sys.setenv(POSTGRES_USER = "YOUR_USERNAME_HERE")
-# Sys.setenv(POSTGRES_PASSWORD = "YOUR_PASSWORD_HERE")
-
-telemetry <- shiny.telemetry::Telemetry$new(
-  app_name = "austraits_portal",
-  data_storage = shiny.telemetry::DataStoragePostgreSQL$new(
-    user = Sys.getenv("POSTGRES_USER"),
-    password = Sys.getenv("POSTGRES_PASSWORD"),
-    host = Sys.getenv("POSTGRES_HOST"),
-    dbname = Sys.getenv("POSTGRES_DB"),
-    port = as.integer(Sys.getenv("POSTGRES_PORT", "5432"))
-  )
-)
+if (nchar(supabase_url) > 0 && nchar(supabase_key) > 0) {
+  init_supabase_telemetry(supabase_url, supabase_key)
+} else {
+  warning("SUPABASE_URL or SUPABASE_KEY not set - telemetry disabled")
 }
 
-dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
-telemetry <- shiny.telemetry::Telemetry$new(
-  app_name = "austraits_portal",
-  data_storage = shiny.telemetry::DataStorageSQLite$new(
-    db_path = "inst/telemetry/telemetry.db"
-  )
-)
+# dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
+# telemetry <- shiny.telemetry::Telemetry$new(
+#   app_name = "austraits_portal",
+#   data_storage = shiny.telemetry::DataStorageSQLite$new(
+#     db_path = "inst/telemetry/telemetry.db"
+#   )
+# )
