@@ -53,6 +53,12 @@ mod_trait_view_server <- function(id, filtered_data, filters){
     })
     
 trait_profile <- reactive({
+  start_time <- Sys.time()
+  cache_key_trait <- filters()$trait_name
+  cache_key_dataset <- filters()$dataset_type
+  cache_key_species <- is_species_avg()
+  cat("\n[TRAIT PROFILE] Starting for trait:", cache_key_trait, "| dataset:", cache_key_dataset, "| is_species:", cache_key_species, "\n")
+  
   req(filtered_data())
   
   # Collect ALL data for profile generation
@@ -126,8 +132,18 @@ trait_profile <- reactive({
       )
       
       trait_info_with_banner <- tagList(banner, raw_profile[[1]])
+      
+      elapsed <- as.numeric(Sys.time() - start_time, units = "secs")
+      cat("[TRAIT PROFILE] Completed in", round(elapsed, 3), "seconds\n")
+      
       return(list(trait_info_with_banner, raw_profile[[2]], raw_profile[[3]], raw_profile[[4]]))
-    })
+    }) |> 
+    bindCache(
+      filters()$trait_name, 
+      filters()$dataset_type, 
+      is_species_avg(),
+      cache = "session"
+    )
     
     output$trait_profile <- renderUI({
       tagList(trait_profile()[[1]])

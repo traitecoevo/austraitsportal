@@ -28,10 +28,11 @@ mod_citations_server <- function(id, filtered_query_cache){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
-    usage_text <- reactiveVal(NULL)
-    
-    # Update usage text when filtered data changes
-    observe({
+    # Cached reactive for generating citations text
+    citations_data <- reactive({
+      start_time <- Sys.time()
+      cat("\n[CITATIONS] Starting citations generation\n")
+      
       query_data <- filtered_query_cache()
       
       if (!is.null(query_data)) {
@@ -42,13 +43,20 @@ mod_citations_server <- function(id, filtered_query_cache){
           dplyr::collect()
         
         if (nrow(data_collected) > 0) {
-          usage_text(generate_usage_and_citations_text(data_collected))
-        } else {
-          usage_text(NULL)
+          result <- generate_usage_and_citations_text(data_collected)
+          elapsed <- as.numeric(Sys.time() - start_time, units = "secs")
+          cat("[CITATIONS] Completed in", round(elapsed, 3), "seconds\n")
+          return(result)
         }
-      } else {
-        usage_text(NULL)
       }
+      return(NULL)
+    }) |> bindCache(filtered_query_cache(), cache = "session")
+    
+    usage_text <- reactiveVal(NULL)
+    
+    # Update usage_text from cached reactive
+    observe({
+      usage_text(citations_data())
     })
     
     output$usage_text <- renderUI({
