@@ -301,15 +301,20 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
 
   # create species means dataset
   # list of traits to take means for - core traits only
-  traits <- 
-    readr::read_csv(
-      "inst/extdata/austraits/trait_groups_for_portal.csv", show_col_types = FALSE) |>
+  trait_groups <- readr::read_csv(
+    "inst/extdata/austraits/trait_groups_for_portal.csv", 
+    show_col_types = FALSE,
+    col_types = readr::cols(.default = readr::col_character())
+  )
+
+  core_traits <- 
+    trait_groups |>
     dplyr::filter(!is.na(core_trait)) |>
     dplyr::pull(trait)
 
   austraits_species_averages <-
     austraits_full_flatten |>
-    dplyr::filter(trait_name %in% traits) |>    
+    dplyr::filter(trait_name %in% core_traits) |>    
     estimate_species_trait_means()
 
   # Save the flattened database
@@ -340,8 +345,29 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
   sources_df <- austraits_full_flatten |> 
     select(source_primary_key, source_primary_citation) |>
     dplyr::distinct()
-  sources_df |> readr::write_csv(file.path(output_dir, "sources.csv"))
   saveRDS(sources_df, file.path(output_dir, "sources.rds"))
+  
+  # Save trait_groups as RDS for faster loading
+  saveRDS(trait_groups, file.path(output_dir, "trait_groups.rds"))
+  
+  # Save metadata as RDS (faster than JSON)
+  metatdata <- jsonlite::read_json("inst/extdata/austraits/austraits.json")
+  saveRDS(metatdata, file.path(output_dir, "metadata.rds"))
+  
+  # Combine and save state flora links as single RDS
+  flora_links <- list(
+    atrp = readr::read_csv("inst/extdata/ATRP_links.csv", show_col_types = FALSE) |>
+      dplyr::rename(url = formatted) |> 
+      dplyr::select(taxon_name, url) |>
+      dplyr::filter(!is.na(url), url != ""),
+    nt = readr::read_csv("inst/extdata/NT_links.csv", show_col_types = FALSE) |>
+      dplyr::select(taxon_name, url) |> 
+      dplyr::filter(!is.na(url), url != ""),
+    vic = readr::read_csv("inst/extdata/Vic_links.csv", show_col_types = FALSE) |>
+      dplyr::select(taxon_name, url) |> 
+      dplyr::filter(!is.na(url), url != "")
+  )
+  saveRDS(flora_links, file.path(output_dir, "flora_links.rds"))
   
   # Cache dropdown values for faster app startup
   message("Caching dropdown values...")

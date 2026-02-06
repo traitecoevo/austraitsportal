@@ -39,11 +39,11 @@ sources <- readRDS(file.path(data_path, "sources.rds"))
 # Load trait definitions (RDS faster than YAML)
 trait_definitions <- readRDS(file.path(data_path, "definitions.rds"))
 
-trait_groups <- readr::read_csv(
-  "inst/extdata/austraits/trait_groups_for_portal.csv",
-  col_types = readr::cols(.default = readr::col_character())
-  )
-metatdata <- jsonlite::read_json("inst/extdata/austraits/austraits.json")
+# Load trait groups (RDS faster than CSV)
+trait_groups <- readRDS(file.path(data_path, "trait_groups.rds"))
+
+# Load metadata (RDS faster than JSON)
+metatdata <- readRDS(file.path(data_path, "metadata.rds"))
 
 columns_display <- c(
   "dataset_id", "taxon_name", "genus", "family", "trait_name", "value", "unit",
@@ -79,28 +79,11 @@ all_keywords <- dropdown_cache$all_keywords
 
 ### States by location properties
 
-# Load state flora link mappings
-atrp_links <- readr::read_csv(
-  "inst/extdata/ATRP_links.csv",
-  show_col_types = FALSE
-) |>
-  dplyr::rename(url = formatted) |> 
-  dplyr::select(taxon_name, url) |>
-  dplyr::filter(!is.na(url), url != "")
-
-nt_links <- readr::read_csv(
-  "inst/extdata/NT_links.csv",
-  show_col_types = FALSE
-) |>
-  dplyr::select(taxon_name, url) |> 
-  dplyr::filter(!is.na(url), url != "")
-
-vic_links <- readr::read_csv(
-  "inst/extdata/Vic_links.csv",
-  show_col_types = FALSE
-) |>
-  dplyr::select(taxon_name, url) |> 
-  dplyr::filter(!is.na(url), url != "")
+# Load state flora link mappings (precomputed in RDS)
+flora_links <- readRDS(file.path(data_path, "flora_links.rds"))
+atrp_links <- flora_links$atrp
+nt_links <- flora_links$nt
+vic_links <- flora_links$vic
 
 # Define controlled vocabulary columns (dropdown)
 controlled_vocab_columns <- c(
