@@ -413,6 +413,17 @@ mod_filters_server <- function(
         }
       })
 
+      # ---- DEBOUNCED INPUTS FOR BETTER PERFORMANCE ----
+      # Debounce text inputs and numeric inputs to reduce reactive firing
+      custom_val_1_debounced <- reactive(input$custom_val_1) |> debounce(800)
+      custom_val_2_debounced <- reactive(input$custom_val_2) |> debounce(800)
+      custom_val_3_debounced <- reactive(input$custom_val_3) |> debounce(800)
+      
+      min_latitude_debounced <- reactive(input$min_latitude) |> debounce(1000)
+      max_latitude_debounced <- reactive(input$max_latitude) |> debounce(1000)
+      min_longitude_debounced <- reactive(input$min_longitude) |> debounce(1000)
+      max_longitude_debounced <- reactive(input$max_longitude) |> debounce(1000)
+      
       # ---- RETURN FILTER STATE TO MAIN SERVER ----
       return(
         reactive({
@@ -431,16 +442,16 @@ mod_filters_server <- function(
             life_stage = input$life_stage,
             location = input$location,
             apc_taxon_distribution = input$apc_taxon_distribution,
-            min_latitude = input$min_latitude,
-            max_latitude = input$max_latitude,
-            min_longitude = input$min_longitude,
-            max_longitude = input$max_longitude,
+            min_latitude = min_latitude_debounced(),
+            max_latitude = max_latitude_debounced(),
+            min_longitude = min_longitude_debounced(),
+            max_longitude = max_longitude_debounced(),
             custom_col_1 = input$custom_col_1,
-            custom_val_1 = input$custom_val_1,
+            custom_val_1 = custom_val_1_debounced(),
             custom_col_2 = input$custom_col_2,
-            custom_val_2 = input$custom_val_2,
+            custom_val_2 = custom_val_2_debounced(),
             custom_col_3 = input$custom_col_3,
-            custom_val_3 = input$custom_val_3
+            custom_val_3 = custom_val_3_debounced()
           )
         })
       )
