@@ -97,39 +97,18 @@ observeEvent(input[["filters-clear_filters"]], {
           !is.null(selected_structure) && length(selected_structure) > 0 ||
           !is.null(selected_keywords) && length(selected_keywords) > 0) {
         
-        # Start with all traits
-        matching_traits <- trait_groups$trait
-        
-        # Filter by grouping
-        if (!is.null(selected_grouping) && length(selected_grouping) > 0) {
-          matching_traits <- trait_groups |>
-            dplyr::filter(trait_group_for_portal %in% selected_grouping) |>
-            dplyr::pull(trait) |>
-            unique()
-        }
-        
-        # Filter by structure
-        if (!is.null(selected_structure) && length(selected_structure) > 0) {
-          structure_pattern <- paste(selected_structure, collapse = "|")
-          structure_traits <- trait_groups |>
-            dplyr::filter(stringr::str_detect(structure_measured, structure_pattern)) |>
-            dplyr::pull(trait)
-          matching_traits <- intersect(matching_traits, structure_traits)
-        }
-        
-        # Filter by keywords
-        if (!is.null(selected_keywords) && length(selected_keywords) > 0 && "keywords" %in% names(trait_groups)) {
-          keyword_pattern <- paste(selected_keywords, collapse = "|")
-          keyword_traits <- trait_groups |>
-            dplyr::filter(stringr::str_detect(keywords, keyword_pattern)) |>
-            dplyr::pull(trait)
-          matching_traits <- intersect(matching_traits, keyword_traits)
-        }
+        # Use cached helper function
+        matching_traits <- get_matching_traits_cached(
+          trait_groups,
+          selected_grouping,
+          selected_structure,
+          selected_keywords
+        )
         
         # Update trait_name dropdown
         current_trait_selection <- input[["filters-trait_name"]]
         updateSelectizeInput(session, "filters-trait_name",
-                            choices = sort(matching_traits),
+                            choices = matching_traits,
                             selected = current_trait_selection,
                             server = TRUE)
       } else {
@@ -200,27 +179,16 @@ observeEvent(input[["filters-clear_filters"]], {
             if (column_name == "dataset_id" && filters()$dataset_type == "species") {
               unique_values <- all_dataset_ids_species
             } else {
-              # Use full query (not just loaded data)
-              unique_values <- query |>
-                dplyr::select(!!rlang::sym(column_name)) |>
-                dplyr::distinct() |>
-                dplyr::collect() |>
-                dplyr::pull(1) |>
-                na.omit() |>
-                sort()
+              # Use cached helper with limit to avoid large collect operations
+              unique_values <- get_distinct_values_cached(query, column_name, limit = 1000)
             }
           } else {
             # Special handling for dataset_id in species averages
             if (column_name == "dataset_id" && filters()$dataset_type == "species") {
               unique_values <- all_dataset_ids_species
             } else {
-              unique_values <- current_austraits_display() |>
-                dplyr::select(!!rlang::sym(column_name)) |>
-                dplyr::distinct() |>
-                dplyr::collect() |>
-                dplyr::pull(1) |>
-                na.omit() |>
-                sort()
+              # Use cached helper with limit
+              unique_values <- get_distinct_values_cached(current_austraits_display(), column_name, limit = 1000)
             }
           }
           

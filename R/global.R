@@ -1,5 +1,18 @@
 options(shiny.launch.browser = TRUE)
 
+# Performance optimizations
+#' Configure Shiny Application Options
+#'
+#' Sets global Shiny options to optimize application performance and resource handling:
+#' - `shiny.autoreload = FALSE`: Disables automatic reloading to prevent interruptions during development
+#' - `shiny.reactlog = FALSE`: Disables reactivity logging to reduce memory overhead and improve performance
+#' - `shiny.maxRequestSize = 30 * 1024 ^ 2`: Sets maximum upload file size to 30 MB, preventing excessive memory consumption from large file uploads
+options(
+  shiny.autoreload = FALSE,
+  shiny.reactlog = FALSE,
+  shiny.maxRequestSize = 30 * 1024 ^ 2
+)
+
 # Load data
 ## TODO: One day parquet of flattened database may be uploaded to Zenodo,
 ## For now will use the R package and store in Github Releases see branch data-load

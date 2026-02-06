@@ -69,7 +69,8 @@ Imports:
     plotly,
     scales,
     shiny.telemetry,
-    RPostgreSQL    
+    RPostgreSQL,
+    memoise
 Remotes:
     traitecoevo/austraits
 Suggests: 

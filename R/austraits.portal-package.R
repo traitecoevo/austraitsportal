@@ -5,6 +5,7 @@
 #' @import dplyr
 #' @import DT
 #' @import austraits
+#' @importFrom memoise memoise
 "_PACKAGE"
 
 ## usethis namespace: start
