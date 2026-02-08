@@ -203,11 +203,3 @@ if (nchar(supabase_url) > 0 && nchar(supabase_key) > 0) {
 } else {
   warning("SUPABASE_URL or SUPABASE_KEY not set - telemetry disabled")
 }
-
-# dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
-# telemetry <- shiny.telemetry::Telemetry$new(
-#   app_name = "austraits_portal",
-#   data_storage = shiny.telemetry::DataStorageSQLite$new(
-#     db_path = "inst/telemetry/telemetry.db"
-#   )
-# )

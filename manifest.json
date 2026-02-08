@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "locale": "en_US",
+  "locale": "C",
   "platform": "4.4.2",
   "metadata": {
     "appmode": "shiny",
@@ -40,29 +40,6 @@
         "Repository": "CRAN",
         "Date/Publication": "2024-04-04 05:03:17 UTC",
         "Built": "R 4.4.0; ; 2024-04-06 10:57:00 UTC; unix"
-      }
-    },
-    "PKI": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Package": "PKI",
-        "Version": "0.1-12",
-        "Title": "Public Key Infrastucture for R Based on the X.509 Standard",
-        "Author": "Simon Urbanek <Simon.Urbanek@r-project.org>",
-        "Maintainer": "Simon Urbanek <Simon.Urbanek@r-project.org>",
-        "Depends": "R (>= 2.9.0), base64enc",
-        "Enhances": "gmp",
-        "Description": "Public Key Infrastucture functions such as verifying certificates, RSA encription and signing which can be used to build PKI infrastructure and perform cryptographic tasks.",
-        "License": "GPL-2 | GPL-3 | file LICENSE",
-        "URL": "http://www.rforge.net/PKI",
-        "SystemRequirements": "OpenSSL library and headers (openssl-dev or\nsimilar)",
-        "NeedsCompilation": "yes",
-        "Packaged": "2022-11-27 21:31:15 UTC; rforge",
-        "Repository": "CRAN",
-        "Date/Publication": "2022-11-28 07:32:03 UTC",
-        "Built": "R 4.4.0; aarch64-apple-darwin20; 2024-04-05 18:34:44 UTC; unix",
-        "Archs": "PKI.so.dSYM"
       }
     },
     "R6": {
@@ -141,34 +118,6 @@
         "Date/Publication": "2026-01-10 09:50:02 UTC",
         "Built": "R 4.4.3; aarch64-apple-darwin20; 2026-01-10 11:30:19 UTC; unix",
         "Archs": "Rcpp.so.dSYM"
-      }
-    },
-    "RcppTOML": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Package": "RcppTOML",
-        "Type": "Package",
-        "Title": "'Rcpp' Bindings to Parser for \"Tom's Obvious Markup Language\"",
-        "Version": "0.2.2",
-        "Date": "2023-01-29",
-        "Author": "Dirk Eddelbuettel",
-        "Maintainer": "Dirk Eddelbuettel <edd@debian.org>",
-        "Description": "The configuration format defined by 'TOML' (which expands to\n \"Tom's Obvious Markup Language\") specifies an excellent format\n (described at <https://toml.io/en/>) suitable for both human editing\n as well as the common uses of a machine-readable format. This package\n uses 'Rcpp' to connect to the 'toml++' parser written by Mark Gillard\n to R.",
-        "SystemRequirements": "A C++17 compiler",
-        "BugReports": "https://github.com/eddelbuettel/rcpptoml/issues",
-        "URL": "http://dirk.eddelbuettel.com/code/rcpp.toml.html",
-        "Imports": "Rcpp (>= 0.11.5)",
-        "Depends": "R (>= 3.3.0)",
-        "LinkingTo": "Rcpp",
-        "Suggests": "tinytest",
-        "License": "GPL (>= 2)",
-        "NeedsCompilation": "yes",
-        "Packaged": "2023-01-29 21:10:46 UTC; edd",
-        "Repository": "CRAN",
-        "Date/Publication": "2023-01-29 22:12:06",
-        "Built": "R 4.4.0; aarch64-apple-darwin20; 2024-04-05 15:17:20 UTC; unix",
-        "Archs": "RcppTOML.so.dSYM"
       }
     },
     "RefManageR": {
@@ -1260,23 +1209,23 @@
         "BugReports": "https://github.com/tidyverse/ggplot2/issues",
         "Depends": "R (>= 4.1)",
         "Imports": "cli, grDevices, grid, gtable (>= 0.3.6), isoband, lifecycle (>\n1.0.1), rlang (>= 1.1.0), S7, scales (>= 1.4.0), stats, vctrs\n(>= 0.6.0), withr (>= 2.5.0)",
-        "Suggests": "broom, covr, dplyr, ggplot2movies, hexbin, Hmisc, knitr,\nmapproj, maps, MASS, mgcv, multcomp, munsell, nlme, profvis,\nquantreg, ragg (>= 1.2.6), RColorBrewer, rmarkdown, roxygen2,\nrpart, sf (>= 0.7-3), svglite (>= 2.1.2), testthat (>= 3.1.5),\ntibble, vdiffr (>= 1.0.6), xml2",
+        "Suggests": "broom, covr, dplyr, ggplot2movies, hexbin, Hmisc, hms, knitr,\nmapproj, maps, MASS, mgcv, multcomp, munsell, nlme, profvis,\nquantreg, quarto, ragg (>= 1.2.6), RColorBrewer, roxygen2,\nrpart, sf (>= 0.7-3), svglite (>= 2.1.2), testthat (>= 3.1.5),\ntibble, vdiffr (>= 1.0.6), xml2",
         "Enhances": "sp",
-        "VignetteBuilder": "knitr",
+        "VignetteBuilder": "quarto",
         "Config/Needs/website": "ggtext, tidyr, forcats, tidyverse/tidytemplate",
         "Config/testthat/edition": "3",
         "Config/usethis/last-upkeep": "2025-04-23",
         "Encoding": "UTF-8",
         "LazyData": "true",
-        "RoxygenNote": "7.3.2",
+        "RoxygenNote": "7.3.3",
         "Collate": "'ggproto.R' 'ggplot-global.R' 'aaa-.R'\n'aes-colour-fill-alpha.R' 'aes-evaluation.R'\n'aes-group-order.R' 'aes-linetype-size-shape.R'\n'aes-position.R' 'all-classes.R' 'compat-plyr.R' 'utilities.R'\n'aes.R' 'annotation-borders.R' 'utilities-checks.R'\n'legend-draw.R' 'geom-.R' 'annotation-custom.R'\n'annotation-logticks.R' 'scale-type.R' 'layer.R'\n'make-constructor.R' 'geom-polygon.R' 'geom-map.R'\n'annotation-map.R' 'geom-raster.R' 'annotation-raster.R'\n'annotation.R' 'autolayer.R' 'autoplot.R' 'axis-secondary.R'\n'backports.R' 'bench.R' 'bin.R' 'coord-.R' 'coord-cartesian-.R'\n'coord-fixed.R' 'coord-flip.R' 'coord-map.R' 'coord-munch.R'\n'coord-polar.R' 'coord-quickmap.R' 'coord-radial.R'\n'coord-sf.R' 'coord-transform.R' 'data.R' 'docs_layer.R'\n'facet-.R' 'facet-grid-.R' 'facet-null.R' 'facet-wrap.R'\n'fortify-map.R' 'fortify-models.R' 'fortify-spatial.R'\n'fortify.R' 'stat-.R' 'geom-abline.R' 'geom-rect.R'\n'geom-bar.R' 'geom-tile.R' 'geom-bin2d.R' 'geom-blank.R'\n'geom-boxplot.R' 'geom-col.R' 'geom-path.R' 'geom-contour.R'\n'geom-point.R' 'geom-count.R' 'geom-crossbar.R'\n'geom-segment.R' 'geom-curve.R' 'geom-defaults.R'\n'geom-ribbon.R' 'geom-density.R' 'geom-density2d.R'\n'geom-dotplot.R' 'geom-errorbar.R' 'geom-freqpoly.R'\n'geom-function.R' 'geom-hex.R' 'geom-histogram.R'\n'geom-hline.R' 'geom-jitter.R' 'geom-label.R'\n'geom-linerange.R' 'geom-pointrange.R' 'geom-quantile.R'\n'geom-rug.R' 'geom-sf.R' 'geom-smooth.R' 'geom-spoke.R'\n'geom-text.R' 'geom-violin.R' 'geom-vline.R'\n'ggplot2-package.R' 'grob-absolute.R' 'grob-dotstack.R'\n'grob-null.R' 'grouping.R' 'properties.R' 'margins.R'\n'theme-elements.R' 'guide-.R' 'guide-axis.R'\n'guide-axis-logticks.R' 'guide-axis-stack.R'\n'guide-axis-theta.R' 'guide-legend.R' 'guide-bins.R'\n'guide-colorbar.R' 'guide-colorsteps.R' 'guide-custom.R'\n'guide-none.R' 'guide-old.R' 'guides-.R' 'guides-grid.R'\n'hexbin.R' 'import-standalone-obj-type.R'\n'import-standalone-types-check.R' 'labeller.R' 'labels.R'\n'layer-sf.R' 'layout.R' 'limits.R' 'performance.R'\n'plot-build.R' 'plot-construction.R' 'plot-last.R' 'plot.R'\n'position-.R' 'position-collide.R' 'position-dodge.R'\n'position-dodge2.R' 'position-identity.R' 'position-jitter.R'\n'position-jitterdodge.R' 'position-nudge.R' 'position-stack.R'\n'quick-plot.R' 'reshape-add-margins.R' 'save.R' 'scale-.R'\n'scale-alpha.R' 'scale-binned.R' 'scale-brewer.R'\n'scale-colour.R' 'scale-continuous.R' 'scale-date.R'\n'scale-discrete-.R' 'scale-expansion.R' 'scale-gradient.R'\n'scale-grey.R' 'scale-hue.R' 'scale-identity.R'\n'scale-linetype.R' 'scale-linewidth.R' 'scale-manual.R'\n'scale-shape.R' 'scale-size.R' 'scale-steps.R' 'scale-view.R'\n'scale-viridis.R' 'scales-.R' 'stat-align.R' 'stat-bin.R'\n'stat-summary-2d.R' 'stat-bin2d.R' 'stat-bindot.R'\n'stat-binhex.R' 'stat-boxplot.R' 'stat-connect.R'\n'stat-contour.R' 'stat-count.R' 'stat-density-2d.R'\n'stat-density.R' 'stat-ecdf.R' 'stat-ellipse.R'\n'stat-function.R' 'stat-identity.R' 'stat-manual.R'\n'stat-qq-line.R' 'stat-qq.R' 'stat-quantilemethods.R'\n'stat-sf-coordinates.R' 'stat-sf.R' 'stat-smooth-methods.R'\n'stat-smooth.R' 'stat-sum.R' 'stat-summary-bin.R'\n'stat-summary-hex.R' 'stat-summary.R' 'stat-unique.R'\n'stat-ydensity.R' 'summarise-plot.R' 'summary.R' 'theme.R'\n'theme-defaults.R' 'theme-current.R' 'theme-sub.R'\n'utilities-break.R' 'utilities-grid.R' 'utilities-help.R'\n'utilities-patterns.R' 'utilities-resolution.R'\n'utilities-tidy-eval.R' 'zxx.R' 'zzz.R'",
         "NeedsCompilation": "no",
-        "Packaged": "2025-08-19 08:21:45 UTC; thomas",
+        "Packaged": "2026-02-02 09:44:19 UTC; thomas",
         "Author": "Hadley Wickham [aut] (ORCID: <https://orcid.org/0000-0003-4757-117X>),\n  Winston Chang [aut] (ORCID: <https://orcid.org/0000-0002-1576-2126>),\n  Lionel Henry [aut],\n  Thomas Lin Pedersen [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-5147-4711>),\n  Kohske Takahashi [aut],\n  Claus Wilke [aut] (ORCID: <https://orcid.org/0000-0002-7470-9261>),\n  Kara Woo [aut] (ORCID: <https://orcid.org/0000-0002-5125-4188>),\n  Hiroaki Yutani [aut] (ORCID: <https://orcid.org/0000-0002-3385-7233>),\n  Dewey Dunnington [aut] (ORCID: <https://orcid.org/0000-0002-9415-4582>),\n  Teun van den Brand [aut] (ORCID:\n    <https://orcid.org/0000-0002-9335-7468>),\n  Posit, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)",
         "Maintainer": "Thomas Lin Pedersen <thomas.pedersen@posit.co>",
         "Repository": "CRAN",
-        "Date/Publication": "2025-09-11 07:10:02 UTC",
-        "Built": "R 4.4.1; ; 2025-09-11 09:13:32 UTC; unix"
+        "Date/Publication": "2026-02-03 08:50:23 UTC",
+        "Built": "R 4.4.3; ; 2026-02-03 12:19:33 UTC; unix"
       }
     },
     "glue": {
@@ -1641,35 +1590,6 @@
         "Repository": "CRAN",
         "Date/Publication": "2024-12-22 16:30:01 UTC",
         "Built": "R 4.4.1; ; 2024-12-22 17:09:56 UTC; unix"
-      }
-    },
-    "jose": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Package": "jose",
-        "Type": "Package",
-        "Title": "JavaScript Object Signing and Encryption",
-        "Version": "1.2.1",
-        "Authors@R": "person(\"Jeroen\", \"Ooms\", role = c(\"aut\", \"cre\"), \n    email = \"jeroenooms@gmail.com\", comment = c(ORCID = \"0000-0002-4035-0289\"))",
-        "Description": "Read and write JSON Web Keys (JWK, rfc7517), generate and verify JSON\n    Web Signatures (JWS, rfc7515) and encode/decode JSON Web Tokens (JWT, rfc7519)\n    <https://datatracker.ietf.org/wg/jose/documents/>. These standards provide \n    modern signing and encryption formats that are natively supported by browsers\n    via the JavaScript WebCryptoAPI <https://www.w3.org/TR/WebCryptoAPI/#jose>, \n    and used by services like OAuth 2.0, LetsEncrypt, and Github Apps.",
-        "License": "MIT + file LICENSE",
-        "URL": "https://r-lib.r-universe.dev/jose",
-        "BugReports": "https://github.com/r-lib/jose/issues",
-        "Depends": "openssl (>= 1.2.1)",
-        "Imports": "jsonlite",
-        "RoxygenNote": "7.1.2",
-        "VignetteBuilder": "knitr",
-        "Suggests": "spelling, testthat, knitr, rmarkdown",
-        "Encoding": "UTF-8",
-        "Language": "en-US",
-        "NeedsCompilation": "no",
-        "Packaged": "2024-10-03 14:12:53 UTC; jeroen",
-        "Author": "Jeroen Ooms [aut, cre] (<https://orcid.org/0000-0002-4035-0289>)",
-        "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
-        "Repository": "CRAN",
-        "Date/Publication": "2024-10-04 12:20:01 UTC",
-        "Built": "R 4.4.1; ; 2024-10-04 13:39:32 UTC; unix"
       }
     },
     "jquerylib": {
@@ -2123,34 +2043,6 @@
         "Archs": "openssl.so.dSYM"
       }
     },
-    "packrat": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Type": "Package",
-        "Package": "packrat",
-        "Title": "A Dependency Management System for Projects and their R Package\nDependencies",
-        "Version": "0.9.2",
-        "Authors@R": "c(\n    person(\"Aron\", \"Atkins\", , \"aron@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Toph\", \"Allen\", role = \"aut\"),\n    person(\"Kevin\", \"Ushey\", role = \"aut\"),\n    person(\"Jonathan\", \"McPherson\", role = \"aut\"),\n    person(\"Joe\", \"Cheng\", role = \"aut\"),\n    person(\"JJ\", \"Allaire\", role = \"aut\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
-        "Description": "Manage the R packages your project depends on in an isolated,\n    portable, and reproducible way.",
-        "License": "GPL-2",
-        "URL": "https://github.com/rstudio/packrat",
-        "BugReports": "https://github.com/rstudio/packrat/issues",
-        "Depends": "R (>= 3.0.0)",
-        "Imports": "tools, utils",
-        "Suggests": "devtools, httr, knitr, mockery, rmarkdown, testthat (>=\n3.0.0)",
-        "Config/testthat/edition": "3",
-        "Encoding": "UTF-8",
-        "RoxygenNote": "7.2.3",
-        "NeedsCompilation": "no",
-        "Packaged": "2023-09-05 11:45:33 UTC; aron",
-        "Author": "Aron Atkins [aut, cre],\n  Toph Allen [aut],\n  Kevin Ushey [aut],\n  Jonathan McPherson [aut],\n  Joe Cheng [aut],\n  JJ Allaire [aut],\n  Posit Software, PBC [cph, fnd]",
-        "Maintainer": "Aron Atkins <aron@posit.co>",
-        "Repository": "CRAN",
-        "Date/Publication": "2023-09-05 13:00:02 UTC",
-        "Built": "R 4.4.0; ; 2024-04-05 17:07:38 UTC; unix"
-      }
-    },
     "patchwork": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -2306,26 +2198,26 @@
       "description": {
         "Package": "plotly",
         "Title": "Create Interactive Web Graphics via 'plotly.js'",
-        "Version": "4.10.4",
+        "Version": "4.12.0",
         "Authors@R": "c(person(\"Carson\", \"Sievert\", role = c(\"aut\", \"cre\"),\n    email = \"cpsievert1@gmail.com\", comment = c(ORCID = \"0000-0002-4958-2844\")),\n    person(\"Chris\", \"Parmer\", role = \"aut\",\n    email = \"chris@plot.ly\"),\n    person(\"Toby\", \"Hocking\", role = \"aut\",\n    email = \"tdhock5@gmail.com\"),\n    person(\"Scott\", \"Chamberlain\", role = \"aut\",\n    email = \"myrmecocystus@gmail.com\"),\n    person(\"Karthik\", \"Ram\", role = \"aut\",\n    email = \"karthik.ram@gmail.com\"),\n    person(\"Marianne\", \"Corvellec\", role = \"aut\",\n    email = \"marianne.corvellec@igdore.org\", comment = c(ORCID = \"0000-0002-1994-3581\")),\n    person(\"Pedro\", \"Despouy\", role = \"aut\",\n    email = \"pedro@plot.ly\"),\n    person(\"Salim\", \"Brüggemann\", role = \"ctb\",\n    email = \"salim-b@pm.me\", comment = c(ORCID = \"0000-0002-5329-5987\")),\n    person(\"Plotly Technologies Inc.\", role = \"cph\"))",
         "License": "MIT + file LICENSE",
         "Description": "Create interactive web graphics from 'ggplot2' graphs and/or a custom interface to the (MIT-licensed) JavaScript library 'plotly.js' inspired by the grammar of graphics.",
         "URL": "https://plotly-r.com, https://github.com/plotly/plotly.R,\nhttps://plotly.com/r/",
         "BugReports": "https://github.com/plotly/plotly.R/issues",
-        "Depends": "R (>= 3.2.0), ggplot2 (>= 3.0.0)",
-        "Imports": "tools, scales, httr (>= 1.3.0), jsonlite (>= 1.6), magrittr,\ndigest, viridisLite, base64enc, htmltools (>= 0.3.6),\nhtmlwidgets (>= 1.5.2.9001), tidyr (>= 1.0.0), RColorBrewer,\ndplyr, vctrs, tibble, lazyeval (>= 0.2.0), rlang (>= 0.4.10),\ncrosstalk, purrr, data.table, promises",
-        "Suggests": "MASS, maps, hexbin, ggthemes, GGally, ggalluvial, testthat,\nknitr, shiny (>= 1.1.0), shinytest (>= 1.3.0), curl, rmarkdown,\nCairo, broom, webshot, listviewer, dendextend, sf, png,\nIRdisplay, processx, plotlyGeoAssets, forcats, withr,\npalmerpenguins, rversions, reticulate, rsvg",
+        "Depends": "R (>= 3.5.0), ggplot2 (>= 3.0.0)",
+        "Imports": "tools, scales, httr (>= 1.3.0), jsonlite (>= 1.6), magrittr,\ndigest, viridisLite, base64enc, htmltools (>= 0.3.6),\nhtmlwidgets (>= 1.5.2.9001), tidyr (>= 1.0.0), RColorBrewer,\ndplyr, vctrs, tibble, lazyeval (>= 0.2.0), rlang (>= 1.0.0),\ncrosstalk, purrr, data.table, promises",
+        "Suggests": "MASS, maps, hexbin, ggthemes, GGally, ggalluvial, testthat,\nknitr, shiny (>= 1.1.0), shinytest2, curl, rmarkdown, Cairo,\nbroom, webshot, listviewer, dendextend, sf, png, IRdisplay,\nprocessx, plotlyGeoAssets, forcats, withr, palmerpenguins,\nrversions, reticulate, rsvg, ggridges",
         "LazyData": "true",
-        "RoxygenNote": "7.2.3",
+        "RoxygenNote": "7.3.3",
         "Encoding": "UTF-8",
-        "Config/Needs/check": "tidyverse/ggplot2, rcmdcheck, devtools, reshape2",
+        "Config/Needs/check": "tidyverse/ggplot2, ggobi/GGally, rcmdcheck,\ndevtools, reshape2, s2",
         "NeedsCompilation": "no",
-        "Packaged": "2024-01-13 20:51:33 UTC; cpsievert",
-        "Author": "Carson Sievert [aut, cre] (<https://orcid.org/0000-0002-4958-2844>),\n  Chris Parmer [aut],\n  Toby Hocking [aut],\n  Scott Chamberlain [aut],\n  Karthik Ram [aut],\n  Marianne Corvellec [aut] (<https://orcid.org/0000-0002-1994-3581>),\n  Pedro Despouy [aut],\n  Salim Brüggemann [ctb] (<https://orcid.org/0000-0002-5329-5987>),\n  Plotly Technologies Inc. [cph]",
+        "Packaged": "2026-01-24 00:53:27 UTC; cpsievert",
+        "Author": "Carson Sievert [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-4958-2844>),\n  Chris Parmer [aut],\n  Toby Hocking [aut],\n  Scott Chamberlain [aut],\n  Karthik Ram [aut],\n  Marianne Corvellec [aut] (ORCID:\n    <https://orcid.org/0000-0002-1994-3581>),\n  Pedro Despouy [aut],\n  Salim Brüggemann [ctb] (ORCID: <https://orcid.org/0000-0002-5329-5987>),\n  Plotly Technologies Inc. [cph]",
         "Maintainer": "Carson Sievert <cpsievert1@gmail.com>",
         "Repository": "CRAN",
-        "Date/Publication": "2024-01-13 22:40:02 UTC",
-        "Built": "R 4.4.0; ; 2024-04-06 17:07:58 UTC; unix"
+        "Date/Publication": "2026-01-24 07:50:02 UTC",
+        "Built": "R 4.4.3; ; 2026-01-24 07:56:56 UTC; unix"
       }
     },
     "plyr": {
@@ -2674,37 +2566,6 @@
         "Archs": "readr.so.dSYM"
       }
     },
-    "renv": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Package": "renv",
-        "Type": "Package",
-        "Title": "Project Environments",
-        "Version": "1.0.7",
-        "Authors@R": "c(\n    person(\"Kevin\", \"Ushey\", role = c(\"aut\", \"cre\"), email = \"kevin@rstudio.com\",\n           comment = c(ORCID = \"0000-0003-2880-7407\")),\n    person(\"Hadley\", \"Wickham\", role = c(\"aut\"), email = \"hadley@rstudio.com\",\n           comment = c(ORCID = \"0000-0003-4757-117X\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n    )",
-        "Description": "A dependency management toolkit for R. Using 'renv', you can create\n    and manage project-local R libraries, save the state of these libraries to\n    a 'lockfile', and later restore your library as required. Together, these\n    tools can help make your projects more isolated, portable, and reproducible.",
-        "License": "MIT + file LICENSE",
-        "URL": "https://rstudio.github.io/renv/, https://github.com/rstudio/renv",
-        "BugReports": "https://github.com/rstudio/renv/issues",
-        "Imports": "utils",
-        "Suggests": "BiocManager, cli, covr, cpp11, devtools, gitcreds, jsonlite,\nknitr, miniUI, packrat, pak, R6, remotes, reticulate,\nrmarkdown, rstudioapi, shiny, testthat, uuid, waldo, yaml,\nwebfakes",
-        "Encoding": "UTF-8",
-        "RoxygenNote": "7.3.1",
-        "VignetteBuilder": "knitr",
-        "Config/Needs/website": "tidyverse/tidytemplate",
-        "Config/testthat/edition": "3",
-        "Config/testthat/parallel": "true",
-        "Config/testthat/start-first": "bioconductor,python,install,restore,snapshot,retrieve,remotes",
-        "NeedsCompilation": "no",
-        "Packaged": "2024-04-11 16:26:24 UTC; kevin",
-        "Author": "Kevin Ushey [aut, cre] (<https://orcid.org/0000-0003-2880-7407>),\n  Hadley Wickham [aut] (<https://orcid.org/0000-0003-4757-117X>),\n  Posit Software, PBC [cph, fnd]",
-        "Maintainer": "Kevin Ushey <kevin@rstudio.com>",
-        "Repository": "CRAN",
-        "Date/Publication": "2024-04-11 22:20:02 UTC",
-        "Built": "R 4.4.0; ; 2024-04-12 00:15:39 UTC; unix"
-      }
-    },
     "rlang": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -2794,38 +2655,6 @@
         "Repository": "CRAN",
         "Date/Publication": "2023-11-05 10:20:02 UTC",
         "Built": "R 4.4.0; ; 2024-04-05 15:11:41 UTC; unix"
-      }
-    },
-    "rsconnect": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Type": "Package",
-        "Package": "rsconnect",
-        "Title": "Deploy Docs, Apps, and APIs to 'Posit Connect', 'shinyapps.io',\nand 'RPubs'",
-        "Version": "1.7.0",
-        "Authors@R": "c(\n    person(\"Aron\", \"Atkins\", , \"aron@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Toph\", \"Allen\", role = \"aut\"),\n    person(\"Hadley\", \"Wickham\", role = \"aut\"),\n    person(\"Jonathan\", \"McPherson\", role = \"aut\"),\n    person(\"JJ\", \"Allaire\", role = \"aut\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
-        "Description": "Programmatic deployment interface for 'RPubs',\n    'shinyapps.io', and 'Posit Connect'. Supported content types include R\n    Markdown documents, Shiny applications, Plumber APIs, plots, and\n    static web content.",
-        "License": "GPL-2",
-        "URL": "https://rstudio.github.io/rsconnect/,\nhttps://github.com/rstudio/rsconnect",
-        "BugReports": "https://github.com/rstudio/rsconnect/issues",
-        "Depends": "R (>= 3.5.0)",
-        "Imports": "cli, curl, digest, jsonlite, lifecycle, openssl (>= 2.0.0),\nPKI, packrat (>= 0.6), renv (>= 1.0.0), rlang (>= 1.0.0),\nrstudioapi (>= 0.5), snowflakeauth, tools, yaml (>= 2.1.5),\nutils",
-        "Suggests": "Biobase, BiocManager, foreign, knitr, MASS, plumber (>=\n0.3.2), quarto, RCurl, reticulate, rmarkdown (>= 1.1), shiny,\ntestthat (>= 3.1.9), webfakes, withr",
-        "VignetteBuilder": "knitr, rmarkdown",
-        "Config/Needs/website": "tidyverse/tidytemplate",
-        "Config/testthat/edition": "3",
-        "Config/testthat/parallel": "true",
-        "Config/Python/Note": "Python <= 3.10 requires tomllib package for\npyproject.toml parsing",
-        "Encoding": "UTF-8",
-        "RoxygenNote": "7.3.3",
-        "NeedsCompilation": "no",
-        "Packaged": "2025-12-05 13:40:38 UTC; aron",
-        "Author": "Aron Atkins [aut, cre],\n  Toph Allen [aut],\n  Hadley Wickham [aut],\n  Jonathan McPherson [aut],\n  JJ Allaire [aut],\n  Posit Software, PBC [cph, fnd]",
-        "Maintainer": "Aron Atkins <aron@posit.co>",
-        "Repository": "CRAN",
-        "Date/Publication": "2025-12-06 13:50:02 UTC",
-        "Built": "R 4.4.3; ; 2025-12-06 18:01:19 UTC; unix"
       }
     },
     "rstudioapi": {
@@ -2996,32 +2825,6 @@
         "Repository": "CRAN",
         "Date/Publication": "2023-08-27 22:50:09 UTC",
         "Built": "R 4.4.0; ; 2024-04-06 06:56:34 UTC; unix"
-      }
-    },
-    "snowflakeauth": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Package": "snowflakeauth",
-        "Title": "Authentication Helpers for 'Snowflake'",
-        "Version": "0.2.0",
-        "Authors@R": "c(\n    person(\"Aaron\", \"Jacobs\", , \"aaron.jacobs@posit.co\", role = c(\"aut\")),\n    person(\"E. David\", \"Aja\", , \"david@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
-        "Description": "Authentication helpers for 'Snowflake'.\n    It provides compatibility with authentication approaches supported\n    by the 'Snowflake Connector for Python' <https://pypi.org/project/snowflake-connector-python>\n    and the 'Snowflake CLI' <https://pypi.org/project/snowflake-cli>.",
-        "License": "MIT + file LICENSE",
-        "Encoding": "UTF-8",
-        "Imports": "cli, curl, jsonlite, RcppTOML, rlang, jose, openssl",
-        "Suggests": "testthat (>= 3.0.0), withr",
-        "RoxygenNote": "7.3.2",
-        "Config/testthat/edition": "3",
-        "URL": "https://posit-dev.github.io/snowflakeauth/,\nhttps://github.com/posit-dev/snowflakeauth",
-        "BugReports": "https://github.com/posit-dev/snowflakeauth/issues",
-        "NeedsCompilation": "no",
-        "Packaged": "2025-09-02 11:32:38 UTC; edavidaja",
-        "Author": "Aaron Jacobs [aut],\n  E. David Aja [aut, cre],\n  Posit Software, PBC [cph, fnd]",
-        "Maintainer": "E. David Aja <david@posit.co>",
-        "Repository": "CRAN",
-        "Date/Publication": "2025-09-02 12:00:02 UTC",
-        "Built": "R 4.4.1; ; 2025-09-05 03:24:54 UTC; unix"
       }
     },
     "sourcetools": {
@@ -3893,7 +3696,7 @@
       "checksum": "ffda7f4f205ee1966066a2b632bbf720"
     },
     "data-raw/prepare_data.R": {
-      "checksum": "4d5e8b0d3bd8fae31e8840acc0ad4708"
+      "checksum": "4c152846670f0c57344725be7a1c9311"
     },
     "DESCRIPTION": {
       "checksum": "c450daf7fb08ac4b2e98c09b0e3a4f0a"
@@ -3905,52 +3708,91 @@
       "checksum": "9ba69e281a4611eec508e31c801e909f"
     },
     "inst/extdata/austraits/austraits-5.0.0-lite/austraits-display.parquet": {
-      "checksum": "6fc4ba2b5a6e7bcba822bfa1c3977986"
+      "checksum": "4cabe0fe2cd118bc4ff71186f6712536"
+    },
+    "inst/extdata/austraits/austraits-5.0.0-lite/austraits-species-averages-display.parquet": {
+      "checksum": "dd02c4aa37ca830659d109dab63cd4b5"
+    },
+    "inst/extdata/austraits/austraits-5.0.0-lite/austraits-species-averages.parquet": {
+      "checksum": "dd02c4aa37ca830659d109dab63cd4b5"
+    },
+    "inst/extdata/austraits/austraits-5.0.0-lite/definitions.rds": {
+      "checksum": "a26ec6f1f1c03a930b749f9dbd45c5e0"
     },
     "inst/extdata/austraits/austraits-5.0.0-lite/definitions.yml": {
       "checksum": "78531abd24cb70aea02d37a2d7a0b048"
     },
+    "inst/extdata/austraits/austraits-5.0.0-lite/dropdown_cache.rds": {
+      "checksum": "f5f760dce27e9215d41d24301f5d464e"
+    },
     "inst/extdata/austraits/austraits-5.0.0-lite/sources.bib": {
       "checksum": "e0b35af931cb4e4d5369dd4c463b4f59"
     },
-    "inst/extdata/austraits/austraits-6.0.0-full/austraits-data.parquet": {
-      "checksum": "8c6e16771eb27791d6a7e4961043f51b"
+    "inst/extdata/austraits/austraits-5.0.0-lite/sources.csv": {
+      "checksum": "021bc3dda73711777af835af163cfe09"
     },
-    "inst/extdata/austraits/austraits-6.0.0-full/austraits-display.parquet": {
-      "checksum": "344aa2b55d1f542267256d8bde14e570"
+    "inst/extdata/austraits/austraits-5.0.0-lite/sources.rds": {
+      "checksum": "379bd6d068adb87fb5894fd712f115c3"
     },
-    "inst/extdata/austraits/austraits-6.0.0-full/definitions.yml": {
-      "checksum": "a3ad98cc85606de9813723c84cb8767f"
+    "inst/extdata/austraits/austraits-7.0.0-full copy/austraits-data.parquet": {
+      "checksum": "ff12a9a49b32844565002d194ca2765d"
     },
-    "inst/extdata/austraits/austraits-6.0.0-full/sources.bib": {
-      "checksum": "f95cf9456c4ed5a4d97dbf0b71d0d6d6"
+    "inst/extdata/austraits/austraits-7.0.0-full copy/austraits-display.parquet": {
+      "checksum": "b40f78974895236c489c328aac807fda"
     },
-    "inst/extdata/austraits/austraits-6.0.0-mid/austraits-data.parquet": {
-      "checksum": "677246c5e9c698b4b23fee4307472a5d"
+    "inst/extdata/austraits/austraits-7.0.0-full copy/austraits-species-averages-display.parquet": {
+      "checksum": "32a465d1988ce89f11c330c9ef032303"
     },
-    "inst/extdata/austraits/austraits-6.0.0-mid/austraits-display.parquet": {
-      "checksum": "a2b6bc8948c17de7b92285fbc498ad42"
+    "inst/extdata/austraits/austraits-7.0.0-full copy/austraits-species-averages.parquet": {
+      "checksum": "32a465d1988ce89f11c330c9ef032303"
     },
-    "inst/extdata/austraits/austraits-6.0.0-mid/definitions.yml": {
-      "checksum": "a3ad98cc85606de9813723c84cb8767f"
+    "inst/extdata/austraits/austraits-7.0.0-full copy/definitions.yml": {
+      "checksum": "e93e7347766255c03db108bbae55cc7d"
     },
-    "inst/extdata/austraits/austraits-6.0.0-mid/sources.bib": {
-      "checksum": "f95cf9456c4ed5a4d97dbf0b71d0d6d6"
+    "inst/extdata/austraits/austraits-7.0.0-full copy/dropdown_cache.rds": {
+      "checksum": "87e2d41cc0bcf34dd62a7c149a41ccf0"
     },
-    "inst/extdata/austraits/austraits-6.0.0.rds": {
-      "checksum": "56383a6028f54ed71d4528f5633fb139"
+    "inst/extdata/austraits/austraits-7.0.0-full copy/sources.bib": {
+      "checksum": "43bf3f4b1ff95990e4026d664e18f63e"
     },
     "inst/extdata/austraits/austraits-7.0.0-full/austraits-data.parquet": {
-      "checksum": "41f53d3f23858f8867adb547f2e9278e"
+      "checksum": "ff12a9a49b32844565002d194ca2765d"
     },
     "inst/extdata/austraits/austraits-7.0.0-full/austraits-display.parquet": {
-      "checksum": "d39a3532b7d259c9e8d299fca56d127f"
+      "checksum": "b40f78974895236c489c328aac807fda"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/austraits-species-averages-display.parquet": {
+      "checksum": "32a465d1988ce89f11c330c9ef032303"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/austraits-species-averages.parquet": {
+      "checksum": "32a465d1988ce89f11c330c9ef032303"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/definitions.rds": {
+      "checksum": "f325eebf8fb26fd348b0999bfc9792a5"
     },
     "inst/extdata/austraits/austraits-7.0.0-full/definitions.yml": {
       "checksum": "e93e7347766255c03db108bbae55cc7d"
     },
+    "inst/extdata/austraits/austraits-7.0.0-full/dropdown_cache.rds": {
+      "checksum": "c8b44dd46ab29d51fe92ff71a684cf65"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/flora_links.rds": {
+      "checksum": "8c0f4f94e92f8320ded1d3c8a7baa855"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/metadata.rds": {
+      "checksum": "69461a732b0ba388ceeeb41c5c679190"
+    },
     "inst/extdata/austraits/austraits-7.0.0-full/sources.bib": {
       "checksum": "43bf3f4b1ff95990e4026d664e18f63e"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/sources.csv": {
+      "checksum": "f76ef391dc80dce35e40e47dbb08ac14"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/sources.rds": {
+      "checksum": "594e9b02971799044cb5e8733c23d9df"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/trait_groups.rds": {
+      "checksum": "d72c6fcf1516fd36d41ec5381671b0c8"
     },
     "inst/extdata/austraits/austraits-7.0.0.rds": {
       "checksum": "c040dada5776177a1fabaced7ac0afdb"
@@ -4034,13 +3876,13 @@
       "checksum": "02a7d2f0b103125b373c67e6f9d8dd39"
     },
     "R/a-helper.R": {
-      "checksum": "3a8485365a543326f0977d7ee4be7936"
+      "checksum": "3d24ae8851c291ba366a027daf9d8cb3"
     },
     "R/app_config.R": {
       "checksum": "c83b2a69f39227ac1db79ae7eab34ef4"
     },
     "R/app_server.R": {
-      "checksum": "2340bf6d96422943ec4a92d9036cf6f3"
+      "checksum": "6d5b6a9924f552381070e7d2ef2f6037"
     },
     "R/app_ui.R": {
       "checksum": "9ca8f41597dc198453b527b7739d4db3"
@@ -4052,40 +3894,43 @@
       "checksum": "a03898fc06f091b699cf551d4324ae90"
     },
     "R/generate_taxon_text.R": {
-      "checksum": "a97f22e62249dfc91ace21778446d663"
+      "checksum": "fa401e5aa61a42aec26eea964a9bceb7"
     },
     "R/generate_trait_profile.R": {
       "checksum": "7253db5c85c30df94b72713d1497e160"
     },
     "R/generate_usage_text.R": {
-      "checksum": "e221f1de52c6791e78bcd5ca68256247"
+      "checksum": "08e30e98954a202db27091ac449a9f6b"
     },
     "R/global.R": {
-      "checksum": "b4fe6f6759096c29af8c1c906a1bed6e"
+      "checksum": "5c7a19a9700f57218ac1cb1dd68c4e1c"
     },
     "R/mod_app_info.R": {
-      "checksum": "5e495f57446c5ea34a38728a8a656f12"
+      "checksum": "8bccdd268c0349265918f17f47616e6e"
     },
     "R/mod_citations.R": {
-      "checksum": "f53060e71d3f5d6bb49ec3e5c6ff1671"
+      "checksum": "da06fb699b33d60c8751e677e9361413"
     },
     "R/mod_data_table.R": {
-      "checksum": "4e9782c77ae5157c37ab98e6576a49e3"
+      "checksum": "3e158ac8f9406c530ddec90ed3b8b88b"
     },
     "R/mod_filters.R": {
-      "checksum": "8adfb019b32633c2c750da88edb49f56"
+      "checksum": "377dc307d7e0ed36c1e8bf921e89e362"
     },
     "R/mod_taxon_view.R": {
-      "checksum": "6c8cbeea47f89a8dd00cb98fd0947082"
+      "checksum": "80224fe0dbb1b1f7e75fdda21d76ba38"
     },
     "R/mod_trait_view.R": {
-      "checksum": "e5b1a5149a35574817432df05af53f1c"
+      "checksum": "2789b306db6038ba44d7e5fa00ca7fa3"
     },
     "R/plot_trait_values.R": {
-      "checksum": "0bd60ed046f0aafd67ea87f0b6ec97bd"
+      "checksum": "206094158ae45554d027d8c517249aba"
     },
     "R/species_means.R": {
-      "checksum": "d37d660eda6704c290f2553aa922cf26"
+      "checksum": "e3887830896125803989eeed4e5e29f0"
+    },
+    "R/telemetry_supabase.R": {
+      "checksum": "be12478ae9d4200bf372522f520e12a2"
     },
     "R/utils.R": {
       "checksum": "81e6202aa0a9e86e9373c20de2052787"
@@ -4098,9 +3943,6 @@
     },
     "README.Rmd": {
       "checksum": "d149ab73511c83742d54937c7ab18680"
-    },
-    "renv.lock": {
-      "checksum": "cb39186f9be626ecbe30f9f381d75202"
     },
     "tests/spelling.R": {
       "checksum": "8ab01e2978c6a97f4b4897427e4a1052"
