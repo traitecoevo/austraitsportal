@@ -192,9 +192,19 @@ columns_display_species <- c(
 library(httr2)
 source("R/telemetry_supabase.R")
 
-# Read credentials from environment variables (set in .Rprofile or .Renviron locally, or in shinyapps.io dashboard)
-supabase_url <- Sys.getenv("SUPABASE_URL")
-supabase_key <- Sys.getenv("SUPABASE_KEY")
+# Read credentials from config.yml (production)
+config_file <- "config.yml"
+
+if (file.exists(config_file)) {
+  # Read from config.yml
+  cfg <- config::get(config = "production", file = config_file)
+  supabase_url <- cfg$supabase_url
+  supabase_key <- cfg$supabase_key
+} else {
+  # Fallback to environment variables
+  supabase_url <- Sys.getenv("SUPABASE_URL")
+  supabase_key <- Sys.getenv("SUPABASE_KEY")
+}
 
 if (nchar(supabase_url) > 0 && nchar(supabase_key) > 0) {
   message("✓ Using Supabase telemetry (cloud)")
@@ -210,5 +220,8 @@ if (nchar(supabase_url) > 0 && nchar(supabase_key) > 0) {
       db_path = "inst/telemetry/telemetry.db"
     )
   )
-  options(telemetry_mode = "local")
+  options(
+    telemetry_mode = "local",
+    telemetry_object = telemetry
+  )
 }

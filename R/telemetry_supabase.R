@@ -1,5 +1,6 @@
 #' Supabase REST API Telemetry Functions
 #' Uses HTTP instead of PostgreSQL driver
+#' Auto-detects cloud (Supabase) vs local (SQLite) mode
 
 library(httr2)
 library(jsonlite)
@@ -15,7 +16,10 @@ init_supabase_telemetry <- function(url, key) {
 start_telemetry_session <- function() {
   if (getOption("telemetry_mode", "cloud") == "local") {
     # Local SQLite mode
-    telemetry$start_session(track_inputs = FALSE)
+    telemetry_obj <- getOption("telemetry_object")
+    if (!is.null(telemetry_obj)) {
+      telemetry_obj$start_session(track_inputs = FALSE)
+    }
   } else {
     # Cloud Supabase mode
     url <- getOption("supabase_telemetry_url")
@@ -46,7 +50,10 @@ start_telemetry_session <- function() {
 log_telemetry_event <- function(event_type, details = list()) {
   if (getOption("telemetry_mode", "cloud") == "local") {
     # Local SQLite mode
-    telemetry$log_custom_event(event_type, details = details)
+    telemetry_obj <- getOption("telemetry_object")
+    if (!is.null(telemetry_obj)) {
+      telemetry_obj$log_custom_event(event_type, details = details)
+    }
   } else {
     # Cloud Supabase mode
     url <- getOption("supabase_telemetry_url")
@@ -77,8 +84,13 @@ log_telemetry_event <- function(event_type, details = list()) {
 read_telemetry_metrics <- function(from_date = "2020-01-01", to_date = NULL) {
   if (getOption("telemetry_mode", "cloud") == "local") {
     # Local SQLite mode
+    telemetry_obj <- getOption("telemetry_object")
+    if (is.null(telemetry_obj)) {
+      return(tibble::tibble(type = character(), timestamp = character(), details = character()))
+    }
+    
     tryCatch({
-      data <- telemetry$data_storage$read_event_data(
+      data <- telemetry_obj$data_storage$read_event_data(
         from_date, 
         if(is.null(to_date)) as.character(Sys.Date() + 1) else to_date
       )
