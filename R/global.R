@@ -19,6 +19,9 @@ options(
 ## Use austraits R package load_austraits() function to download data to the file path below
 ## Then create this parquet following code in data-raw/create-flat-austraits.R
 
+# create place for cache
+dir.create(".cache/taxon_text", showWarnings = FALSE, recursive = TRUE)
+
 # Custom logic
 `%not_in%` <- Negate(`%in%`)
 
