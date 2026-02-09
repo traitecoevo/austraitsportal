@@ -192,6 +192,7 @@ columns_display_species <- c(
 library(httr2)
 source("R/telemetry_supabase.R")
 
+# Read credentials from environment variables (set in .Rprofile or .Renviron locally, or in shinyapps.io dashboard)
 supabase_url <- Sys.getenv("SUPABASE_URL")
 supabase_key <- Sys.getenv("SUPABASE_KEY")
 
