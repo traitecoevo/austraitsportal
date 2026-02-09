@@ -274,9 +274,13 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
   filename_display <- file.path(output_dir, "austraits-display.parquet")
   
   ## Early exit if file already exists
-  if (file.exists(filename_data) & !overwrite) { return()}
+  if (file.exists(filename_data) & !overwrite) { 
+    message("✓ Data files already exist (use overwrite=TRUE to regenerate)")
+    return()
+  }
 
   # Flatten the database
+  message("Flattening AusTraits database...")
   austraits_full_flatten <-
     austraits |>
     austraits::flatten_database() |>
@@ -288,9 +292,11 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
         sub = "" # Remove any bytes that can't be converted
       )
     )
+  message("✓ Database flattened")
 
   # create species means dataset
   # list of traits to take means for - core traits only
+  message("Computing species averages for core traits...")
   trait_groups <- readr::read_csv(
     "inst/extdata/austraits/trait_groups_for_portal.csv", 
     show_col_types = FALSE,
@@ -306,8 +312,10 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
     austraits_full_flatten |>
     dplyr::filter(trait_name %in% core_traits) |>    
     estimate_species_trait_means()
+  message("✓ Species averages computed")
 
   # Save the flattened database
+  message("Writing parquet files...")
   austraits_full_flatten |>
     arrow::write_parquet(filename_data)
   
@@ -322,29 +330,42 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
     arrow::write_parquet(file.path(output_dir, "austraits-species-averages.parquet"))
   
   # Save the display version of the species averages dataset
-  austraits_species_averages |>
-    #format_hyperlinks_for_display() |>
+  austraits_species_averages_display <-     
+    austraits_species_averages
+    #format_hyperlinks_for_display()
+    
+  austraits_species_averages_display |>
     arrow::write_parquet(file.path(output_dir, "austraits-species-averages-display.parquet")) 
+  message("✓ Parquet files saved") 
   
   # Saving definitions
+  message("Saving definitions...")
   austraits$definitions |> yaml::write_yaml(file.path(output_dir, "definitions.yml"))
   saveRDS(austraits$definitions, file.path(output_dir, "definitions.rds"))
+  message("✓ Definitions saved")
 
   # Sources
+  message("Saving sources...")
   austraits$sources |> RefManageR::WriteBib(file.path(output_dir, "sources.bib"))
   sources_df <- austraits_full_flatten |> 
     select(source_primary_key, source_primary_citation) |>
     dplyr::distinct()
   saveRDS(sources_df, file.path(output_dir, "sources.rds"))
+  message("✓ Sources saved")
   
   # Save trait_groups as RDS for faster loading
+  message("Saving trait groups...")
   saveRDS(trait_groups, file.path(output_dir, "trait_groups.rds"))
+  message("✓ Trait groups saved")
   
   # Save metadata as RDS (faster than JSON)
+  message("Saving metadata...")
   metatdata <- jsonlite::read_json("inst/extdata/austraits/austraits.json")
   saveRDS(metatdata, file.path(output_dir, "metadata.rds"))
+  message("✓ Metadata saved")
   
   # Combine and save state flora links as single RDS
+  message("Consolidating flora links...")
   flora_links <- list(
     atrp = readr::read_csv("inst/extdata/ATRP_links.csv", show_col_types = FALSE) |>
       dplyr::rename(url = formatted) |> 
@@ -358,6 +379,7 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
       dplyr::filter(!is.na(url), url != "")
   )
   saveRDS(flora_links, file.path(output_dir, "flora_links.rds"))
+  message("✓ Flora links saved")
   
   # Cache dropdown values for faster app startup
   message("Caching dropdown values...")
@@ -416,7 +438,7 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
   
   # Precompute species dataset IDs (split semicolon-separated values)
   message("Computing species dataset IDs...")
-  temp_species_ids <- austraits_species_display_data |> 
+  temp_species_ids <- austraits_species_averages_display |> 
     dplyr::select(dataset_id) |> 
     dplyr::distinct() |> 
     dplyr::collect() |> 
