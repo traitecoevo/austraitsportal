@@ -67,7 +67,10 @@ Imports:
     shinybusy,
     leaflet,
     plotly,
-    scales
+    scales,
+    DBI,
+    RSQLite,
+    shiny.telemetry
 Remotes:
     traitecoevo/austraits
 Suggests: 

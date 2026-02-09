@@ -188,7 +188,7 @@ columns_display_species <- c(
   "taxon_rank", "taxon_distribution", "establishment_means"
 )
 
-# TELEMETRY - Supabase
+# TELEMETRY - Supabase REST API with SQLite fallback
 library(httr2)
 source("R/telemetry_supabase.R")
 
@@ -196,15 +196,18 @@ supabase_url <- Sys.getenv("SUPABASE_URL")
 supabase_key <- Sys.getenv("SUPABASE_KEY")
 
 if (nchar(supabase_url) > 0 && nchar(supabase_key) > 0) {
+  message("✓ Using Supabase telemetry (cloud)")
   init_supabase_telemetry(supabase_url, supabase_key)
+  options(telemetry_mode = "cloud")
 } else {
-  warning("SUPABASE_URL or SUPABASE_KEY not set - telemetry disabled")
+  message("✓ Using local SQLite telemetry")
+  library(shiny.telemetry)
+  dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
+  telemetry <- shiny.telemetry::Telemetry$new(
+    app_name = "austraits_portal",
+    data_storage = shiny.telemetry::DataStorageSQLite$new(
+      db_path = "inst/telemetry/telemetry.db"
+    )
+  )
+  options(telemetry_mode = "local")
 }
-
-# dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
-# telemetry <- shiny.telemetry::Telemetry$new(
-#   app_name = "austraits_portal",
-#   data_storage = shiny.telemetry::DataStorageSQLite$new(
-#     db_path = "inst/telemetry/telemetry.db"
-#   )
-# )
