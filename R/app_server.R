@@ -177,7 +177,7 @@ observeEvent(input[["filters-clear_filters"]], {
           if (!is.null(query) && column_name %in% names(query)) {
             # Special handling for dataset_id in species averages
             if (column_name == "dataset_id" && filters()$dataset_type == "species") {
-              unique_values <- all_dataset_ids_species
+              unique_values <- dropdowns$all_dataset_ids_species
             } else {
               # Use cached helper with limit to avoid large collect operations
               unique_values <- get_distinct_values_cached(query, column_name, limit = 1000)
@@ -185,7 +185,7 @@ observeEvent(input[["filters-clear_filters"]], {
           } else {
             # Special handling for dataset_id in species averages
             if (column_name == "dataset_id" && filters()$dataset_type == "species") {
-              unique_values <- all_dataset_ids_species
+              unique_values <- dropdowns$all_dataset_ids_species
             } else {
               # Use cached helper with limit
               unique_values <- get_distinct_values_cached(current_austraits_display(), column_name, limit = 1000)

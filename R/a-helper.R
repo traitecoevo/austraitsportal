@@ -414,6 +414,16 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
     unique() |>
     sort()
   
+  # Precompute species dataset IDs (split semicolon-separated values)
+  message("Computing species dataset IDs...")
+  temp_species_ids <- austraits_species_display_data |> 
+    dplyr::select(dataset_id) |> 
+    dplyr::distinct() |> 
+    dplyr::collect() |> 
+    dplyr::pull(dataset_id)
+  
+  dropdown_cache$all_dataset_ids_species <- unique(sort(unlist(strsplit(temp_species_ids, "; "))))
+  
   saveRDS(dropdown_cache, file.path(output_dir, "dropdown_cache.rds"))
   message("✓ Dropdown cache saved")
 }

@@ -112,17 +112,6 @@ custom_filter_columns_species <- c(
 target <- bsplus::shiny_iconlink(name = "github")
 target$attribs$href <- "https://github.com/traitecoevo/austraits.portal"
 
-
-# For species averages - split semicolon-separated dataset_id (Get done cause IDs get clubbed, should be understandable)
-temp_species_ids <- austraits_species_display |> 
-  dplyr::select(dataset_id) |> 
-  dplyr::distinct() |> 
-  dplyr::collect() |> 
-  dplyr::pull(dataset_id)
-
-all_dataset_ids_species <- unique(sort(unlist(strsplit(temp_species_ids, "; "))))
-rm(temp_species_ids)
-
 # Columns to display for species averages (different from raw data)
 columns_display_species <- c(
   "dataset_id", "taxon_name", "genus", "family", "trait_name", 
