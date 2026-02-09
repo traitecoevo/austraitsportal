@@ -4,6 +4,7 @@
 *.parquet
 *.rds
 *.bib
+*.Renviron
 definitions.yml
 
 ignore/

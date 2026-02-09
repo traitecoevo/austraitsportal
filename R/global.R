@@ -192,9 +192,6 @@ columns_display_species <- c(
 library(httr2)
 source("R/telemetry_supabase.R")
 
-Sys.setenv(SUPABASE_URL = "https://oownhtyvuegjtdirryat.supabase.co")
-Sys.setenv(SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vd25odHl2dWVnanRkaXJyeWF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNDM5NTYsImV4cCI6MjA4NTcxOTk1Nn0.fwTNo09bSbdYiQ6N8iXNOgp4gezINh1qVIZhXTWn16E")
-
 supabase_url <- Sys.getenv("SUPABASE_URL")
 supabase_key <- Sys.getenv("SUPABASE_KEY")
 
