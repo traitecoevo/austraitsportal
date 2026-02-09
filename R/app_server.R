@@ -47,10 +47,7 @@ app_server <- function(input, output, session) {
   })
 
   # Start telemetry session
-  telemetry$start_session(
-    track_inputs = FALSE, 
-    navigation_input_id = "main_tabs"  
-  )
+  start_telemetry_session()
 
 # Update the appropriate selectizeInput when radio button changes
 filters <- mod_filters_server(
@@ -410,10 +407,10 @@ observeEvent(input[["filters-clear_filters"]], {
     data_table_outputs$set_start(0)
 
     # Log search event
-    telemetry$log_custom_event("search", details = list(
-      dataset_type = filters()$dataset_type,
-      trait = filters()$trait_name
-    ))
+    log_telemetry_event("search", details = list(
+    dataset_type = filters()$dataset_type,
+    trait = filters()$trait_name
+  ))
   }, ignoreInit = TRUE)
 
   # Handle loading more data - with throttle to prevent rapid firing
@@ -657,10 +654,10 @@ observeEvent(input[["filters-clear_filters"]], {
       }
       }
         # Log download event
-        telemetry$log_custom_event("download", details = list(
-          dataset_type = filters()$dataset_type,
-          trait = filters()$trait_name
-        ))
+        log_telemetry_event("download", details = list(
+        dataset_type = filters()$dataset_type,
+        trait = filters()$trait_name
+      ))
       showNotification("Downloading filtered data...",
                       type = "message",
                       duration = 3)

@@ -6,6 +6,7 @@
 *.parquet
 *.rds
 *.bib
+*.Renviron
 definitions.yml
 
 ignore/
@@ -16,3 +17,4 @@ data
 *.swp
 inst/extdata/austraits/austraits-7.0.0-full/*
 inst/telemetry/telemetry.db
+config.yml

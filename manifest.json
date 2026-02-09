@@ -122,32 +122,6 @@
         "Built": "R 4.4.0; ; 2024-04-05 15:01:01 UTC; unix"
       }
     },
-    "RPostgreSQL": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Package": "RPostgreSQL",
-        "Version": "0.7-8",
-        "Date": "2025-03-28",
-        "Title": "R Interface to the 'PostgreSQL' Database System",
-        "Maintainer": "Tomoaki Nishiyama <tomoaki@sci.u-toyama.ac.jp>",
-        "Description": "Database interface and 'PostgreSQL' driver for 'R'.\n This package provides a Database Interface 'DBI' compliant \n driver for 'R' to access 'PostgreSQL' database systems.  \n In order to build and install this package from source, 'PostgreSQL' \n itself must be present your system to provide 'PostgreSQL' functionality \n via its libraries and header files. These files are provided as\n 'postgresql-devel' package under some Linux distributions.\n On 'macOS' and 'Microsoft Windows' system the attached 'libpq' library source will be used.",
-        "LazyLoad": "true",
-        "Depends": "R (>= 3.4.0), methods, DBI (>= 0.3)",
-        "License": "GPL-3 | file LICENSE",
-        "Copyright": "Authors listed above, PostgreSQL Global Development Group,\nand The Regents of the University of California",
-        "Collate": "S4R.R zzz.R PostgreSQLSupport.R dbObjectId.R PostgreSQL.R",
-        "URL": "https://github.com/tomoakin/RPostgreSQL,\nhttps://cran.r-project.org/package=DBI,\nhttps://www.postgresql.org",
-        "Authors@R": "c(person(given = \"Joe\",\n                       family = \"Conway\",\n                       role = \"aut\"),\n                person(given = \"Dirk\",\n                       family = \"Eddelbuettel\",\n                       role = \"aut\"),\n                person(given = \"Tomoaki\",\n                       family = \"Nishiyama\",\n                       role = c(\"aut\", \"cre\"),\n                       email = \"tomoaki@sci.u-toyama.ac.jp\"),\n                person(given = c(\"Sameer\", \"Kumar\"),\n                       family = \"Prayaga\",\n                       role = \"aut\",\n                       comment = \"during 2008\"),\n                person(given = \"Neil\",\n                       family = \"Tiffin\",\n                       role = \"aut\"))",
-        "NeedsCompilation": "yes",
-        "Packaged": "2025-03-28 06:57:36 UTC; tomoaki",
-        "Author": "Joe Conway [aut],\n  Dirk Eddelbuettel [aut],\n  Tomoaki Nishiyama [aut, cre],\n  Sameer Kumar Prayaga [aut] (during 2008),\n  Neil Tiffin [aut]",
-        "Repository": "CRAN",
-        "Date/Publication": "2025-03-28 08:00:02 UTC",
-        "Built": "R 4.4.1; aarch64-apple-darwin20; 2025-03-28 08:36:42 UTC; unix",
-        "Archs": "RPostgreSQL.so.dSYM"
-      }
-    },
     "RSQLite": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -403,17 +377,32 @@
         "Package": "austraits.portal",
         "Title": "Shiny interface to the AusTraits database",
         "Version": "0.0.0.9000",
-        "Authors@R": "c(person(given = \"Daniel\",\nfamily = \"Falster\",\nrole = c(\"aut\", \"cre\"),\nemail = \"daniel.falster@unsw.edu.au\",\ncomment = c(ORCID = \"0000-0002-9814-092X\")),\nperson(given = \"Elizabeth\",\nfamily = \"Wenk\",\nrole = \"aut\",\nemail = \"e.wenk@unsw.edu.au\",\ncomment = c(ORCID = \"0000-0001-5640-5910\")),\nperson(given = \"Fonti\",\nfamily = \"Kar\",\nrole = \"aut\",\nemail = \"f.kar@unsw.edu.au\",\ncomment = c(ORCID = \"0000-0002-2760-3974\")),\nperson(given = \"Eve\",\nfamily = \"Miles\",\nrole = \"ctb\",\nemail = \"e.miles@unsw.edu.au\",\ncomment = c(ORCID = \"0009-0008-4168-8645\")),\nperson(given = \"Pushkal\",\nfamily = \"Garg\",\nrole = \"ctb\",\nemail = \"pushkal.garg@student.unsw.edu.au\",\ncomment = c(ORCID = \"0009-0002-0179-2946\"))\n)",
+        "Authors@R": "\n        c(person(given = \"Daniel\",\n             family = \"Falster\",\n             role = c(\"aut\", \"cre\"),\n             email = \"daniel.falster@unsw.edu.au\",\n             comment = c(ORCID = \"0000-0002-9814-092X\")),\n      person(given = \"Elizabeth\", \n            family = \"Wenk\", \n            role = \"aut\",\n            email = \"e.wenk@unsw.edu.au\", \n            comment = c(ORCID = \"0000-0001-5640-5910\")),\n      person(given = \"Fonti\",\n             family = \"Kar\",\n             role = \"aut\",\n             email = \"f.kar@unsw.edu.au\",\n             comment = c(ORCID = \"0000-0002-2760-3974\")),\n      person(given = \"Eve\",\n             family = \"Miles\",\n             role = \"ctb\",\n             email = \"e.miles@unsw.edu.au\",\n             comment = c(ORCID = \"0009-0008-4168-8645\")),\n      person(given = \"Pushkal\",\n             family = \"Garg\",\n             role = \"ctb\",\n             email = \"pushkal.garg@student.unsw.edu.au\",\n             comment = c(ORCID = \"0009-0002-0179-2946\"))\n             )",
         "Description": "Shiny R package to the AusTraits Plant Traits database.",
         "License": "CC BY 4.0 + file LICENSE",
         "Encoding": "UTF-8",
         "Roxygen": "list(markdown = TRUE)",
         "RoxygenNote": "7.3.2",
         "Depends": "R (>= 3.5.0)",
-        "Imports": "shiny,\naustraits,\narrow,\nbslib,\nbsplus,\nDT,\ndplyr,\nreadr,\ntidyr,\ntibble,\nggplot2,\npatchwork,\nkableExtra,\npurrr,\nstringr,\ntidyselect,\nutils,\nhttr2,\ncommonmark,\nzip,\nhtmltools,\nyaml,\njsonlite,\nspelling,\nRefManageR,\ncli,\nforcats,\nknitr,\nshinybusy,\nleaflet,\nplotly,\nscales,\nshiny.telemetry,\nRPostgreSQL,\nmemoise",
+        "Imports": "shiny, austraits, arrow, bslib, bsplus, DT, dplyr, readr,\ntidyr, tibble, ggplot2, patchwork, kableExtra, purrr, stringr,\ntidyselect, utils, httr2, commonmark, zip, htmltools, yaml,\njsonlite, spelling, RefManageR, cli, forcats, knitr, shinybusy,\nleaflet, plotly, scales",
         "Remotes": "traitecoevo/austraits",
         "Suggests": "testthat (>= 3.0.0)",
-        "Config/testthat/edition": "3"
+        "Config/testthat/edition": "3",
+        "RemoteType": "github",
+        "RemoteHost": "api.github.com",
+        "RemoteRepo": "austraits.portal",
+        "RemoteUsername": "traitecoevo",
+        "RemoteRef": "HEAD",
+        "RemoteSha": "7067609e2c2570ed241ad2ca8da7853dae8c8f0d",
+        "GithubRepo": "austraits.portal",
+        "GithubUsername": "traitecoevo",
+        "GithubRef": "HEAD",
+        "GithubSHA1": "7067609e2c2570ed241ad2ca8da7853dae8c8f0d",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-01-29 02:26:22 UTC; dfalster",
+        "Author": "Daniel Falster [aut, cre] (<https://orcid.org/0000-0002-9814-092X>),\n  Elizabeth Wenk [aut] (<https://orcid.org/0000-0001-5640-5910>),\n  Fonti Kar [aut] (<https://orcid.org/0000-0002-2760-3974>),\n  Eve Miles [ctb] (<https://orcid.org/0009-0008-4168-8645>),\n  Pushkal Garg [ctb] (<https://orcid.org/0009-0002-0179-2946>)",
+        "Maintainer": "Daniel Falster <daniel.falster@unsw.edu.au>",
+        "Built": "R 4.4.2; ; 2026-01-29 02:26:23 UTC; unix"
       }
     },
     "backports": {
@@ -3986,7 +3975,7 @@
       "checksum": "4c152846670f0c57344725be7a1c9311"
     },
     "DESCRIPTION": {
-      "checksum": "6849794e571329e9b8b6fa23884189ee"
+      "checksum": "773e37ac04ad1906e3dce3e1e312be82"
     },
     "inst/extdata/ATRP_links.csv": {
       "checksum": "62e573ae6dd303034ba0572c08dcf5b1"
@@ -4003,14 +3992,50 @@
     "inst/extdata/austraits/austraits-5.0.0-lite/austraits-species-averages.parquet": {
       "checksum": "dd02c4aa37ca830659d109dab63cd4b5"
     },
-    "inst/extdata/austraits/austraits-5.0.0-lite/definitions.yml": {
-      "checksum": "78531abd24cb70aea02d37a2d7a0b048"
+    "inst/extdata/austraits/austraits-5.0.0-lite/definitions.rds": {
+      "checksum": "a26ec6f1f1c03a930b749f9dbd45c5e0"
+    },
+    "inst/extdata/austraits/austraits-5.0.0-lite/dropdown_cache.rds": {
+      "checksum": "e1d41bb02903e9967ef1384a0c42d382"
+    },
+    "inst/extdata/austraits/austraits-5.0.0-lite/flora_links.rds": {
+      "checksum": "8c0f4f94e92f8320ded1d3c8a7baa855"
+    },
+    "inst/extdata/austraits/austraits-5.0.0-lite/metadata.rds": {
+      "checksum": "69461a732b0ba388ceeeb41c5c679190"
     },
     "inst/extdata/austraits/austraits-5.0.0-lite/sources.bib": {
       "checksum": "e0b35af931cb4e4d5369dd4c463b4f59"
     },
-    "inst/extdata/austraits/austraits-5.0.0-lite/sources.csv": {
-      "checksum": "021bc3dda73711777af835af163cfe09"
+    "inst/extdata/austraits/austraits-5.0.0-lite/sources.rds": {
+      "checksum": "379bd6d068adb87fb5894fd712f115c3"
+    },
+    "inst/extdata/austraits/austraits-5.0.0-lite/trait_groups.rds": {
+      "checksum": "d72c6fcf1516fd36d41ec5381671b0c8"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full copy/austraits-data.parquet": {
+      "checksum": "ff12a9a49b32844565002d194ca2765d"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full copy/austraits-display.parquet": {
+      "checksum": "b40f78974895236c489c328aac807fda"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full copy/austraits-species-averages-display.parquet": {
+      "checksum": "32a465d1988ce89f11c330c9ef032303"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full copy/austraits-species-averages.parquet": {
+      "checksum": "32a465d1988ce89f11c330c9ef032303"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full copy/definitions.yml": {
+      "checksum": "e93e7347766255c03db108bbae55cc7d"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full copy/dropdown_cache.rds": {
+      "checksum": "87e2d41cc0bcf34dd62a7c149a41ccf0"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full copy/sources.bib": {
+      "checksum": "43bf3f4b1ff95990e4026d664e18f63e"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full copy/sources.csv": {
+      "checksum": "f76ef391dc80dce35e40e47dbb08ac14"
     },
     "inst/extdata/austraits/austraits-7.0.0-full/austraits-data.parquet": {
       "checksum": "ff12a9a49b32844565002d194ca2765d"
@@ -4024,11 +4049,32 @@
     "inst/extdata/austraits/austraits-7.0.0-full/austraits-species-averages.parquet": {
       "checksum": "32a465d1988ce89f11c330c9ef032303"
     },
+    "inst/extdata/austraits/austraits-7.0.0-full/definitions.rds": {
+      "checksum": "f325eebf8fb26fd348b0999bfc9792a5"
+    },
     "inst/extdata/austraits/austraits-7.0.0-full/definitions.yml": {
       "checksum": "e93e7347766255c03db108bbae55cc7d"
     },
+    "inst/extdata/austraits/austraits-7.0.0-full/dropdown_cache.rds": {
+      "checksum": "dddb049be6ebd22f4fa928cecbab3112"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/flora_links.rds": {
+      "checksum": "8c0f4f94e92f8320ded1d3c8a7baa855"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/metadata.rds": {
+      "checksum": "69461a732b0ba388ceeeb41c5c679190"
+    },
     "inst/extdata/austraits/austraits-7.0.0-full/sources.bib": {
       "checksum": "43bf3f4b1ff95990e4026d664e18f63e"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/sources.csv": {
+      "checksum": "f76ef391dc80dce35e40e47dbb08ac14"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/sources.rds": {
+      "checksum": "594e9b02971799044cb5e8733c23d9df"
+    },
+    "inst/extdata/austraits/austraits-7.0.0-full/trait_groups.rds": {
+      "checksum": "d72c6fcf1516fd36d41ec5381671b0c8"
     },
     "inst/extdata/austraits/austraits-7.0.0.rds": {
       "checksum": "c040dada5776177a1fabaced7ac0afdb"
@@ -4049,7 +4095,7 @@
       "checksum": "d1c4c300661e5a2273062fd263f29b12"
     },
     "inst/telemetry/telemetry.db": {
-      "checksum": "3c185c16a65f92aa58e8ae8afe41243d"
+      "checksum": "90825f0c95934f95e2b3f394de1bb273"
     },
     "inst/WORDLIST": {
       "checksum": "cd7f762344ba97a13d09c4bd971ae0ea"
@@ -4112,16 +4158,16 @@
       "checksum": "02a7d2f0b103125b373c67e6f9d8dd39"
     },
     "R/a-helper.R": {
-      "checksum": "b83d8665a24a48904669cf7425fcabb4"
+      "checksum": "c26631ad8d965ed88cbe6f5a427b9e2b"
     },
     "R/app_config.R": {
       "checksum": "c83b2a69f39227ac1db79ae7eab34ef4"
     },
     "R/app_server.R": {
-      "checksum": "f93e3d0f55af28eac36870021eb609a1"
+      "checksum": "51a4c78eba228236d518ea15a94ac36a"
     },
     "R/app_ui.R": {
-      "checksum": "4fe38f335dd1ebc9fc27ed7612f45e43"
+      "checksum": "9ca8f41597dc198453b527b7739d4db3"
     },
     "R/app.R": {
       "checksum": "bbb6509e8f68afc72c66e48b014a077f"
@@ -4130,7 +4176,7 @@
       "checksum": "b3deab721b7bedd5b4c3cd4989bd337e"
     },
     "R/generate_taxon_text.R": {
-      "checksum": "fa401e5aa61a42aec26eea964a9bceb7"
+      "checksum": "b6aa5400872b98b56a2b657dd1f484e0"
     },
     "R/generate_trait_profile.R": {
       "checksum": "7253db5c85c30df94b72713d1497e160"
@@ -4139,25 +4185,25 @@
       "checksum": "08e30e98954a202db27091ac449a9f6b"
     },
     "R/global.R": {
-      "checksum": "b1f9fb518722f148fc635fe78eb03446"
+      "checksum": "95d9cf2ad6d8397f8c3f499f04f21e11"
     },
     "R/mod_app_info.R": {
-      "checksum": "655d045e096a0eb34480bf2def2d475d"
+      "checksum": "8bccdd268c0349265918f17f47616e6e"
     },
     "R/mod_citations.R": {
-      "checksum": "da06fb699b33d60c8751e677e9361413"
+      "checksum": "8ceb02cf9e02061adbaa8526ff2c5530"
     },
     "R/mod_data_table.R": {
       "checksum": "3e158ac8f9406c530ddec90ed3b8b88b"
     },
     "R/mod_filters.R": {
-      "checksum": "377dc307d7e0ed36c1e8bf921e89e362"
+      "checksum": "30542381b00dfd1cd1ed90d8a348a249"
     },
     "R/mod_taxon_view.R": {
-      "checksum": "80224fe0dbb1b1f7e75fdda21d76ba38"
+      "checksum": "37276ca928c5535d60916d453c2135a5"
     },
     "R/mod_trait_view.R": {
-      "checksum": "2789b306db6038ba44d7e5fa00ca7fa3"
+      "checksum": "3daff6ea604f417b255262990a40316a"
     },
     "R/plot_trait_values.R": {
       "checksum": "206094158ae45554d027d8c517249aba"
@@ -4165,11 +4211,11 @@
     "R/species_means.R": {
       "checksum": "e3887830896125803989eeed4e5e29f0"
     },
+    "R/telemetry_supabase.R": {
+      "checksum": "7281b2c3a64f78b87b0eecc9b5ecbf0c"
+    },
     "R/utils.R": {
       "checksum": "81e6202aa0a9e86e9373c20de2052787"
-    },
-    "README.html": {
-      "checksum": "fa0c5206693c4140a7e2af61c323d320"
     },
     "README.md": {
       "checksum": "f90378172b25e0d32b54cc83e8c69ae2"

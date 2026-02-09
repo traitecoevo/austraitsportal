@@ -78,7 +78,6 @@ tags$head(
     });
   "))
 ),
-      shiny.telemetry::use_telemetry(),
 
       # Loading spinner
       shinybusy::add_busy_spinner(
