@@ -37,13 +37,13 @@ app_server <- function(input, output, session) {
   
   # Initialize dropdown choices
   taxon_name_choices <- reactive({
-    all_taxon_names
+    dropdowns$all_taxon_names
   })
   genus_choices <- reactive({
-    all_genus
+    dropdowns$all_genus
   })
   family_choices <- reactive({
-    all_family
+    dropdowns$all_family
   })
 
   # Start telemetry session
@@ -72,12 +72,12 @@ observeEvent(input[["filters-clear_filters"]], {
 })
   
   # Server-side selectizeInput update for other options that are not conditional
-  updateSelectizeInput(session, "filters-trait_name", choices = all_traits, server = TRUE)
-  updateSelectizeInput(session, "filters-trait_grouping", choices = all_trait_groupings, server = TRUE)
-  updateSelectizeInput(session, "filters-structure_measured", choices = all_structure_measured, server = TRUE)
-  updateSelectizeInput(session, "filters-keywords", choices = all_keywords, server = TRUE)
-  updateSelectizeInput(session, "filters-basis_of_record", choices = all_bor, server = TRUE)
-  updateSelectizeInput(session, "filters-life_stage", choices = all_age, server = TRUE)
+  updateSelectizeInput(session, "filters-trait_name", choices = dropdowns$all_traits, server = TRUE)
+  updateSelectizeInput(session, "filters-trait_grouping", choices = dropdowns$all_trait_groupings, server = TRUE)
+  updateSelectizeInput(session, "filters-structure_measured", choices = dropdowns$all_structure_measured, server = TRUE)
+  updateSelectizeInput(session, "filters-keywords", choices = dropdowns$all_keywords, server = TRUE)
+  updateSelectizeInput(session, "filters-basis_of_record", choices = dropdowns$all_bor, server = TRUE)
+  updateSelectizeInput(session, "filters-life_stage", choices = dropdowns$all_age, server = TRUE)
 
   # Update trait names when trait features are selected
   observeEvent(
@@ -115,7 +115,7 @@ observeEvent(input[["filters-clear_filters"]], {
         # No trait features selected - show all traits
         current_trait_selection <- input[["filters-trait_name"]]
         updateSelectizeInput(session, "filters-trait_name",
-                            choices = all_traits,
+                            choices = dropdowns$all_traits,
                             selected = current_trait_selection,
                             server = TRUE)
       }
@@ -517,7 +517,7 @@ observeEvent(input[["filters-clear_filters"]], {
       # Handle trait name WITH CHOICES
       if (!is.null(query$trait_name)) {
         updateSelectizeInput(session, "filters-trait_name", 
-                            choices = all_traits, 
+                            choices = dropdowns$all_traits, 
                             selected = query$trait_name, 
                             server = TRUE)
       }
@@ -530,7 +530,7 @@ observeEvent(input[["filters-clear_filters"]], {
       if (!is.null(query$apc_taxon_distribution)) {
         states <- strsplit(query$apc_taxon_distribution, ",")[[1]]
         updateSelectizeInput(session, "filters-apc_taxon_distribution", 
-                            choices = all_states_territories, 
+                            choices = dropdowns$all_states_territories, 
                             selected = states, 
                             server = TRUE)
       }
@@ -538,7 +538,7 @@ observeEvent(input[["filters-clear_filters"]], {
       # Handle basis of record WITH CHOICES
       if (!is.null(query$basis_of_record)) {
         updateSelectizeInput(session, "filters-basis_of_record", 
-                            choices = all_bor, 
+                            choices = dropdowns$all_bor, 
                             selected = query$basis_of_record, 
                             server = TRUE)
       }
@@ -546,7 +546,7 @@ observeEvent(input[["filters-clear_filters"]], {
       # Handle life stage WITH CHOICES
       if (!is.null(query$life_stage)) {
         updateSelectizeInput(session, "filters-life_stage", 
-                            choices = all_age, 
+                            choices = dropdowns$all_age, 
                             selected = query$life_stage, 
                             server = TRUE)
       }

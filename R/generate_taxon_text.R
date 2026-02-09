@@ -207,7 +207,7 @@ generate_taxon_portal_links <- function(taxon_info) {
   # NT eFlora only if distributed in NT
   if (grepl("NT", distribution, ignore.case = TRUE)) {
     # Try to find in CSV
-    nt_match <- nt_links |> dplyr::filter(taxon_name == taxon)
+    nt_match <- flora_links$nt |> dplyr::filter(taxon_name == taxon)
     
     if (nrow(nt_match) > 0 && !is.na(nt_match$url[1])) {
       # Use URL from CSV
@@ -238,7 +238,7 @@ generate_taxon_portal_links <- function(taxon_info) {
   # Vic Flora only if distributed in Vic/Victoria
   if (grepl("Vic", distribution, ignore.case = TRUE)) {
     # Try to find in CSV
-    vic_match <- vic_links |> dplyr::filter(taxon_name == taxon)
+    vic_match <- flora_links$vic |> dplyr::filter(taxon_name == taxon)
     
     if (nrow(vic_match) > 0 && !is.na(vic_match$url[1])) {
       # Use URL from CSV
@@ -267,7 +267,7 @@ generate_taxon_portal_links <- function(taxon_info) {
   }
   
   # ATRP only if distributed in Qld (Australian Tropical Rainforest Plants)
-    atrp_match <- atrp_links |> dplyr::filter(taxon_name == taxon)
+    atrp_match <- flora_links$atrp |> dplyr::filter(taxon_name == taxon)
     
     if (nrow(atrp_match) > 0)  {
       # Use URL from CSV

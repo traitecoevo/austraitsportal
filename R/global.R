@@ -64,17 +64,7 @@ columns_display <- c(
 dropdown_cache_path <- file.path(data_path, "dropdown_cache.rds")
 
 # Load from cache (much faster)
-dropdown_cache <- readRDS(dropdown_cache_path)
-all_family <- dropdown_cache$all_family
-all_genus <- dropdown_cache$all_genus
-all_taxon_names <- dropdown_cache$all_taxon_names
-all_states_territories <- dropdown_cache$all_states_territories
-all_traits <- dropdown_cache$all_traits
-all_bor <- dropdown_cache$all_bor
-all_age <- dropdown_cache$all_age
-all_trait_groupings <- dropdown_cache$all_trait_groupings
-all_structure_measured <- dropdown_cache$all_structure_measured
-all_keywords <- dropdown_cache$all_keywords
+dropdowns <- readRDS(dropdown_cache_path)
 
 ## Location
 # TODO: Not yet implemented.
@@ -84,9 +74,6 @@ all_keywords <- dropdown_cache$all_keywords
 
 # Load state flora link mappings (precomputed in RDS)
 flora_links <- readRDS(file.path(data_path, "flora_links.rds"))
-atrp_links <- flora_links$atrp
-nt_links <- flora_links$nt
-vic_links <- flora_links$vic
 
 # Define controlled vocabulary columns (dropdown)
 controlled_vocab_columns <- c(

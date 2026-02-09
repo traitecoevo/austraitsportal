@@ -128,7 +128,7 @@ mod_filters_ui <- function(id) {
       selectizeInput(
         ns("apc_taxon_distribution"),
         label = "State/territory:",
-        choices = all_states_territories,
+        choices = dropdowns$all_states_territories,
         multiple = TRUE
       )
     ),
