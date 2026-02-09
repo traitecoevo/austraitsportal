@@ -188,40 +188,40 @@ columns_display_species <- c(
   "taxon_rank", "taxon_distribution", "establishment_means"
 )
 
-# TELEMETRY - Usage tracking via shiny.telemetry
-library(shiny.telemetry)
+# TELEMETRY - Supabase REST API with SQLite fallback
+library(httr2)
+source("R/telemetry_supabase.R")
 
-# Global telemetry object — PostgreSQL for persistent storage
-if(FALSE) {
+# Read credentials from config.yml (production)
+config_file <- "config.yml"
 
-library(dplyr)
-library(tidyr)
-library(stringr)
-library(shiny.telemetry)
-library(RPostgreSQL)
-
-Sys.setenv(POSTGRES_HOST = "aws-1-ap-southeast-2.pooler.supabase.com")
-Sys.setenv(POSTGRES_DB = "postgres")
-Sys.setenv(POSTGRES_PORT = "6543")
-# Sys.setenv(POSTGRES_USER = "YOUR_USERNAME_HERE")
-# Sys.setenv(POSTGRES_PASSWORD = "YOUR_PASSWORD_HERE")
-
-telemetry <- shiny.telemetry::Telemetry$new(
-  app_name = "austraits_portal",
-  data_storage = shiny.telemetry::DataStoragePostgreSQL$new(
-    user = Sys.getenv("POSTGRES_USER"),
-    password = Sys.getenv("POSTGRES_PASSWORD"),
-    host = Sys.getenv("POSTGRES_HOST"),
-    dbname = Sys.getenv("POSTGRES_DB"),
-    port = as.integer(Sys.getenv("POSTGRES_PORT", "5432"))
-  )
-)
+if (file.exists(config_file)) {
+  # Read from config.yml
+  cfg <- config::get(config = "production", file = config_file)
+  supabase_url <- cfg$supabase_url
+  supabase_key <- cfg$supabase_key
+} else {
+  # Fallback to environment variables
+  supabase_url <- Sys.getenv("SUPABASE_URL")
+  supabase_key <- Sys.getenv("SUPABASE_KEY")
 }
 
-dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
-telemetry <- shiny.telemetry::Telemetry$new(
-  app_name = "austraits_portal",
-  data_storage = shiny.telemetry::DataStorageSQLite$new(
-    db_path = "inst/telemetry/telemetry.db"
+if (nchar(supabase_url) > 0 && nchar(supabase_key) > 0) {
+  message("✓ Using Supabase telemetry (cloud)")
+  init_supabase_telemetry(supabase_url, supabase_key)
+  options(telemetry_mode = "cloud")
+} else {
+  message("✓ Using local SQLite telemetry")
+  library(shiny.telemetry)
+  dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
+  telemetry <- shiny.telemetry::Telemetry$new(
+    app_name = "austraits_portal",
+    data_storage = shiny.telemetry::DataStorageSQLite$new(
+      db_path = "inst/telemetry/telemetry.db"
+    )
   )
-)
+  options(
+    telemetry_mode = "local",
+    telemetry_object = telemetry
+  )
+}
