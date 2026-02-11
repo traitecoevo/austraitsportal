@@ -236,6 +236,115 @@ print(benchmark_datasets)
 cat("\n")
 
 # ════════════════════════════════════════════════════════════════
+# TEST 6B: LAZY vs IN-MEMORY (THE BIG QUESTION!)
+# ════════════════════════════════════════════════════════════════
+
+cat("📊 TEST 6B: Lazy DuckDB vs In-Memory Data Frame\n")
+cat(paste0("-", strrep("-", 48), "\n"))
+cat("Loading full dataset into memory for comparison...\n")
+
+# Load entire dataset into memory
+load_start <- Sys.time()
+austraits_in_memory <- austraits_display_duckdb |> dplyr::collect()
+load_time <- as.numeric(Sys.time() - load_start, units = "secs")
+mem_size <- format(object.size(austraits_in_memory), units = "MB")
+
+cat(sprintf("  ✓ Loaded: %s in %.1f seconds\n", mem_size, load_time))
+cat(sprintf("  ✓ Rows: %s\n", format(nrow(austraits_in_memory), big.mark = ",")))
+cat(sprintf("  ✓ Cols: %d\n\n", ncol(austraits_in_memory)))
+
+# Test 1: Simple filtering + count
+cat("Scenario 1: Filter + Count (common operation)\n")
+benchmark_lazy_vs_memory_count <- microbenchmark(
+  "Lazy: filter + count" = {
+    austraits_display_duckdb |>
+      dplyr::filter(stringr::str_detect(trait_name, "^(wood_density)$")) |>
+      dplyr::count() |>
+      dplyr::collect() |>
+      dplyr::pull(n)
+  },
+  "In-memory: filter + count" = {
+    austraits_in_memory |>
+      dplyr::filter(stringr::str_detect(trait_name, "^(wood_density)$")) |>
+      nrow()
+  },
+  times = 20
+)
+print(benchmark_lazy_vs_memory_count)
+cat("\n")
+
+# Test 2: Filtering + collecting data
+cat("Scenario 2: Filter + Collect 1000 rows\n")
+benchmark_lazy_vs_memory_collect <- microbenchmark(
+  "Lazy: filter + collect 1000" = {
+    austraits_display_duckdb |>
+      dplyr::filter(stringr::str_detect(trait_name, "^(wood_density)$")) |>
+      head(1000) |>
+      dplyr::collect()
+  },
+  "In-memory: filter + head 1000" = {
+    austraits_in_memory |>
+      dplyr::filter(stringr::str_detect(trait_name, "^(wood_density)$")) |>
+      head(1000)
+  },
+  times = 20
+)
+print(benchmark_lazy_vs_memory_collect)
+cat("\n")
+
+# Test 3: Complex multi-filter query
+cat("Scenario 3: Complex multi-filter query + count\n")
+benchmark_lazy_vs_memory_complex <- microbenchmark(
+  "Lazy: multi-filter + count" = {
+    austraits_display_duckdb |>
+      dplyr::filter(stringr::str_detect(trait_name, "^(wood_density|leaf_area)$")) |>
+      dplyr::filter(stringr::str_detect(basis_of_record, "^(measurement)$")) |>
+      dplyr::filter(stringr::str_detect(life_stage, "^(adult)$")) |>
+      dplyr::count() |>
+      dplyr::collect() |>
+      dplyr::pull(n)
+  },
+  "In-memory: multi-filter + count" = {
+    austraits_in_memory |>
+      dplyr::filter(stringr::str_detect(trait_name, "^(wood_density|leaf_area)$")) |>
+      dplyr::filter(stringr::str_detect(basis_of_record, "^(measurement)$")) |>
+      dplyr::filter(stringr::str_detect(life_stage, "^(adult)$")) |>
+      nrow()
+  },
+  times = 20
+)
+print(benchmark_lazy_vs_memory_complex)
+cat("\n")
+
+# Test 4: Distinct values (for dropdowns)
+cat("Scenario 4: Get distinct values (dropdown population)\n")
+benchmark_lazy_vs_memory_distinct <- microbenchmark(
+  "Lazy: distinct + collect" = {
+    austraits_display_duckdb |>
+      dplyr::select(basis_of_record) |>
+      dplyr::distinct() |>
+      dplyr::collect() |>
+      dplyr::pull(1)
+  },
+  "In-memory: distinct" = {
+    austraits_in_memory |>
+      dplyr::select(basis_of_record) |>
+      dplyr::distinct() |>
+      dplyr::pull(1)
+  },
+  times = 20
+)
+print(benchmark_lazy_vs_memory_distinct)
+cat("\n")
+
+cat("💡 ANALYSIS:\n")
+cat(paste0("-", strrep("-", 48), "\n"))
+cat(sprintf("Initial load cost: %.1f seconds, %s memory per session\n", load_time, mem_size))
+cat("\nFor Shiny app with multiple concurrent users:\n")
+cat("  • Lazy approach: ~50MB × N users = manageable\n")
+cat(sprintf("  • In-memory approach: %s × N users = potential issue\n\n", mem_size))
+
+# ════════════════════════════════════════════════════════════════
 # PROFILE: Helper function performance
 # ════════════════════════════════════════════════════════════════
 
