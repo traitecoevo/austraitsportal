@@ -36,6 +36,34 @@ austraits_species_averages <- arrow::open_dataset(file.path(data_path, "austrait
 austraits_species <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
 austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits-species-averages-display.parquet"))
 
+# After loading Arrow datasets, ADD:
+
+# ════════════════════════════════════════
+# DUCKDB SETUP FOR PERFORMANCE
+# ════════════════════════════════════════
+cat("[STARTUP] Setting up DuckDB...\n")
+duckdb_setup_start <- Sys.time()
+
+library(duckdb)
+
+# Create DuckDB connection
+duckdb_con <- dbConnect(duckdb::duckdb(), ":memory:")
+
+# Register Arrow datasets with DuckDB
+duckdb::duckdb_register_arrow(duckdb_con, "austraits_display", austraits_display)
+duckdb::duckdb_register_arrow(duckdb_con, "austraits_species_display", austraits_species_display)
+duckdb::duckdb_register_arrow(duckdb_con, "austraits_data", austraits)
+duckdb::duckdb_register_arrow(duckdb_con, "austraits_species_data", austraits_species)
+
+# Create DuckDB table references (no library needed)
+austraits_display_duckdb <- dplyr::tbl(duckdb_con, "austraits_display")
+austraits_species_display_duckdb <- dplyr::tbl(duckdb_con, "austraits_species_display")
+austraits_duckdb <- dplyr::tbl(duckdb_con, "austraits_data")
+austraits_species_duckdb <- dplyr::tbl(duckdb_con, "austraits_species_data")
+
+cat(sprintf("[STARTUP] ✅ DuckDB setup: %.2f sec\n\n", 
+    as.numeric(Sys.time() - duckdb_setup_start, units = "secs")))
+
 # Load sources (RDS faster than CSV)
 sources <- readRDS(file.path(data_path, "sources.rds"))
 

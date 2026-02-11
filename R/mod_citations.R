@@ -50,7 +50,7 @@ mod_citations_server <- function(id, filtered_query_cache){
         }
       }
       return(NULL)
-    }) |> bindCache(filtered_query_cache(), cache = "session")
+    })
     
     usage_text <- reactiveVal(NULL)
     

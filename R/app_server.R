@@ -13,19 +13,19 @@ app_server <- function(input, output, session) {
   # Reactive datasets that switch based on user selection
   current_austraits <- reactive({
     if (filters()$dataset_type == "species") {
-      austraits_species
+      austraits_species_duckdb
     } else {
-      austraits
+      austraits_duckdb
     }
-  }) |> bindCache(filters()$dataset_type)
+  })
 
   current_austraits_display <- reactive({
     if (filters()$dataset_type == "species") {
-      austraits_species_display
+      austraits_species_display_duckdb
     } else {
-      austraits_display
+      austraits_display_duckdb
     }
-  }) |> bindCache(filters()$dataset_type)
+  })
 
   current_columns_display <- reactive({
     if (filters()$dataset_type == "species") {
@@ -33,7 +33,7 @@ app_server <- function(input, output, session) {
     } else {
       columns_display
     }
-  }) |> bindCache(filters()$dataset_type)
+  })
   
   # Initialize dropdown choices
   taxon_name_choices <- reactive({
@@ -236,9 +236,9 @@ observeEvent(input[["filters-clear_filters"]], {
         
         # Only use lazy loading for large datasets (> 10,000 rows)
         if (total_rows > 10000) {
-          # Load first 100 rows only
+          # Load first 100 rows only (use head() for DuckDB)
           filtered_data <- filtered_query |> 
-            dplyr::slice_head(n = 100) |> 
+            head(100) |> 
             dplyr::collect()
           
           print(paste("done - showing 100 of", total_rows, "rows"))
@@ -321,7 +321,7 @@ observeEvent(input[["filters-clear_filters"]], {
         # Only use lazy loading for large datasets
         if (total_rows > 10000) {
           filtered_data <- filtered_query |> 
-            dplyr::slice_head(n = 100) |> 
+            head(100) |> 
             dplyr::collect()
         } else {
           filtered_data <- filtered_query |> 
@@ -346,7 +346,7 @@ observeEvent(input[["filters-clear_filters"]], {
         # Only use lazy loading for large datasets
         if (total_rows > 10000) {
           full_display_database <- all_data_query |> 
-            dplyr::slice_head(n = 100) |> 
+            head(100) |> 
             dplyr::collect()
         } else {
           full_display_database <- all_data_query |> 
@@ -675,4 +675,11 @@ observeEvent(input[["filters-clear_filters"]], {
     },
     contentType = "application/zip"
   )
+# Cleanup DuckDB connection when app stops
+  onStop(function() {
+    if (exists("duckdb_con")) {
+      dbDisconnect(duckdb_con, shutdown = TRUE)
+      cat("DuckDB connection closed\n")
+    }
+  })
 }

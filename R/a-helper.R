@@ -14,7 +14,7 @@ get_distinct_values_cached <- memoise::memoise(function(data, column_name, limit
     dplyr::distinct()
   
   if (!is.null(limit)) {
-    query <- query |> dplyr::slice_head(n = limit)
+    query <- query |> head(limit)
   }
   
   query |>
