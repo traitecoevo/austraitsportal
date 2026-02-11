@@ -201,7 +201,8 @@ observeEvent(input[["filters-clear_filters"]], {
   
   # Apply Filter
   observeEvent(filters(), {
-    
+    start_time <- Sys.time()
+
     # SAFETY CHECK: Wait for data to be loaded
     req(exists("austraits_display") || exists("austraits_species_display"))
     if (!exists("austraits_display") && !exists("austraits_species_display")) return()
@@ -220,8 +221,6 @@ observeEvent(input[["filters-clear_filters"]], {
 
     if (has_filters) {
 
-      print("filtering")
-      
       tryCatch({
         # Apply filters but don't collect yet
         filtered_query <- current_austraits_display() |>
@@ -241,13 +240,13 @@ observeEvent(input[["filters-clear_filters"]], {
             head(100) |> 
             dplyr::collect()
           
-          print(paste("done - showing 100 of", total_rows, "rows"))
+          txt <- paste("showing 100 of", total_rows, "rows")
         } else {
           # Load all data for small datasets
           filtered_data <- filtered_query |> 
             dplyr::collect()
           
-          print(paste("done - showing all", total_rows, "rows"))
+          txt <- paste("showing all", total_rows, "rows")
         }
         
         # Add total_rows as attribute
@@ -260,6 +259,10 @@ observeEvent(input[["filters-clear_filters"]], {
 
         # Store filtered data
         filtered_database(filtered_data)
+
+        # Log search event with time taken and number of results
+        elapsed <- as.numeric(Sys.time() - start_time, units = "secs")
+        cat("[FILTERING] Completed in", round(elapsed, 3), "seconds, ", txt, "\n")
         
       }, error = function(e) {
         cat("\n!!! FILTERING ERROR !!!\n")
@@ -679,7 +682,6 @@ observeEvent(input[["filters-clear_filters"]], {
   onStop(function() {
     if (exists("duckdb_con")) {
       dbDisconnect(duckdb_con, shutdown = TRUE)
-      cat("DuckDB connection closed\n")
     }
   })
 }

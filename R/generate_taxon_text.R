@@ -13,8 +13,6 @@
 #' }
 
 generate_taxon_text <- function(taxon) {
-  start_time <- Sys.time()
-  cat("\n[TAXON VIEW] Starting for taxon:", taxon, "\n")
 
   # Todo -- likely inefficient to collect all the data here. Optimize later.
   data_taxon <- austraits_display |>
@@ -167,9 +165,6 @@ generate_taxon_text <- function(taxon) {
     stringr::str_replace_all("&gt;", ">")
 
   result <- c(add_target_blank(taxon_description), add_target_blank(sources))
-  
-  elapsed <- as.numeric(Sys.time() - start_time, units = "secs")
-  cat("[TAXON VIEW] Completed in", round(elapsed, 3), "seconds\n")
   
   return(result)
 }

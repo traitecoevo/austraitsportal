@@ -37,6 +37,8 @@ mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
     taxon_text_generated <- reactive({
       req(current_tab() == "Taxon View")
       
+      start_time <- Sys.time()
+      
       filter_vals <- filters()
       cache_key_rank <- filter_vals$taxon_rank
       cache_key_name <- filter_vals$taxon_name
@@ -49,7 +51,12 @@ mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
       }
       
       selected_taxon <- cache_key_name[[1]]
-      generate_taxon_text_cached(selected_taxon)
+      txt <- generate_taxon_text_cached(selected_taxon)
+
+      elapsed <- as.numeric(Sys.time() - start_time, units = "secs")
+      cat("[TAXON VIEW] Completed in", round(elapsed, 3), "seconds\n")
+      
+      txt
     })
 
     output$taxon_text <- renderUI({
