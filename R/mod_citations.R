@@ -22,16 +22,20 @@ mod_citations_ui <- function(id){
 #'
 #' @param id Internal parameter for {shiny}
 #' @param filtered_query_cache Reactive containing full arrow query (not paginated display data)
+#' @param active_tab Reactive containing the currently selected tab name
 #'
 #' @noRd 
-mod_citations_server <- function(id, filtered_query_cache){
+mod_citations_server <- function(id, filtered_query_cache, active_tab = reactive(NULL)){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
     # Cached reactive for generating citations text
+    # Only runs when Citations tab is active
     citations_data <- reactive({
+      # Only execute when Citations tab is selected
+      req(active_tab() == "Citations")
+      
       start_time <- Sys.time()
-      cat("\n[CITATIONS] Starting citations generation\n")
       
       query_data <- filtered_query_cache()
       
@@ -67,9 +71,3 @@ mod_citations_server <- function(id, filtered_query_cache){
     return(reactive({ usage_text() }))
   })
 }
-    
-## To be copied in the UI
-# mod_citations_ui("citations_1")
-    
-## To be copied in the server
-# mod_citations_server("citations_1")

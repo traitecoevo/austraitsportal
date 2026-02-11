@@ -460,8 +460,8 @@ observeEvent(input[["filters-clear_filters"]], {
     }
   }, ignoreInit = TRUE)
 
-  # Citations module
-  usage_text_reactive <- mod_citations_server("citations", filtered_query_cache)
+  # Citations module (only active when tab is selected)
+  usage_text_reactive <- mod_citations_server("citations", filtered_query_cache, reactive(input$main_tabs))
 
   # App info module
   mod_app_info_server("app_info")
