@@ -198,8 +198,12 @@ observeEvent(input[["filters-clear_filters"]], {
       })
     })
   }
-  # we apply all filters only once now
-  observeEvent(filters(), {
+
+  # Debounce filters to prevent double-firing
+  filters_debounced <- debounce(filters, 300)  # Wait 300ms for changes to settle
+  
+  # Apply all filters only once (after debounce)
+  observeEvent(filters_debounced(), {
     start_time <- Sys.time()
 
     # SAFETY CHECK: Wait for data to be loaded
@@ -207,15 +211,14 @@ observeEvent(input[["filters-clear_filters"]], {
     if (!exists("austraits_display") && !exists("austraits_species_display")) return()
 
 
-    cat("[FILTER] Parsing filters...\n")
+    cat("\n\n[FILTER] Start filtering...\n")
     parsed_filters <- parse_filters(filters())
-    
 
-    # If no filters at all, show nothing (unless taxon_rank = "all")
-    if (!parsed_filters$has_filters && parsed_filters$taxon$taxon_rank != "all") {
-      filtered_database(NULL)
-      return()
-    }
+    # # If no filters at all, show nothing (unless taxon_rank = "all")
+    # if (!parsed_filters$has_filters && parsed_filters$taxon$taxon_rank != "all") {
+    #   filtered_database(NULL)
+    #   return()
+    # }
     
 
     tryCatch({

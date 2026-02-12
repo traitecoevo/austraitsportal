@@ -121,9 +121,6 @@ apply_filters_categorical <- function(data = austraits, parsed_filters){
     # Build expression (will be applied with all others in ONE filter call)
     if (length(matching_traits) > 0) {
       filter_expressions[[length(filter_expressions) + 1]] <- expr(trait_name %in% !!matching_traits)
-    } else {
-      # No matching traits = return nothing
-      filter_expressions[[length(filter_expressions) + 1]] <- expr(FALSE)
     }
   }
   
@@ -207,21 +204,18 @@ apply_filters_categorical <- function(data = austraits, parsed_filters){
   }
   
   if (length(filter_expressions) > 0) {
-    cat(sprintf("[FILTER] Combining %d expressions into ONE filter\n", length(filter_expressions)))
-    
-    # Combine all expressions with & operator
-    combined_expr <- filter_expressions[[1]]
-    if (length(filter_expressions) > 1) {
-      for (i in 2:length(filter_expressions)) {
-        combined_expr <- expr(!!combined_expr & !!filter_expressions[[i]])
-      }
-    }
-    
-    cat("[FILTER] Applying SINGLE combined filter expression\n")
-    data <- data |> dplyr::filter(!!combined_expr)
+    cat("[FILTER] Applying combined filter expression\n")
+
+    txt <- 
+      purrr::map_chr(filter_expressions, rlang::expr_text) |> paste(collapse = " &\n\t ")
+    cat("\t", txt, "\n")
+
+    data <- data |> dplyr::filter(!!!filter_expressions)
   } else {
     cat("[FILTER] No filters to apply\n")
   }
+
+
   
   return(data)
 }

@@ -137,13 +137,7 @@ trait_profile <- reactive({
       cat("[TRAIT PROFILE] Completed in", round(elapsed, 3), "seconds\n")
       
       return(list(trait_info_with_banner, raw_profile[[2]], raw_profile[[3]], raw_profile[[4]]))
-    }) |> 
-    bindCache(
-      filters()$trait_name, 
-      filters()$dataset_type, 
-      is_species_avg(),
-      cache = "session"
-    )
+    })
     
     output$trait_profile <- renderUI({
       tagList(trait_profile()[[1]])

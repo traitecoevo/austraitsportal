@@ -35,7 +35,7 @@ mod_filters_ui <- function(id) {
         "Genus"      = "genus",
         "Taxon name" = "taxon_name"
       ),
-      selected = "family"
+      selected = "all"
     ),
 
     conditionalPanel(
