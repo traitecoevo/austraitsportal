@@ -198,8 +198,7 @@ observeEvent(input[["filters-clear_filters"]], {
       })
     })
   }
-  
-  # Apply Filter
+  # we apply all filters only once now
   observeEvent(filters(), {
     start_time <- Sys.time()
 
@@ -207,167 +206,76 @@ observeEvent(input[["filters-clear_filters"]], {
     req(exists("austraits_display") || exists("austraits_species_display"))
     if (!exists("austraits_display") && !exists("austraits_species_display")) return()
 
-    # Extract filters once
-    filter_vals <- filters()
 
-    # Check which filters are valid
-    valid_filter_names <- valid_filters(filter_vals)
-
-    has_filters <- any(
-      sapply(valid_filter_names, function(name) {
-        has_input_value(filter_vals, name)
-      })
-    )
-
-    if (has_filters) {
-
-      tryCatch({
-        # Apply filters but don't collect yet
-        filtered_query <- current_austraits_display() |>
-          apply_filters_categorical(filter_vals) |>
-          apply_filters_location(filter_vals)
-        
-        # Get total count (fast - just counts, doesn't load data)
-        total_rows <- filtered_query |> 
-          dplyr::count() |> 
-          dplyr::collect() |> 
-          dplyr::pull(n)
-        
-        # Only use lazy loading for large datasets (> 10,000 rows)
-        if (total_rows > 10000) {
-          # Load first 100 rows only (use head() for DuckDB)
-          filtered_data <- filtered_query |> 
-            head(100) |> 
-            dplyr::collect()
-          
-          txt <- paste("showing 100 of", total_rows, "rows")
-        } else {
-          # Load all data for small datasets
-          filtered_data <- filtered_query |> 
-            dplyr::collect()
-          
-          txt <- paste("showing all", total_rows, "rows")
-        }
-        
-        # Add total_rows as attribute
-        attr(filtered_data, "total_rows") <- total_rows
-        # Query for loading more rows later
-        filtered_query_cache(filtered_query)
-
-        # Clear the full cache when filters change
-        full_filtered_cache(NULL)
-
-        # Store filtered data
-        filtered_database(filtered_data)
-
-        # Log search event with time taken and number of results
-        elapsed <- as.numeric(Sys.time() - start_time, units = "secs")
-        cat("[FILTERING] Completed in", round(elapsed, 3), "seconds, ", txt, "\n")
-        
-      }, error = function(e) {
-        cat("\n!!! FILTERING ERROR !!!\n")
-        cat("Error:", e$message, "\n")
-        cat("Available columns:", paste(names(austraits_display), collapse=", "), "\n")
-        filtered_database(NULL)
-      })
-
-    } else {
-
-      if (filter_vals$taxon_rank != "all") {
-        filtered_database(NULL)
-      }
-    }
-  })
+    cat("[FILTER] Parsing filters...\n")
+    parsed_filters <- parse_filters(filters())
     
-  # Display all data when all taxa are selected
-  observeEvent(filters()$taxon_rank, {
 
-    if (filters()$taxon_rank == "all" || filters()$taxon_rank == "") {
-      
-      # Get current filter values
-      filter_vals <- filters()
-      
-      # Check if there are other filters applied (trait, location, etc.)
-      has_other_filters <- any(
-        !is.null(filter_vals$trait_name) && length(filter_vals$trait_name) > 0,
-        !is.null(filter_vals$trait_grouping) && length(filter_vals$trait_grouping) > 0,  # ADD
-        !is.null(filter_vals$structure_measured) && length(filter_vals$structure_measured) > 0,  # ADD
-        !is.null(filter_vals$keywords) && length(filter_vals$keywords) > 0,  # ADD
-        !is.null(filter_vals$basis_of_record) && length(filter_vals$basis_of_record) > 0,
-        !is.null(filter_vals$life_stage) && length(filter_vals$life_stage) > 0,
-        !is.null(filter_vals$location) && length(filter_vals$location) > 0 && filter_vals$location != "",
-        !is.null(filter_vals$apc_taxon_distribution) && length(filter_vals$apc_taxon_distribution) > 0,
-        (!is.null(filter_vals$min_latitude) && !is.na(as.numeric(filter_vals$min_latitude))) ||
-        (!is.null(filter_vals$max_latitude) && !is.na(as.numeric(filter_vals$max_latitude))) ||
-        (!is.null(filter_vals$min_longitude) && !is.na(as.numeric(filter_vals$min_longitude))) ||
-        (!is.null(filter_vals$max_longitude) && !is.na(as.numeric(filter_vals$max_longitude))),
-        !is.null(filter_vals$custom_col_1) && !is.null(filter_vals$custom_val_1) &&
-        !is.null(filter_vals$custom_col_1) && !is.null(filter_vals$custom_val_1) && 
-          (length(filter_vals$custom_val_1) > 0) && (nchar(paste(filter_vals$custom_val_1, collapse="")) > 0),
-        !is.null(filter_vals$custom_col_2) && !is.null(filter_vals$custom_val_2) && 
-          (length(filter_vals$custom_val_2) > 0) && (nchar(paste(filter_vals$custom_val_2, collapse="")) > 0),
-        !is.null(filter_vals$custom_col_3) && !is.null(filter_vals$custom_val_3) && 
-          (length(filter_vals$custom_val_3) > 0) && (nchar(paste(filter_vals$custom_val_3, collapse="")) > 0)
-      )
-      
-      if (has_other_filters) {
-        filtered_query <- current_austraits_display() |>
-          apply_filters_categorical(filter_vals) |>
-          apply_filters_location(filter_vals)
-        
-        # Get total count
-        total_rows <- filtered_query |> 
-          dplyr::count() |> 
-          dplyr::collect() |> 
-          dplyr::pull(n)
-        
-        # Only use lazy loading for large datasets
-        if (total_rows > 10000) {
-          filtered_data <- filtered_query |> 
-            head(100) |> 
-            dplyr::collect()
-        } else {
-          filtered_data <- filtered_query |> 
-            dplyr::collect()
-        }
-        
-        attr(filtered_data, "total_rows") <- total_rows
-        filtered_query_cache(filtered_query)
-        full_filtered_cache(NULL)
-        
-        filtered_database(filtered_data)
-      } else {
-        # Show full database
-        all_data_query <- current_austraits_display()
-        
-        # Get total count
-        total_rows <- all_data_query |> 
-          dplyr::count() |> 
-          dplyr::collect() |> 
-          dplyr::pull(n)
-        
-        # Only use lazy loading for large datasets
-        if (total_rows > 10000) {
-          full_display_database <- all_data_query |> 
-            head(100) |> 
-            dplyr::collect()
-        } else {
-          full_display_database <- all_data_query |> 
-            dplyr::collect()
-        }
-        
-        attr(full_display_database, "total_rows") <- total_rows
-        filtered_query_cache(all_data_query)
-        full_filtered_cache(NULL)
-        
-        filtered_database(full_display_database)
-      }
-
-    } else {
-      if (is.null(filtered_database())) {
-        return()
-      }
+    # If no filters at all, show nothing (unless taxon_rank = "all")
+    if (!parsed_filters$has_filters && parsed_filters$taxon$taxon_rank != "all") {
+      filtered_database(NULL)
+      return()
     }
+    
+
+    tryCatch({
+      cat("[FILTER] Applying filters to dataset...\n")
+      
+      # Start with appropriate base dataset
+      base_data <- current_austraits_display()
+      
+      # Apply all filters in ONE pass
+      filtered_query <- apply_filters_categorical(base_data, parsed_filters)
+      
+
+      cat("[FILTER] Loading first 100 rows...\n")
+      collect_start <- Sys.time()
+      
+      filtered_data <- filtered_query |> 
+        head(100) |> 
+        dplyr::collect()
+      
+      elapsed_collect <- as.numeric(Sys.time() - collect_start, units = "secs")
+      cat(sprintf("[FILTER] ✓ Data loaded: %d rows (%.2f sec)\n", 
+          nrow(filtered_data), elapsed_collect))
+      
+      # Set temporary NA while counting
+      attr(filtered_data, "total_rows") <- NA
+      filtered_query_cache(filtered_query)
+      full_filtered_cache(NULL)
+      
+      # Display table immediately
+      filtered_database(filtered_data)
+      
+      cat(sprintf("[FILTER] 🚀 TABLE DISPLAYED in %.2f sec\n", elapsed_collect))
+      
+
+      cat("[FILTER] Counting total rows...\n")
+      count_start <- Sys.time()
+      
+      total_rows <- filtered_query |> 
+        dplyr::count() |> 
+        dplyr::collect() |> 
+        dplyr::pull(n)
+      
+      elapsed_count <- as.numeric(Sys.time() - count_start, units = "secs")
+      cat(sprintf("[FILTER] ✓ Count complete: %s rows (%.2f sec)\n", 
+          format(total_rows, big.mark = ","), elapsed_count))
+      
+      # Update with actual count
+      attr(filtered_data, "total_rows") <- total_rows
+      filtered_database(filtered_data)
+      
+      elapsed_total <- as.numeric(Sys.time() - start_time, units = "secs")
+      cat(sprintf("[FILTER] ✅ COMPLETE in %.2f sec (parse + filter + display + count)\n", elapsed_total))
+      
+    }, error = function(e) {
+      cat("\n!!! FILTERING ERROR !!!\n")
+      cat("Error:", e$message, "\n")
+      cat("Parsed filters:\n")
+      print(parsed_filters)
+      filtered_database(NULL)
+    })
   })
     
   # Set up download data as reactive expression
