@@ -44,12 +44,11 @@ mod_trait_view_server <- function(id, filtered_data, filters){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
-    # Check if current dataset is species averages
+# Check if current dataset is species averages
     is_species_avg <- reactive({
-      req(filtered_data())
-      data <- filtered_data()
-      # Species avg has value_mean column, raw data has value column
-      "value_mean" %in% names(data)
+      req(filters())
+      # Use dataset_type from filters instead of checking columns
+      filters()$dataset_type == "species"
     })
     
 trait_profile <- reactive({
@@ -65,11 +64,17 @@ trait_profile <- reactive({
   full_data <- filtered_data() |> dplyr::collect()
   
   if (is_species_avg()) {
-    # Add dummy location columns to prevent crash
+    # Add ALL missing columns for species dataset
     data_with_location <- full_data |>
       dplyr::mutate(
         `latitude (deg)` = NA_real_,
-        `longitude (deg)` = NA_real_
+        `longitude (deg)` = NA_real_,
+        # Add value column from mean_value (for plot compatibility)
+        value = if ("mean_value" %in% names(full_data)) mean_value else NA_real_,
+        # Add value_type if missing
+        value_type = if (!"value_type" %in% names(full_data)) "mean" else value_type,
+        # Add unit if missing
+        unit = if (!"unit" %in% names(full_data)) NA_character_ else unit
       )
         
         # Generate full profile (works now with dummy location)
