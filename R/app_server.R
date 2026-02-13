@@ -13,17 +13,17 @@ app_server <- function(input, output, session) {
   # Reactive datasets that switch based on user selection
   current_austraits <- reactive({
     if (filters()$dataset_type == "species") {
-      austraits_species
+      austraits_species_duckdb
     } else {
-      austraits
+      austraits_duckdb
     }
   })
 
   current_austraits_display <- reactive({
     if (filters()$dataset_type == "species") {
-      austraits_species_display
+      austraits_species_display_duckdb
     } else {
-      austraits_display
+      austraits_display_duckdb
     }
   })
 
@@ -37,13 +37,13 @@ app_server <- function(input, output, session) {
   
   # Initialize dropdown choices
   taxon_name_choices <- reactive({
-    all_taxon_names
+    dropdowns$all_taxon_names
   })
   genus_choices <- reactive({
-    all_genus
+    dropdowns$all_genus
   })
   family_choices <- reactive({
-    all_family
+    dropdowns$all_family
   })
 
   # Start telemetry session
@@ -69,12 +69,12 @@ observeEvent(input[["filters-clear_filters"]], {
 })
   
   # Server-side selectizeInput update for other options that are not conditional
-  updateSelectizeInput(session, "filters-trait_name", choices = all_traits, server = TRUE)
-  updateSelectizeInput(session, "filters-trait_grouping", choices = all_trait_groupings, server = TRUE)
-  updateSelectizeInput(session, "filters-structure_measured", choices = all_structure_measured, server = TRUE)
-  updateSelectizeInput(session, "filters-keywords", choices = all_keywords, server = TRUE)
-  updateSelectizeInput(session, "filters-basis_of_record", choices = all_bor, server = TRUE)
-  updateSelectizeInput(session, "filters-life_stage", choices = all_age, server = TRUE)
+  updateSelectizeInput(session, "filters-trait_name", choices = dropdowns$all_traits, server = TRUE)
+  updateSelectizeInput(session, "filters-trait_grouping", choices = dropdowns$all_trait_groupings, server = TRUE)
+  updateSelectizeInput(session, "filters-structure_measured", choices = dropdowns$all_structure_measured, server = TRUE)
+  updateSelectizeInput(session, "filters-keywords", choices = dropdowns$all_keywords, server = TRUE)
+  updateSelectizeInput(session, "filters-basis_of_record", choices = dropdowns$all_bor, server = TRUE)
+  updateSelectizeInput(session, "filters-life_stage", choices = dropdowns$all_age, server = TRUE)
 
   # Update trait names when trait features are selected
   observeEvent(
@@ -94,46 +94,25 @@ observeEvent(input[["filters-clear_filters"]], {
           !is.null(selected_structure) && length(selected_structure) > 0 ||
           !is.null(selected_keywords) && length(selected_keywords) > 0) {
         
-        # Start with all traits
-        matching_traits <- trait_groups$trait
-        
-        # Filter by grouping
-        if (!is.null(selected_grouping) && length(selected_grouping) > 0) {
-          matching_traits <- trait_groups |>
-            dplyr::filter(trait_group_for_portal %in% selected_grouping) |>
-            dplyr::pull(trait) |>
-            unique()
-        }
-        
-        # Filter by structure
-        if (!is.null(selected_structure) && length(selected_structure) > 0) {
-          structure_pattern <- paste(selected_structure, collapse = "|")
-          structure_traits <- trait_groups |>
-            dplyr::filter(stringr::str_detect(structure_measured, structure_pattern)) |>
-            dplyr::pull(trait)
-          matching_traits <- intersect(matching_traits, structure_traits)
-        }
-        
-        # Filter by keywords
-        if (!is.null(selected_keywords) && length(selected_keywords) > 0 && "keywords" %in% names(trait_groups)) {
-          keyword_pattern <- paste(selected_keywords, collapse = "|")
-          keyword_traits <- trait_groups |>
-            dplyr::filter(stringr::str_detect(keywords, keyword_pattern)) |>
-            dplyr::pull(trait)
-          matching_traits <- intersect(matching_traits, keyword_traits)
-        }
+        # Use cached helper function
+        matching_traits <- get_matching_traits_cached(
+          trait_groups,
+          selected_grouping,
+          selected_structure,
+          selected_keywords
+        )
         
         # Update trait_name dropdown
         current_trait_selection <- input[["filters-trait_name"]]
         updateSelectizeInput(session, "filters-trait_name",
-                            choices = sort(matching_traits),
+                            choices = matching_traits,
                             selected = current_trait_selection,
                             server = TRUE)
       } else {
         # No trait features selected - show all traits
         current_trait_selection <- input[["filters-trait_name"]]
         updateSelectizeInput(session, "filters-trait_name",
-                            choices = all_traits,
+                            choices = dropdowns$all_traits,
                             selected = current_trait_selection,
                             server = TRUE)
       }
@@ -195,29 +174,18 @@ observeEvent(input[["filters-clear_filters"]], {
           if (!is.null(query) && column_name %in% names(query)) {
             # Special handling for dataset_id in species averages
             if (column_name == "dataset_id" && filters()$dataset_type == "species") {
-              unique_values <- all_dataset_ids_species
+              unique_values <- dropdowns$all_dataset_ids_species
             } else {
-              # Use full query (not just loaded data)
-              unique_values <- query |>
-                dplyr::select(!!rlang::sym(column_name)) |>
-                dplyr::distinct() |>
-                dplyr::collect() |>
-                dplyr::pull(1) |>
-                na.omit() |>
-                sort()
+              # Use cached helper with limit to avoid large collect operations
+              unique_values <- get_distinct_values_cached(query, column_name, limit = 1000)
             }
           } else {
             # Special handling for dataset_id in species averages
             if (column_name == "dataset_id" && filters()$dataset_type == "species") {
-              unique_values <- all_dataset_ids_species
+              unique_values <- dropdowns$all_dataset_ids_species
             } else {
-              unique_values <- current_austraits_display() |>
-                dplyr::select(!!rlang::sym(column_name)) |>
-                dplyr::distinct() |>
-                dplyr::collect() |>
-                dplyr::pull(1) |>
-                na.omit() |>
-                sort()
+              # Use cached helper with limit
+              unique_values <- get_distinct_values_cached(current_austraits_display(), column_name, limit = 1000)
             }
           }
           
@@ -230,204 +198,132 @@ observeEvent(input[["filters-clear_filters"]], {
       })
     })
   }
+
+  # Debounce filters to prevent double-firing
+  filters_debounced <- debounce(filters, 300)  # Wait 300ms for changes to settle
   
-  # Apply Filter
-  observeEvent(filters(), {
-    
+  # Apply all filters only once (after debounce)
+  observeEvent(filters_debounced(), {
+    start_time <- Sys.time()
+
     # SAFETY CHECK: Wait for data to be loaded
     req(exists("austraits_display") || exists("austraits_species_display"))
     if (!exists("austraits_display") && !exists("austraits_species_display")) return()
 
-    # Extract filters once
-    filter_vals <- filters()
 
-    # Check which filters are valid
-    valid_filter_names <- valid_filters(filter_vals)
+    cat("\n\n[FILTER] Start filtering...\n")
+    parsed_filters <- parse_filters(filters())
 
-    has_filters <- any(
-      sapply(valid_filter_names, function(name) {
-        has_input_value(filter_vals, name)
-      })
-    )
+    # # If no filters at all, show nothing (unless taxon_rank = "all")
+    # if (!parsed_filters$has_filters && parsed_filters$taxon$taxon_rank != "all") {
+    #   filtered_database(NULL)
+    #   return()
+    # }
+    
 
-    if (has_filters) {
-
-      print("filtering")
+    tryCatch({
+      cat("[FILTER] Applying filters to dataset...\n")
       
-      tryCatch({
-        # Apply filters but don't collect yet
-        filtered_query <- current_austraits_display() |>
-          apply_filters_categorical(filter_vals) |>
-          apply_filters_location(filter_vals)
-        
-        # Get total count (fast - just counts, doesn't load data)
-        total_rows <- filtered_query |> 
-          dplyr::count() |> 
-          dplyr::collect() |> 
-          dplyr::pull(n)
-        
-        # Only use lazy loading for large datasets (> 10,000 rows)
-        if (total_rows > 10000) {
-          # Load first 100 rows only
-          filtered_data <- filtered_query |> 
-            dplyr::slice_head(n = 100) |> 
-            dplyr::collect()
-          
-          print(paste("done - showing 100 of", total_rows, "rows"))
-        } else {
-          # Load all data for small datasets
-          filtered_data <- filtered_query |> 
-            dplyr::collect()
-          
-          print(paste("done - showing all", total_rows, "rows"))
-        }
-        
-        # Add total_rows as attribute
-        attr(filtered_data, "total_rows") <- total_rows
-        # Query for loading more rows later
-        filtered_query_cache(filtered_query)
+      # Start with appropriate base dataset
+      base_data <- current_austraits_display()
+      
+      # Apply all filters in ONE pass
+      filtered_query <- apply_filters_categorical(base_data, parsed_filters)
+      
 
-        # Clear the full cache when filters change
-        full_filtered_cache(NULL)
+      cat("[FILTER] Loading first 100 rows...\n")
+      collect_start <- Sys.time()
+      
+      filtered_data <- filtered_query |> 
+        head(100) |> 
+        dplyr::collect()
+      
+      elapsed_collect <- as.numeric(Sys.time() - collect_start, units = "secs")
+      cat(sprintf("[FILTER] ✓ Data loaded: %d rows (%.2f sec)\n", 
+          nrow(filtered_data), elapsed_collect))
+      
+      # Set temporary NA while counting
+      attr(filtered_data, "total_rows") <- NA
+      filtered_query_cache(filtered_query)
+      full_filtered_cache(NULL)
+      
+      # Display table immediately
+      filtered_database(filtered_data)
+      
+      cat(sprintf("[FILTER] 🚀 TABLE DISPLAYED in %.2f sec\n", elapsed_collect))
+      
 
-        # Store filtered data
-        filtered_database(filtered_data)
-        
-      }, error = function(e) {
-        cat("\n!!! FILTERING ERROR !!!\n")
-        cat("Error:", e$message, "\n")
-        cat("Available columns:", paste(names(austraits_display), collapse=", "), "\n")
-        filtered_database(NULL)
-      })
-
-    } else {
-
-      if (filter_vals$taxon_rank != "all") {
-        filtered_database(NULL)
-      }
-    }
+      cat("[FILTER] Counting total rows...\n")
+      count_start <- Sys.time()
+      
+      total_rows <- filtered_query |> 
+        dplyr::count() |> 
+        dplyr::collect() |> 
+        dplyr::pull(n)
+      
+      elapsed_count <- as.numeric(Sys.time() - count_start, units = "secs")
+      cat(sprintf("[FILTER] ✓ Count complete: %s rows (%.2f sec)\n", 
+          format(total_rows, big.mark = ","), elapsed_count))
+      
+      # Update with actual count
+      attr(filtered_data, "total_rows") <- total_rows
+      filtered_database(filtered_data)
+      
+      elapsed_total <- as.numeric(Sys.time() - start_time, units = "secs")
+      cat(sprintf("[FILTER] ✅ COMPLETE in %.2f sec (parse + filter + display + count)\n", elapsed_total))
+      
+    }, error = function(e) {
+      cat("\n!!! FILTERING ERROR !!!\n")
+      cat("Error:", e$message, "\n")
+      cat("Parsed filters:\n")
+      print(parsed_filters)
+      filtered_database(NULL)
+    })
   })
     
-  # Display all data when all taxa are selected
-  observeEvent(filters()$taxon_rank, {
-
-    if (filters()$taxon_rank == "all" || filters()$taxon_rank == "") {
-      
-      # Get current filter values
-      filter_vals <- filters()
-      
-      # Check if there are other filters applied (trait, location, etc.)
-      has_other_filters <- any(
-        !is.null(filter_vals$trait_name) && length(filter_vals$trait_name) > 0,
-        !is.null(filter_vals$trait_grouping) && length(filter_vals$trait_grouping) > 0,  # ADD
-        !is.null(filter_vals$structure_measured) && length(filter_vals$structure_measured) > 0,  # ADD
-        !is.null(filter_vals$keywords) && length(filter_vals$keywords) > 0,  # ADD
-        !is.null(filter_vals$basis_of_record) && length(filter_vals$basis_of_record) > 0,
-        !is.null(filter_vals$life_stage) && length(filter_vals$life_stage) > 0,
-        !is.null(filter_vals$location) && length(filter_vals$location) > 0 && filter_vals$location != "",
-        !is.null(filter_vals$apc_taxon_distribution) && length(filter_vals$apc_taxon_distribution) > 0,
-        (!is.null(filter_vals$min_latitude) && !is.na(as.numeric(filter_vals$min_latitude))) ||
-        (!is.null(filter_vals$max_latitude) && !is.na(as.numeric(filter_vals$max_latitude))) ||
-        (!is.null(filter_vals$min_longitude) && !is.na(as.numeric(filter_vals$min_longitude))) ||
-        (!is.null(filter_vals$max_longitude) && !is.na(as.numeric(filter_vals$max_longitude))),
-        !is.null(filter_vals$custom_col_1) && !is.null(filter_vals$custom_val_1) &&
-        !is.null(filter_vals$custom_col_1) && !is.null(filter_vals$custom_val_1) && 
-          (length(filter_vals$custom_val_1) > 0) && (nchar(paste(filter_vals$custom_val_1, collapse="")) > 0),
-        !is.null(filter_vals$custom_col_2) && !is.null(filter_vals$custom_val_2) && 
-          (length(filter_vals$custom_val_2) > 0) && (nchar(paste(filter_vals$custom_val_2, collapse="")) > 0),
-        !is.null(filter_vals$custom_col_3) && !is.null(filter_vals$custom_val_3) && 
-          (length(filter_vals$custom_val_3) > 0) && (nchar(paste(filter_vals$custom_val_3, collapse="")) > 0)
-      )
-      
-      if (has_other_filters) {
-        filtered_query <- current_austraits_display() |>
-          apply_filters_categorical(filter_vals) |>
-          apply_filters_location(filter_vals)
-        
-        # Get total count
-        total_rows <- filtered_query |> 
-          dplyr::count() |> 
-          dplyr::collect() |> 
-          dplyr::pull(n)
-        
-        # Only use lazy loading for large datasets
-        if (total_rows > 10000) {
-          filtered_data <- filtered_query |> 
-            dplyr::slice_head(n = 100) |> 
-            dplyr::collect()
-        } else {
-          filtered_data <- filtered_query |> 
-            dplyr::collect()
-        }
-        
-        attr(filtered_data, "total_rows") <- total_rows
-        filtered_query_cache(filtered_query)
-        full_filtered_cache(NULL)
-        
-        filtered_database(filtered_data)
-      } else {
-        # Show full database
-        all_data_query <- current_austraits_display()
-        
-        # Get total count
-        total_rows <- all_data_query |> 
-          dplyr::count() |> 
-          dplyr::collect() |> 
-          dplyr::pull(n)
-        
-        # Only use lazy loading for large datasets
-        if (total_rows > 10000) {
-          full_display_database <- all_data_query |> 
-            dplyr::slice_head(n = 100) |> 
-            dplyr::collect()
-        } else {
-          full_display_database <- all_data_query |> 
-            dplyr::collect()
-        }
-        
-        attr(full_display_database, "total_rows") <- total_rows
-        filtered_query_cache(all_data_query)
-        full_filtered_cache(NULL)
-        
-        filtered_database(full_display_database)
-      }
-
-    } else {
-      if (is.null(filtered_database())) {
-        return()
-      }
-    }
-  })
-    
-  # Set up download data as reactive expression
+# Set up download data as reactive expression
   download_data_table <- reactive({
-    # Use the query cache to get ALL filtered data, not just displayed 100 rows
+    # Use the query cache to get ALL filtered data
     query <- filtered_query_cache()
     
     if (is.null(query)) {
       return(NULL)
     }
     
-    # If user applied DataTable column filters, respect those
+    # Check if user applied DataTable column filters
     if (!is.null(data_table_outputs$visible_rows())) {
       visible_rows <- data_table_outputs$visible_rows()
       display_db <- filtered_database()
       
       if (!is.null(display_db) && length(visible_rows) > 0 && length(visible_rows) < nrow(display_db)) {
-        # User filtered within the DataTable - only download those rows
+        # User filtered within DataTable - only download visible rows
+        # Collect filtered query first, then filter in R
+        full_data <- query |> dplyr::collect()
         display_db_filtered <- display_db[visible_rows, , drop = FALSE]
-        return(current_austraits() |> dplyr::semi_join(display_db_filtered, by = "row_id"))
+        
+        # Filter in R (not DuckDB)
+        result <- full_data |>
+          dplyr::filter(row_id %in% display_db_filtered$row_id)
+        
+        # Join with full dataset to get all columns
+        row_ids <- result$row_id
+        return(current_austraits() |> 
+                 dplyr::collect() |>  # Collect EVERYTHING first
+                 dplyr::filter(row_id %in% row_ids))
       }
     }
     
-    # Default: Return ALL filtered data from the query (not just 100 displayed)
-    # Collect ALL row_ids from the filtered query, then join with full dataset
-    filtered_row_ids <- query |> 
+    # Default: download ALL filtered data
+    # Just collect the filtered query and join with full dataset
+    filtered_ids <- query |> 
       dplyr::select(row_id) |> 
-      dplyr::collect()
+      dplyr::collect() |>
+      dplyr::pull(row_id)
     
-    # Join full dataset with ALL filtered row_ids
-    current_austraits() |> dplyr::semi_join(filtered_row_ids, by = "row_id")
+    # Collect full dataset and filter in R
+    current_austraits() |> 
+      dplyr::collect() |>
+      dplyr::filter(row_id %in% filtered_ids)
   })
   
   # Data table module
@@ -492,8 +388,8 @@ observeEvent(input[["filters-clear_filters"]], {
     }
   }, ignoreInit = TRUE)
 
-  # Citations module
-  usage_text_reactive <- mod_citations_server("citations", filtered_query_cache)
+  # Citations module (only active when tab is selected)
+  usage_text_reactive <- mod_citations_server("citations", filtered_query_cache, reactive(input$main_tabs))
 
   # App info module
   mod_app_info_server("app_info")
@@ -546,7 +442,7 @@ observeEvent(input[["filters-clear_filters"]], {
       # Handle trait name WITH CHOICES
       if (!is.null(query$trait_name)) {
         updateSelectizeInput(session, "filters-trait_name", 
-                            choices = all_traits, 
+                            choices = dropdowns$all_traits, 
                             selected = query$trait_name, 
                             server = TRUE)
       }
@@ -559,7 +455,7 @@ observeEvent(input[["filters-clear_filters"]], {
       if (!is.null(query$apc_taxon_distribution)) {
         states <- strsplit(query$apc_taxon_distribution, ",")[[1]]
         updateSelectizeInput(session, "filters-apc_taxon_distribution", 
-                            choices = all_states_territories, 
+                            choices = dropdowns$all_states_territories, 
                             selected = states, 
                             server = TRUE)
       }
@@ -567,7 +463,7 @@ observeEvent(input[["filters-clear_filters"]], {
       # Handle basis of record WITH CHOICES
       if (!is.null(query$basis_of_record)) {
         updateSelectizeInput(session, "filters-basis_of_record", 
-                            choices = all_bor, 
+                            choices = dropdowns$all_bor, 
                             selected = query$basis_of_record, 
                             server = TRUE)
       }
@@ -575,7 +471,7 @@ observeEvent(input[["filters-clear_filters"]], {
       # Handle life stage WITH CHOICES
       if (!is.null(query$life_stage)) {
         updateSelectizeInput(session, "filters-life_stage", 
-                            choices = all_age, 
+                            choices = dropdowns$all_age, 
                             selected = query$life_stage, 
                             server = TRUE)
       }
@@ -707,4 +603,10 @@ observeEvent(input[["filters-clear_filters"]], {
     },
     contentType = "application/zip"
   )
+# Cleanup DuckDB connection when app stops
+  onStop(function() {
+    if (exists("duckdb_con")) {
+      dbDisconnect(duckdb_con, shutdown = TRUE)
+    }
+  })
 }

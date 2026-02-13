@@ -44,26 +44,37 @@ mod_trait_view_server <- function(id, filtered_data, filters){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
-    # Check if current dataset is species averages
+# Check if current dataset is species averages
     is_species_avg <- reactive({
-      req(filtered_data())
-      data <- filtered_data()
-      # Species avg has value_mean column, raw data has value column
-      "value_mean" %in% names(data)
+      req(filters())
+      # Use dataset_type from filters instead of checking columns
+      filters()$dataset_type == "species"
     })
     
 trait_profile <- reactive({
+  start_time <- Sys.time()
+  cache_key_trait <- filters()$trait_name
+  cache_key_dataset <- filters()$dataset_type
+  cache_key_species <- is_species_avg()
+  cat("\n[TRAIT PROFILE] Starting for trait:", cache_key_trait, "| dataset:", cache_key_dataset, "| is_species:", cache_key_species, "\n")
+  
   req(filtered_data())
   
   # Collect ALL data for profile generation
   full_data <- filtered_data() |> dplyr::collect()
   
   if (is_species_avg()) {
-    # Add dummy location columns to prevent crash
+    # Add ALL missing columns for species dataset
     data_with_location <- full_data |>
       dplyr::mutate(
         `latitude (deg)` = NA_real_,
-        `longitude (deg)` = NA_real_
+        `longitude (deg)` = NA_real_,
+        # Add value column from mean_value (for plot compatibility)
+        value = if ("mean_value" %in% names(full_data)) mean_value else NA_real_,
+        # Add value_type if missing
+        value_type = if (!"value_type" %in% names(full_data)) "mean" else value_type,
+        # Add unit if missing
+        unit = if (!"unit" %in% names(full_data)) NA_character_ else unit
       )
         
         # Generate full profile (works now with dummy location)
@@ -126,6 +137,10 @@ trait_profile <- reactive({
       )
       
       trait_info_with_banner <- tagList(banner, raw_profile[[1]])
+      
+      elapsed <- as.numeric(Sys.time() - start_time, units = "secs")
+      cat("[TRAIT PROFILE] Completed in", round(elapsed, 3), "seconds\n")
+      
       return(list(trait_info_with_banner, raw_profile[[2]], raw_profile[[3]], raw_profile[[4]]))
     })
     

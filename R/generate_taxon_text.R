@@ -164,7 +164,9 @@ generate_taxon_text <- function(taxon) {
     stringr::str_replace_all("&lt;", "<") |>
     stringr::str_replace_all("&gt;", ">")
 
-  c(add_target_blank(taxon_description), add_target_blank(sources))
+  result <- c(add_target_blank(taxon_description), add_target_blank(sources))
+  
+  return(result)
 }
 
 #' Generate Portal Links for a Taxon
@@ -200,7 +202,7 @@ generate_taxon_portal_links <- function(taxon_info) {
   # NT eFlora only if distributed in NT
   if (grepl("NT", distribution, ignore.case = TRUE)) {
     # Try to find in CSV
-    nt_match <- nt_links |> dplyr::filter(taxon_name == taxon)
+    nt_match <- flora_links$nt |> dplyr::filter(taxon_name == taxon)
     
     if (nrow(nt_match) > 0 && !is.na(nt_match$url[1])) {
       # Use URL from CSV
@@ -231,7 +233,7 @@ generate_taxon_portal_links <- function(taxon_info) {
   # Vic Flora only if distributed in Vic/Victoria
   if (grepl("Vic", distribution, ignore.case = TRUE)) {
     # Try to find in CSV
-    vic_match <- vic_links |> dplyr::filter(taxon_name == taxon)
+    vic_match <- flora_links$vic |> dplyr::filter(taxon_name == taxon)
     
     if (nrow(vic_match) > 0 && !is.na(vic_match$url[1])) {
       # Use URL from CSV
@@ -260,7 +262,7 @@ generate_taxon_portal_links <- function(taxon_info) {
   }
   
   # ATRP only if distributed in Qld (Australian Tropical Rainforest Plants)
-    atrp_match <- atrp_links |> dplyr::filter(taxon_name == taxon)
+    atrp_match <- flora_links$atrp |> dplyr::filter(taxon_name == taxon)
     
     if (nrow(atrp_match) > 0)  {
       # Use URL from CSV
@@ -313,3 +315,8 @@ export_bibtex_for_data <- function(keys, filename,
     check = FALSE
   )
 }
+# Memoised version for performance (file-based cache to save RAM on shinyapps.io)
+generate_taxon_text_cached <- memoise::memoise(
+  generate_taxon_text,
+  cache = memoise::cache_filesystem(".cache/taxon_text")
+)

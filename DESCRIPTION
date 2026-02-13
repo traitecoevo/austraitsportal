@@ -71,6 +71,8 @@ Imports:
     DBI,
     RSQLite,
     config,
+    duckdb,
+    dbplyr,
     shiny.telemetry
 Remotes:
     traitecoevo/austraits

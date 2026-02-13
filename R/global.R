@@ -1,10 +1,26 @@
 options(shiny.launch.browser = TRUE)
 
+# Performance optimizations
+#' Configure Shiny Application Options
+#'
+#' Sets global Shiny options to optimize application performance and resource handling:
+#' - `shiny.autoreload = FALSE`: Disables automatic reloading to prevent interruptions during development
+#' - `shiny.reactlog = FALSE`: Disables reactivity logging to reduce memory overhead and improve performance
+#' - `shiny.maxRequestSize = 30 * 1024 ^ 2`: Sets maximum upload file size to 30 MB, preventing excessive memory consumption from large file uploads
+options(
+  shiny.autoreload = FALSE,
+  shiny.reactlog = FALSE,
+  shiny.maxRequestSize = 30 * 1024 ^ 2
+)
+
 # Load data
 ## TODO: One day parquet of flattened database may be uploaded to Zenodo,
 ## For now will use the R package and store in Github Releases see branch data-load
 ## Use austraits R package load_austraits() function to download data to the file path below
 ## Then create this parquet following code in data-raw/create-flat-austraits.R
+
+# create place for cache
+dir.create(".cache/taxon_text", showWarnings = FALSE, recursive = TRUE)
 
 # Custom logic
 `%not_in%` <- Negate(`%in%`)
@@ -19,15 +35,46 @@ austraits_display <- arrow::open_dataset(file.path(data_path, "austraits-display
 austraits_species_averages <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
 austraits_species <- arrow::open_dataset(file.path(data_path, "austraits-species-averages.parquet"))
 austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits-species-averages-display.parquet"))
-sources <- readr::read_csv(file.path(data_path, "sources.csv"), show_col_types = FALSE)
 
-trait_definitions <- yaml::read_yaml(file.path(data_path, "definitions.yml"))
+# After loading Arrow datasets, ADD:
 
-trait_groups <- readr::read_csv(
-  "inst/extdata/austraits/trait_groups_for_portal.csv",
-  col_types = readr::cols(.default = readr::col_character())
-  )
-metatdata <- jsonlite::read_json("inst/extdata/austraits/austraits.json")
+# ════════════════════════════════════════
+# DUCKDB SETUP FOR PERFORMANCE
+# ════════════════════════════════════════
+cat("[STARTUP] Setting up DuckDB...\n")
+duckdb_setup_start <- Sys.time()
+
+library(duckdb)
+
+# Create DuckDB connection
+duckdb_con <- dbConnect(duckdb::duckdb(), ":memory:")
+
+# Register Arrow datasets with DuckDB
+duckdb::duckdb_register_arrow(duckdb_con, "austraits_display", austraits_display)
+duckdb::duckdb_register_arrow(duckdb_con, "austraits_species_display", austraits_species_display)
+duckdb::duckdb_register_arrow(duckdb_con, "austraits_data", austraits)
+duckdb::duckdb_register_arrow(duckdb_con, "austraits_species_data", austraits_species)
+
+# Create DuckDB table references (no library needed)
+austraits_display_duckdb <- dplyr::tbl(duckdb_con, "austraits_display")
+austraits_species_display_duckdb <- dplyr::tbl(duckdb_con, "austraits_species_display")
+austraits_duckdb <- dplyr::tbl(duckdb_con, "austraits_data")
+austraits_species_duckdb <- dplyr::tbl(duckdb_con, "austraits_species_data")
+
+cat(sprintf("[STARTUP] ✅ DuckDB setup: %.2f sec\n\n", 
+    as.numeric(Sys.time() - duckdb_setup_start, units = "secs")))
+
+# Load sources (RDS faster than CSV)
+sources <- readRDS(file.path(data_path, "sources.rds"))
+
+# Load trait definitions (RDS faster than YAML)
+trait_definitions <- readRDS(file.path(data_path, "definitions.rds"))
+
+# Load trait groups (RDS faster than CSV)
+trait_groups <- readRDS(file.path(data_path, "trait_groups.rds"))
+
+# Load metadata (RDS faster than JSON)
+metatdata <- readRDS(file.path(data_path, "metadata.rds"))
 
 columns_display <- c(
   "dataset_id", "taxon_name", "genus", "family", "trait_name", "value", "unit",
@@ -41,18 +88,11 @@ columns_display <- c(
 )
 
 # Set up possible values for selectize menus
-## Taxonomy
-### Unique values of family
-all_family <- austraits |>
-  extract_distinct_values(family)
+# Load precomputed dropdown values for faster startup
+dropdown_cache_path <- file.path(data_path, "dropdown_cache.rds")
 
-### Unique values of genus
-all_genus <- austraits |>
-  extract_distinct_values(genus)
-
-## Unique values of taxon_name
-all_taxon_names <- austraits |>
-  extract_distinct_values(taxon_name)
+# Load from cache (much faster)
+dropdowns <- readRDS(dropdown_cache_path)
 
 ## Location
 # TODO: Not yet implemented.
@@ -60,77 +100,8 @@ all_taxon_names <- austraits |>
 
 ### States by location properties
 
-
-### APC distribution - May need APCalign::create_species_state_origin_matrix()
-all_states_territories <- austraits  |> 
-  extract_distinct_values(taxon_distribution) |> 
-  paste(collapse = ", ")  |> 
-  stringr::str_split(",")  |> 
-  purrr::map(~trimws(.x))  |> 
-  purrr::list_c() |>
-  unique()  |> 
-  stringr::word(1)  |> 
-  unique()  |> 
-  sort()
-
-## Traits
-### Unique values of taxon_name
-all_traits <- austraits |>
-  extract_distinct_values(trait_name)
-
-## Other sidebar values
-### Unique values of BoR
-all_bor <- austraits |>
-  extract_distinct_values(basis_of_record)
-
-## Unique values of age/lifestage
-all_age <- austraits |>
-  extract_distinct_values(life_stage)
-
-# Load state flora link mappings
-atrp_links <- readr::read_csv(
-  "inst/extdata/ATRP_links.csv",
-  show_col_types = FALSE
-) |>
-  dplyr::rename(url = formatted) |> 
-  dplyr::select(taxon_name, url) |>
-  dplyr::filter(!is.na(url), url != "")
-
-nt_links <- readr::read_csv(
-  "inst/extdata/NT_links.csv",
-  show_col_types = FALSE
-) |>
-  dplyr::select(taxon_name, url) |> 
-  dplyr::filter(!is.na(url), url != "")
-
-vic_links <- readr::read_csv(
-  "inst/extdata/Vic_links.csv",
-  show_col_types = FALSE
-) |>
-  dplyr::select(taxon_name, url) |> 
-  dplyr::filter(!is.na(url), url != "")
-## Trait groupings and keywords
-all_trait_groupings <- trait_groups |>
-  dplyr::pull(trait_group_for_portal) |>
-  unique() |>
-  sort()
-
-all_structure_measured <- trait_groups |>
-  dplyr::pull(structure_measured) |>
-  stringr::str_remove_all("\\[.*?\\]") |> 
-  stringr::str_split("; |,") |>              
-  unlist() |>                              
-  stringr::str_trim() |>
-  unique() |>
-  sort()
-
-all_keywords <- trait_groups |>
-    dplyr::pull(keywords) |>
-    stringr::str_split("; |,") |>
-    unlist() |>
-    stringr::str_trim() |>
-    unique() |>
-    sort()
+# Load state flora link mappings (precomputed in RDS)
+flora_links <- readRDS(file.path(data_path, "flora_links.rds"))
 
 # Define controlled vocabulary columns (dropdown)
 controlled_vocab_columns <- c(
@@ -168,17 +139,6 @@ custom_filter_columns_species <- c(
 # Custom Github hyperlink icon
 target <- bsplus::shiny_iconlink(name = "github")
 target$attribs$href <- "https://github.com/traitecoevo/austraits.portal"
-
-
-# For species averages - split semicolon-separated dataset_id (Get done cause IDs get clubbed, should be understandable)
-temp_species_ids <- austraits_species_display |> 
-  dplyr::select(dataset_id) |> 
-  dplyr::distinct() |> 
-  dplyr::collect() |> 
-  dplyr::pull(dataset_id)
-
-all_dataset_ids_species <- unique(sort(unlist(strsplit(temp_species_ids, "; "))))
-rm(temp_species_ids)
 
 # Columns to display for species averages (different from raw data)
 columns_display_species <- c(

@@ -32,6 +32,32 @@ mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
     ns <- session$ns
     
     taxon_text <- reactiveVal(NULL)
+    
+    # Cached reactive for generating taxon text
+    taxon_text_generated <- reactive({
+      req(current_tab() == "Taxon View")
+      
+      start_time <- Sys.time()
+      
+      filter_vals <- filters()
+      cache_key_rank <- filter_vals$taxon_rank
+      cache_key_name <- filter_vals$taxon_name
+      
+      # Must be in taxon_name mode with exactly 1 selected taxon
+      if (cache_key_rank != "taxon_name" ||
+          is.null(cache_key_name) ||
+          length(cache_key_name) != 1) {
+        return(NULL)
+      }
+      
+      selected_taxon <- cache_key_name[[1]]
+      txt <- generate_taxon_text_cached(selected_taxon)
+
+      elapsed <- as.numeric(Sys.time() - start_time, units = "secs")
+      cat("[TAXON VIEW] Completed in", round(elapsed, 3), "seconds\n")
+      
+      txt
+    })
 
     output$taxon_text <- renderUI({
       req(taxon_text())
@@ -84,8 +110,8 @@ mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
           return()
         }
         
-        # Generate taxon text
-        txt <- generate_taxon_text(selected_taxon)
+        # Get cached taxon text
+        txt <- taxon_text_generated()
         
         # Collapse if it's a vector, check if empty
         if (is.null(txt) || length(txt) == 0 || all(nchar(txt) == 0)) {

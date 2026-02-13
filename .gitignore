@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Renviron
+.cache/
 *.parquet
 *.rds
 *.bib
@@ -15,4 +16,5 @@ data
 *.out
 *.swp
 inst/extdata/austraits/austraits-7.0.0-full/*
+inst/telemetry/telemetry.db
 config.yml

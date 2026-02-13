@@ -22,16 +22,21 @@ mod_citations_ui <- function(id){
 #'
 #' @param id Internal parameter for {shiny}
 #' @param filtered_query_cache Reactive containing full arrow query (not paginated display data)
+#' @param active_tab Reactive containing the currently selected tab name
 #'
 #' @noRd 
-mod_citations_server <- function(id, filtered_query_cache){
+mod_citations_server <- function(id, filtered_query_cache, active_tab = reactive(NULL)){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
-    usage_text <- reactiveVal(NULL)
-    
-    # Update usage text when filtered data changes
-    observe({
+    # Cached reactive for generating citations text
+    # Only runs when Citations tab is active
+    citations_data <- reactive({
+      # Only execute when Citations tab is selected
+      req(active_tab() == "Citations")
+      
+      start_time <- Sys.time()
+      
       query_data <- filtered_query_cache()
       
       if (!is.null(query_data)) {
@@ -42,13 +47,20 @@ mod_citations_server <- function(id, filtered_query_cache){
           dplyr::collect()
         
         if (nrow(data_collected) > 0) {
-          usage_text(generate_usage_and_citations_text(data_collected))
-        } else {
-          usage_text(NULL)
+          result <- generate_usage_and_citations_text(data_collected)
+          elapsed <- as.numeric(Sys.time() - start_time, units = "secs")
+          cat("[CITATIONS] Completed in", round(elapsed, 3), "seconds\n")
+          return(result)
         }
-      } else {
-        usage_text(NULL)
       }
+      return(NULL)
+    })
+    
+    usage_text <- reactiveVal(NULL)
+    
+    # Update usage_text from cached reactive
+    observe({
+      usage_text(citations_data())
     })
     
     output$usage_text <- renderUI({
@@ -59,9 +71,3 @@ mod_citations_server <- function(id, filtered_query_cache){
     return(reactive({ usage_text() }))
   })
 }
-    
-## To be copied in the UI
-# mod_citations_ui("citations_1")
-    
-## To be copied in the server
-# mod_citations_server("citations_1")
