@@ -281,35 +281,49 @@ observeEvent(input[["filters-clear_filters"]], {
     })
   })
     
-  # Set up download data as reactive expression
+# Set up download data as reactive expression
   download_data_table <- reactive({
-    # Use the query cache to get ALL filtered data, not just displayed 100 rows
+    # Use the query cache to get ALL filtered data
     query <- filtered_query_cache()
     
     if (is.null(query)) {
       return(NULL)
     }
     
-    # If user applied DataTable column filters, respect those
+    # Check if user applied DataTable column filters
     if (!is.null(data_table_outputs$visible_rows())) {
       visible_rows <- data_table_outputs$visible_rows()
       display_db <- filtered_database()
       
       if (!is.null(display_db) && length(visible_rows) > 0 && length(visible_rows) < nrow(display_db)) {
-        # User filtered within the DataTable - only download those rows
+        # User filtered within DataTable - only download visible rows
+        # Collect filtered query first, then filter in R
+        full_data <- query |> dplyr::collect()
         display_db_filtered <- display_db[visible_rows, , drop = FALSE]
-        return(current_austraits() |> dplyr::semi_join(display_db_filtered, by = "row_id"))
+        
+        # Filter in R (not DuckDB)
+        result <- full_data |>
+          dplyr::filter(row_id %in% display_db_filtered$row_id)
+        
+        # Join with full dataset to get all columns
+        row_ids <- result$row_id
+        return(current_austraits() |> 
+                 dplyr::collect() |>  # Collect EVERYTHING first
+                 dplyr::filter(row_id %in% row_ids))
       }
     }
     
-    # Default: Return ALL filtered data from the query (not just 100 displayed)
-    # Collect ALL row_ids from the filtered query, then join with full dataset
-    filtered_row_ids <- query |> 
+    # Default: download ALL filtered data
+    # Just collect the filtered query and join with full dataset
+    filtered_ids <- query |> 
       dplyr::select(row_id) |> 
-      dplyr::collect()
+      dplyr::collect() |>
+      dplyr::pull(row_id)
     
-    # Join full dataset with ALL filtered row_ids
-    current_austraits() |> dplyr::semi_join(filtered_row_ids, by = "row_id")
+    # Collect full dataset and filter in R
+    current_austraits() |> 
+      dplyr::collect() |>
+      dplyr::filter(row_id %in% filtered_ids)
   })
   
   # Data table module
