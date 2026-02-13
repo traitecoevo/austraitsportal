@@ -1,3 +1,11 @@
+#!/usr/bin/env Rscript
+
+#' Benchmarking script for AusTraits Portal - use of duckDB
+#'
+#' Run this script to test and benchmark the speed of various filtering   
+#' and querying operations outside the Shiny app context.
+
+
 library(arrow)
 library(duckdb)
 library(dplyr)
