@@ -27,7 +27,7 @@ dir.create(".cache/taxon_text", showWarnings = FALSE, recursive = TRUE)
 
 # set the path to the data
 data_path <- "inst/extdata/austraits/austraits-5.0.0-lite"
-# data_path <- "inst/extdata/austraits/austraits-7.0.0-full"
+data_path <- "inst/extdata/austraits/austraits-7.0.0-full"
 
 # Load the datasets
 austraits <- arrow::open_dataset(file.path(data_path, "austraits-data.parquet"))

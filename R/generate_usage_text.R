@@ -23,7 +23,7 @@ generate_usage_and_citations_text <- function(data) {
   concept_doi <- metatdata$hits$hits[[1]]$conceptdoi
 
   keys <- data$source_primary_key |> stringr::str_split(pattern = "; ") |> unlist() |> sort() |> unique()
-  # then get the references. Taking these from the sources data frame loaded in global.R instead of data frame, as species means have multiple sources pasted together (so complicated to parse)
+  # then get the references. Taking these from the sources data frame loaded in data_loading.R instead of data frame, as species means have multiple sources pasted together (so complicated to parse)
   references <- sources |> dplyr::filter(source_primary_key %in% keys) |> dplyr::pull(source_primary_citation)
 
   usage_text <- 

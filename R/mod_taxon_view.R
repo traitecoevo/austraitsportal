@@ -95,7 +95,7 @@ mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
         data <- filtered_database()
         if (is.null(data)) {
           data <- austraits_display |>
-            apply_filters_categorical(filter_vals) |>
+            apply_filters(filter_vals) |>
             dplyr::collect()
           filtered_database(data)
         }
