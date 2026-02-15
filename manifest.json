@@ -4125,9 +4125,6 @@
     "inst/extdata/Vic_links.csv": {
       "checksum": "9d6e4da8701f5a25ae85733cd4e2791b"
     },
-    "inst/golem-config.yml": {
-      "checksum": "d1c4c300661e5a2273062fd263f29b12"
-    },
     "inst/WORDLIST": {
       "checksum": "cd7f762344ba97a13d09c4bd971ae0ea"
     },
