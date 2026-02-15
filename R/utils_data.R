@@ -3,11 +3,6 @@
 #' @description Small helper functions for data manipulation
 #' @noRd
 
-#' Check if input has filters
-#' @keywords internal
-has_input_value <- function(input, input_name) {
-  !is.null(input[[input_name]]) && length(input[[input_name]]) > 0
-}
 
 #' Memoised helper to get distinct values from a column (cached for performance)
 #' 
@@ -73,23 +68,3 @@ get_matching_traits_cached <- memoise::memoise(function(trait_groups,
   sort(matching_traits)
 })
 
-#' Determine valid filters in the input list
-#' 
-#' @param input Input list
-#' @param exclude_taxon_rank Whether to exclude taxon_rank
-#' @return Vector of valid filter names
-#' @keywords internal
-valid_filters <- function(input, exclude_taxon_rank = TRUE) {
-  # Get the names of the input variables
-  v <- names(input)
-  # Limit to values in the database
-  v <- v[v %in% names(austraits)]
-  # remove null values
-  v <- v[purrr::map_lgl(v, ~ !is.null(input[[.x]]))]
-  # remove taxon rank if requested
-  if (exclude_taxon_rank) {
-    v <- v[v != "taxon_rank"]
-  }
-  
-  v
-}

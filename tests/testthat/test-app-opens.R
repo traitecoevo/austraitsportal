@@ -1,3 +1,3 @@
 test_that("Can the app run successfully?", {
-  expect_visible(open_data_portal())
+  expect_visible(shiny::shinyApp(ui = app_ui, server = app_server))
 })

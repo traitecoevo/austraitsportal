@@ -5035,9 +5035,6 @@
     "man/has_input_value.Rd": {
       "checksum": "8f7671258dc24344149e1bb7e157145f"
     },
-    "man/open_data_portal.Rd": {
-      "checksum": "730deaf86d76d940f706976790c78de3"
-    },
     "man/plot_categorical_trait_distribution.Rd": {
       "checksum": "31f48e07e027eb16d6c0f01da2e54fef"
     },
@@ -5046,12 +5043,6 @@
     },
     "man/plot_trait_distribution.Rd": {
       "checksum": "ef54bc752bfac18939115daaa3fcef5f"
-    },
-    "man/retrieve_github_release_parquet.Rd": {
-      "checksum": "62ba4c413e2877fb966584671f83ba1a"
-    },
-    "man/valid_filters.Rd": {
-      "checksum": "364fccc7b66c6643afe287dfca568746"
     },
     "NAMESPACE": {
       "checksum": "bb0b37faf805c0f91526dd8f39d19dc4"
