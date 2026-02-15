@@ -20,6 +20,7 @@ Authors:
 Other contributors:
 \itemize{
   \item Eve Miles \email{e.miles@unsw.edu.au} (\href{https://orcid.org/0009-0008-4168-8645}{ORCID}) [contributor]
+  \item Pushkal Garg \email{pushkal.garg@student.unsw.edu.au} (\href{https://orcid.org/0009-0002-0179-2946}{ORCID}) [contributor]
 }
 
 }
