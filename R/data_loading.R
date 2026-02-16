@@ -14,16 +14,10 @@ options(
 )
 
 # Load data
-## TODO: One day parquet of flattened database may be uploaded to Zenodo,
-## For now will use the R package and store in Github Releases see branch data-load
-## Use austraits R package load_austraits() function to download data to the file path below
-## Then create this parquet following code in data-raw/create-flat-austraits.R
-
 # create place for cache
 dir.create(".cache/taxon_text", showWarnings = FALSE, recursive = TRUE)
 
-# Custom logic
-`%not_in%` <- Negate(`%in%`)
+
 
 # set the path to the data
 dir_full <- "inst/extdata/austraits/austraits-7.0.0-full"

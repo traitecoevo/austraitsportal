@@ -56,6 +56,9 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
       }
       safe_columns_display <- cols_to_show[cols_to_show %in% names(display_data)]
 
+      # Custom logic
+      `%not_in%` <- Negate(`%in%`)
+
       no_filter_cols <- which(names(display_data) %in% c("replicates"))
       hide_cols <- which(names(display_data) %not_in% safe_columns_display)
       thin_cols <- which(names(display_data) %not_in% c("taxon_name", "trait_name", "genus", "family"))
