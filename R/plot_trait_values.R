@@ -157,7 +157,7 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank(),
       panel.grid.minor.y = ggplot2::element_blank(),
-      panel.grid.major.y = ggplot2::element_line(size = 0.05)
+      panel.grid.major.y = ggplot2::element_line(linewidth = 0.05)
     )
 }
 
