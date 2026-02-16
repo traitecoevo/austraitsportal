@@ -73,7 +73,8 @@ Imports:
     config,
     duckdb,
     dbplyr,
-    shiny.telemetry
+    shiny.telemetry,
+    memoise
 Remotes:
     traitecoevo/austraits
 Suggests: 

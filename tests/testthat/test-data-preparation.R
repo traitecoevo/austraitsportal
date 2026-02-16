@@ -4,11 +4,6 @@ test_that("prepare_data_for_portal creates required files", {
   
   # This is an integration test that would require a full database
   # Typically run manually during data preparation
-
-  old_wd <- getwd()
-  on.exit(setwd(old_wd), add = TRUE)
-  setwd("../../inst/extdata")
-
   temp_dir <- tempdir()
   
   # Mock austraits object would be needed here
