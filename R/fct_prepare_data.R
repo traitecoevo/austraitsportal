@@ -41,7 +41,7 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
   # list of traits to take means for - core traits only
   message("Computing species averages for core traits...")
   trait_groups <- readr::read_csv(
-    "inst/extdata/austraits/trait_groups_for_portal.csv", 
+    system.file("extdata/austraits/trait_groups_for_portal.csv", package = "austraits.portal"),
     show_col_types = FALSE,
     col_types = readr::cols(.default = readr::col_character())
   )
@@ -100,21 +100,22 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
   
   # Save metadata as RDS (faster than JSON)
   message("Saving metadata...")
-  metatdata <- jsonlite::read_json("inst/extdata/austraits/austraits.json")
+  
+  metatdata <- jsonlite::read_json(system.file("extdata/austraits/austraits.json", package = "austraits.portal"))
   saveRDS(metatdata, file.path(output_dir, "metadata.rds"))
   message("✓ Metadata saved")
   
   # Combine and save state flora links as single RDS
   message("Consolidating flora links...")
   flora_links <- list(
-    atrp = readr::read_csv("inst/extdata/ATRP_links.csv", show_col_types = FALSE) |>
+    atrp = readr::read_csv(system.file("extdata/ATRP_links.csv", package = "austraits.portal"), show_col_types = FALSE) |>
       dplyr::rename(url = formatted) |> 
       dplyr::select(taxon_name, url) |>
       dplyr::filter(!is.na(url), url != ""),
-    nt = readr::read_csv("inst/extdata/NT_links.csv", show_col_types = FALSE) |>
+    nt = readr::read_csv(system.file("extdata/NT_links.csv", package = "austraits.portal"), show_col_types = FALSE) |>
       dplyr::select(taxon_name, url) |> 
       dplyr::filter(!is.na(url), url != ""),
-    vic = readr::read_csv("inst/extdata/Vic_links.csv", show_col_types = FALSE) |>
+    vic = readr::read_csv(system.file("extdata/Vic_links.csv", package = "austraits.portal"), show_col_types = FALSE) |>
       dplyr::select(taxon_name, url) |> 
       dplyr::filter(!is.na(url), url != "")
   )
