@@ -37,6 +37,38 @@ pkgload::load_all()
 shiny::shinyApp(ui = app_ui, server = app_server)
 ```
 
+However, note that app relies on creation of data files. 
+
+By default, only a small dataset is included in the repo. To use the full dataset, you will need to download the latest version of the AusTraits database and prepare it for use in the portal (see below).
+
+## Data Preparation
+
+## Lite version
+
+The portal is designed to work with two versions of the AusTraits database: a "lite" version containing a subset of core traits for demonstration purposes, and a "full" version containing all available traits and observations.
+
+The lite version is included in the repository at `inst/extdata/austraits/austraits-5.0.0-lite`. To prepare this data for use in the portal, run the following code:
+
+```{r, eval = FALSE}
+austraits:::austraits_5.0.0_lite |>
+  prepare_data_for_portal("inst/extdata/austraits/austraits-5.0.0-lite", overwrite = TRUE)
+```
+
+To prepare the full version of the data,run the following code to prepare it for use in the portal
+
+```{r, eval = FALSE}
+austraits_7.0.0 <-
+  austraits::load_austraits(version = "7.0.0", path = "inst/extdata/austraits", update = FALSE)
+
+# A small fix for Austraits v7.0.0 (to be deleted in future versions) - some datasets have missing source_primary_key values, which causes problems for the portal. This code fills in missing values for the Bryant_2021 dataset, which is the only one affected.
+austraits_7.0.0$methods <- austraits_7.0.0$methods |>
+  mutate(
+    source_primary_key = ifelse(grepl("Bryant_2021", dataset_id), dataset_id, source_primary_key)
+  )
+
+austraits_7.0.0 |>
+  prepare_data_for_portal("inst/extdata/austraits/austraits-7.0.0-full", overwrite = TRUE)
+```
 
 ## Deploying to shinyapps.io
 
@@ -77,6 +109,7 @@ The AusTraits Data Portal is built as a modular Shiny application inspired by th
   - Raw observations (individual measurements)
   - Species averages (aggregated means per species)
 - **Arrow Integration**: Arrow datasets registered with DuckDB for zero-copy data access
+- **Precomputed Metadata**: Cached trait definitions, dropdown values, and flora links for fast access (via `prepare_data_for_portal`).
 
 **UI Structure** (`app_ui.R`)
 - **Sidebar**: Filtering controls via `mod_filters_ui`
