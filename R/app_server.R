@@ -74,7 +74,7 @@ observeEvent(input[["filters-clear_filters"]], {
   srv_filter_updates(input, output, session, filters, filtered_query_cache, current_austraits_display)
 
   # Debounce filters to prevent double-firing
-  filters_debounced <- debounce(filters, 300)  # Wait 300ms for changes to settle
+  filters_debounced <- debounce(filters, 800)  # Wait 800ms for changes to settle
   
   # Apply all filters only once (after debounce)
   observeEvent(filters_debounced(), {
