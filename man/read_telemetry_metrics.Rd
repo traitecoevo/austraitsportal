@@ -6,6 +6,11 @@
 \usage{
 read_telemetry_metrics(from_date = "2020-01-01", to_date = NULL)
 }
+\arguments{
+\item{from_date}{Start date (YYYY-MM-DD) for telemetry records.}
+
+\item{to_date}{End date (YYYY-MM-DD) for telemetry records.}
+}
 \description{
 Read telemetry metrics (works in both cloud and local mode)
 }

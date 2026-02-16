@@ -6,6 +6,11 @@
 \usage{
 log_telemetry_event(event_type, details = list())
 }
+\arguments{
+\item{event_type}{Event type label.}
+
+\item{details}{Named list of event details.}
+}
 \description{
 Log telemetry event (works in both cloud and local mode)
 }

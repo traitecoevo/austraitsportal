@@ -74,6 +74,7 @@ Imports:
     duckdb,
     dbplyr,
     shiny.telemetry,
+    rlang,
     memoise
 Remotes:
     traitecoevo/austraits

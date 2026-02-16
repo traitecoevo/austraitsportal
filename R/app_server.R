@@ -110,7 +110,7 @@ observeEvent(input[["filters-clear_filters"]], {
       collect_start <- Sys.time()
       
       filtered_data <- filtered_query |> 
-        head(100) |> 
+        utils::head(100) |> 
         dplyr::collect()
       
       elapsed_collect <- as.numeric(Sys.time() - collect_start, units = "secs")

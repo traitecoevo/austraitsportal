@@ -26,8 +26,14 @@ dir.create(".cache/taxon_text", showWarnings = FALSE, recursive = TRUE)
 `%not_in%` <- Negate(`%in%`)
 
 # set the path to the data
-data_path <- "inst/extdata/austraits/austraits-5.0.0-lite"
-data_path <- "inst/extdata/austraits/austraits-7.0.0-full"
+dir_full <- "inst/extdata/austraits/austraits-7.0.0-full"
+dir_lite <- "inst/extdata/austraits/austraits-5.0.0-lite"
+if(!dir.exists(dir_full)) {
+  cat("Full dataset not found, loading lite dataset.")
+  data_path <- dir_lite
+} else {
+  data_path <- dir_full
+}
 
 # Load the datasets
 austraits <- arrow::open_dataset(file.path(data_path, "austraits-data.parquet"))
@@ -44,10 +50,8 @@ austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits
 cat("[STARTUP] Setting up DuckDB...\n")
 duckdb_setup_start <- Sys.time()
 
-library(duckdb)
-
 # Create DuckDB connection
-duckdb_con <- dbConnect(duckdb::duckdb(), ":memory:")
+duckdb_con <- duckdb::dbConnect(duckdb::duckdb(), ":memory:")
 
 # Register Arrow datasets with DuckDB
 duckdb::duckdb_register_arrow(duckdb_con, "austraits_display", austraits_display)

@@ -6,6 +6,11 @@
 \usage{
 init_supabase_telemetry(url, key)
 }
+\arguments{
+\item{url}{Supabase project URL.}
+
+\item{key}{Supabase service or anon API key.}
+}
 \description{
 Initialize Supabase Telemetry
 }

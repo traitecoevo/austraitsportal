@@ -96,7 +96,7 @@ observe({
         
         # Handle tab switching
         if (!is.null(query$tab)) {
-          tab_name <- URLdecode(query$tab)
+          tab_name <- utils::URLdecode(query$tab)
           updateNavbarPage(session, "main_tabs", selected = tab_name)
         }
         
