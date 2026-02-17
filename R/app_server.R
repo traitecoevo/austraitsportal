@@ -150,7 +150,9 @@ observeEvent(input[["filters-clear_filters"]], {
       
     }, error = function(e) {
       cat("\n!!! FILTERING ERROR !!!\n")
-      cat("Error:", e$message, "\n")
+      cat("Error:", conditionMessage(e), "\n")
+      cat("Call:", deparse(conditionCall(e)), "\n")
+      traceback()
       cat("Parsed filters:\n")
       print(parsed_filters)
       filtered_database(NULL)

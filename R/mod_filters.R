@@ -140,29 +140,29 @@ mod_filters_ui <- function(id) {
         ns("min_latitude"),
         label = "Minimum latitude:",
         value = NA,
-        min = -45,
-        max = -10
+        min = -60,
+        max = 45
       ),
       numericInput(
         ns("max_latitude"),
         label = "Maximum latitude:",
         value = NA,
-        min = -45,
-        max = -10
+        min = -60,
+        max = 45
       ),
       numericInput(
         ns("min_longitude"),
         label = "Minimum longitude:",
         value = NA,
-        min = 113,
-        max = 154
+        min = -80,
+        max = 169
       ),
       numericInput(
         ns("max_longitude"),
         label = "Maximum longitude:",
         value = NA,
-        min = 113,
-        max = 154
+        min = -80,
+        max = 169
       )
      ),
 

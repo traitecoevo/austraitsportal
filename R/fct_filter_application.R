@@ -44,8 +44,9 @@ apply_filters <- function(data = austraits, parsed_filters) {
     
     # Build expression (will be applied with all others in ONE filter call)
     if (length(matching_traits) > 0) {
-      filter_expressions[[length(filter_expressions) + 1]] <- expr(trait_name %in% !!matching_traits)
-    }
+        pattern <- paste0("^(", paste(matching_traits, collapse = "|"), ")$")
+        filter_expressions[[length(filter_expressions) + 1]] <- expr(grepl(!!pattern, trait_name))
+      }
   }
   
   # 2. TAXON FILTERS
@@ -84,23 +85,33 @@ apply_filters <- function(data = austraits, parsed_filters) {
     # Check if geo columns exist (species dataset doesn't have them!)
     has_geo_cols <- all(c("latitude (deg)", "longitude (deg)") %in% colnames(data))
     
-    if (parsed_filters$location$location == "georeferenced" && has_geo_cols) {
-      filter_expressions[[length(filter_expressions) + 1]] <- expr(!is.na(`latitude (deg)`) & !is.na(`longitude (deg)`))
-      
-      # Bounding box
-      if (!is.null(parsed_filters$location$min_latitude)) {
-        filter_expressions[[length(filter_expressions) + 1]] <- expr(`latitude (deg)` >= !!parsed_filters$location$min_latitude)
-      }
-      if (!is.null(parsed_filters$location$max_latitude)) {
-        filter_expressions[[length(filter_expressions) + 1]] <- expr(`latitude (deg)` <= !!parsed_filters$location$max_latitude)
-      }
-      if (!is.null(parsed_filters$location$min_longitude)) {
-        filter_expressions[[length(filter_expressions) + 1]] <- expr(`longitude (deg)` >= !!parsed_filters$location$min_longitude)
-      }
-      if (!is.null(parsed_filters$location$max_longitude)) {
-        filter_expressions[[length(filter_expressions) + 1]] <- expr(`longitude (deg)` <= !!parsed_filters$location$max_longitude)
-      }
+  if (parsed_filters$location$location == "georeferenced" && has_geo_cols) {
+    lat_col <- rlang::sym("latitude (deg)")
+    lon_col <- rlang::sym("longitude (deg)")
+    
+    # Filter to only rows with valid numeric coordinates
+    filter_expressions[[length(filter_expressions) + 1]] <- expr(
+      grepl("^-?[0-9]+\\.?[0-9]*$", !!lat_col) & 
+      grepl("^-?[0-9]+\\.?[0-9]*$", !!lon_col)
+    )
+    
+    if (!is.null(parsed_filters$location$min_latitude)) {
+      val <- parsed_filters$location$min_latitude
+      filter_expressions[[length(filter_expressions) + 1]] <- expr(as.numeric(!!lat_col) >= !!val)
     }
+    if (!is.null(parsed_filters$location$max_latitude)) {
+      val <- parsed_filters$location$max_latitude
+      filter_expressions[[length(filter_expressions) + 1]] <- expr(as.numeric(!!lat_col) <= !!val)
+    }
+    if (!is.null(parsed_filters$location$min_longitude)) {
+      val <- parsed_filters$location$min_longitude
+      filter_expressions[[length(filter_expressions) + 1]] <- expr(as.numeric(!!lon_col) >= !!val)
+    }
+    if (!is.null(parsed_filters$location$max_longitude)) {
+      val <- parsed_filters$location$max_longitude
+      filter_expressions[[length(filter_expressions) + 1]] <- expr(as.numeric(!!lon_col) <= !!val)
+    }
+  }
     
     # APC taxon distribution
     if (parsed_filters$location$location == "apc" && !is.null(parsed_filters$location$apc_taxon_distribution)) {
