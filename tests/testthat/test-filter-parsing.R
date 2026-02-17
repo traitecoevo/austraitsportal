@@ -19,6 +19,7 @@ test_that("parse_filters extracts trait filters correctly", {
   input <- list(
     dataset_type = "raw",
     taxon_type = "all",
+    trait_filter_type = "features",
     trait_name = c("leaf_area", "wood_density"),
     trait_grouping = "leaf size",
     structure_measured = "leaf",
