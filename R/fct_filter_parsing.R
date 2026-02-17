@@ -3,7 +3,7 @@
 #' @description Converts raw filter inputs into structured, validated filter object
 #' @param input Raw filter inputs from mod_filters
 #' @return Parsed and validated filter object with structure:
-#'   - taxon: list(taxon_rank, family, genus, taxon_name)
+#'   - taxon: list(taxon_type, family, genus, taxon_name)
 #'   - trait: list(trait_name, trait_grouping, structure_measured, keywords)
 #'   - location: list(location, apc_taxon_distribution, min/max lat/long)
 #'   - other: list(basis_of_record, life_stage)
@@ -17,18 +17,18 @@ parse_filters <- function(input) {
   # TAXON FILTERS
   
   taxon_filters <- list(
-    taxon_rank = input$taxon_rank,
-    family = if (input$taxon_rank == "family" && !is.null(input$family) && length(input$family) > 0) {
+    taxon_type = input$taxon_type,
+    family = if (input$taxon_type == "family" && !is.null(input$family) && length(input$family) > 0) {
       input$family
     } else {
       NULL
     },
-    genus = if (input$taxon_rank == "genus" && !is.null(input$genus) && length(input$genus) > 0) {
+    genus = if (input$taxon_type == "genus" && !is.null(input$genus) && length(input$genus) > 0) {
       input$genus
     } else {
       NULL
     },
-    taxon_name = if (input$taxon_rank == "taxon_name" && !is.null(input$taxon_name) && length(input$taxon_name) > 0) {
+    taxon_name = if (input$taxon_type == "taxon_name" && !is.null(input$taxon_name) && length(input$taxon_name) > 0) {
       input$taxon_name
     } else {
       NULL

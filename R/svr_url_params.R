@@ -31,8 +31,8 @@ observe({
       isolate({
         
         # Handle taxon rank first
-        if (!is.null(query$taxon_rank) && query$taxon_rank %in% c("all", "family", "genus", "taxon_name")) {
-          updateRadioButtons(session, "filters-taxon_rank", selected = query$taxon_rank)
+        if (!is.null(query$taxon_type) && query$taxon_type %in% c("all", "family", "genus", "taxon_name")) {
+          updateRadioButtons(session, "filters-taxon_type", selected = query$taxon_type)
         }
         
         # Handle taxon selections WITH CHOICES

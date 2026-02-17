@@ -90,8 +90,8 @@ observeEvent(input[["filters-clear_filters"]], {
     cat("\n\n[FILTER] Start filtering...\n")
     parsed_filters <- parse_filters(filters())
 
-    # # If no filters at all, show nothing (unless taxon_rank = "all")
-    # if (!parsed_filters$has_filters && parsed_filters$taxon$taxon_rank != "all") {
+    # # If no filters at all, show nothing (unless taxon_type = "all")
+    # if (!parsed_filters$has_filters && parsed_filters$taxon$taxon_type != "all") {
     #   filtered_database(NULL)
     #   return()
     # }
