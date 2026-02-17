@@ -38,10 +38,11 @@ parse_filters <- function(input) {
   # TRAIT FILTERS
   
   trait_filters <- list(
+    trait_filter_type = input$trait_filter_type,
     trait_name = if (!is.null(input$trait_name) && length(input$trait_name) > 0) input$trait_name else NULL,
-    trait_grouping = if (!is.null(input$trait_grouping) && length(input$trait_grouping) > 0) input$trait_grouping else NULL,
-    structure_measured = if (!is.null(input$structure_measured) && length(input$structure_measured) > 0) input$structure_measured else NULL,
-    keywords = if (!is.null(input$keywords) && length(input$keywords) > 0) input$keywords else NULL
+    trait_grouping = if (input$trait_filter_type == "features" && !is.null(input$trait_grouping) && length(input$trait_grouping) > 0) input$trait_grouping else NULL,
+    structure_measured = if (input$trait_filter_type == "features" && !is.null(input$structure_measured) && length(input$structure_measured) > 0) input$structure_measured else NULL,
+    keywords = if (input$trait_filter_type == "features" && !is.null(input$keywords) && length(input$keywords) > 0) input$keywords else NULL
   )
   
   # LOCATION FILTERS

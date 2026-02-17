@@ -65,7 +65,7 @@ mod_filters_ui <- function(id) {
         label = "Family:",
         choices = NULL,
         multiple = TRUE,
-        selected = "Fabaceae"
+        selected = character(0)
       )
     ),
 
@@ -139,28 +139,28 @@ mod_filters_ui <- function(id) {
       numericInput(
         ns("min_latitude"),
         label = "Minimum latitude:",
-        value = -10,
+        value = NA,
         min = -45,
         max = -10
       ),
       numericInput(
         ns("max_latitude"),
         label = "Maximum latitude:",
-        value = -45,
+        value = NA,
         min = -45,
         max = -10
       ),
       numericInput(
         ns("min_longitude"),
         label = "Minimum longitude:",
-        value = 113,
+        value = NA,
         min = 113,
         max = 154
       ),
       numericInput(
         ns("max_longitude"),
         label = "Maximum longitude:",
-        value = 154,
+        value = NA,
         min = 113,
         max = 154
       )
@@ -240,14 +240,16 @@ mod_filters_server <- function(
   filtered_database,
   family_choices,
   genus_choices,
-  taxon_name_choices
+  taxon_name_choices,
+  loading_from_url
 ) {
   moduleServer(
     id,
     function(input, output, session) {
       # React when taxon rank changes
       observeEvent(input$taxon_rank, {
-
+        if (loading_from_url()) return()
+        
         # Reset filtered data when rank changes
         filtered_database(NULL)
 

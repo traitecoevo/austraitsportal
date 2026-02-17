@@ -57,7 +57,8 @@ filters <- mod_filters_server(
   filtered_database,
   family_choices = family_choices,
   genus_choices = genus_choices,
-  taxon_name_choices = taxon_name_choices
+  taxon_name_choices = taxon_name_choices,
+  loading_from_url = loading_from_url
 )
 observeEvent(input[["filters-clear_filters"]], {
   updateSelectizeInput(session, "filters-trait_name", selected = character(0))
