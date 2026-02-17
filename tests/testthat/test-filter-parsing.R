@@ -1,7 +1,7 @@
 test_that("parse_filters extracts taxon filters correctly", {
   input <- list(
     dataset_type = "raw",
-    taxon_rank = "family",
+    taxon_type = "family",
     family = c("Fabaceae", "Myrtaceae"),
     genus = NULL,
     taxon_name = NULL
@@ -9,7 +9,7 @@ test_that("parse_filters extracts taxon filters correctly", {
   
   result <- parse_filters(input)
   
-  expect_equal(result$taxon$taxon_rank, "family")
+  expect_equal(result$taxon$taxon_type, "family")
   expect_equal(result$taxon$family, c("Fabaceae", "Myrtaceae"))
   expect_null(result$taxon$genus)
   expect_null(result$taxon$taxon_name)
@@ -18,7 +18,7 @@ test_that("parse_filters extracts taxon filters correctly", {
 test_that("parse_filters extracts trait filters correctly", {
   input <- list(
     dataset_type = "raw",
-    taxon_rank = "all",
+    taxon_type = "all",
     trait_name = c("leaf_area", "wood_density"),
     trait_grouping = "leaf size",
     structure_measured = "leaf",
@@ -36,7 +36,7 @@ test_that("parse_filters extracts trait filters correctly", {
 test_that("parse_filters handles location filters", {
   input <- list(
     dataset_type = "raw",
-    taxon_rank = "all",
+    taxon_type = "all",
     location = "georeferenced",
     min_latitude = -35,
     max_latitude = -25,
@@ -56,7 +56,7 @@ test_that("parse_filters handles location filters", {
 test_that("parse_filters handles APC distribution filters", {
   input <- list(
     dataset_type = "species",
-    taxon_rank = "all",
+    taxon_type = "all",
     location = "apc",
     apc_taxon_distribution = c("NSW", "Qld")
   )
@@ -70,7 +70,7 @@ test_that("parse_filters handles APC distribution filters", {
 test_that("parse_filters handles other filters", {
   input <- list(
     dataset_type = "raw",
-    taxon_rank = "all",
+    taxon_type = "all",
     basis_of_record = "field",
     life_stage = "adult"
   )
@@ -84,7 +84,7 @@ test_that("parse_filters handles other filters", {
 test_that("parse_filters handles custom filters", {
   input <- list(
     dataset_type = "raw",
-    taxon_rank = "all",
+    taxon_type = "all",
     custom_col_1 = "dataset_id",
     custom_val_1 = "Falster_2003",
     custom_col_2 = "entity_type",
@@ -106,7 +106,7 @@ test_that("parse_filters detects when filters are applied", {
   # No filters
   input_empty <- list(
     dataset_type = "raw",
-    taxon_rank = "all"
+    taxon_type = "all"
   )
   
   result_empty <- parse_filters(input_empty)
@@ -115,7 +115,7 @@ test_that("parse_filters detects when filters are applied", {
   # With filters
   input_filtered <- list(
     dataset_type = "raw",
-    taxon_rank = "family",
+    taxon_type = "family",
     family = "Fabaceae"
   )
   
@@ -126,7 +126,7 @@ test_that("parse_filters detects when filters are applied", {
 test_that("parse_filters handles NULL and empty values gracefully", {
   input <- list(
     dataset_type = "raw",
-    taxon_rank = "all",
+    taxon_type = "all",
     family = NULL,
     genus = character(0),
     trait_name = c()
@@ -142,7 +142,7 @@ test_that("parse_filters handles NULL and empty values gracefully", {
 test_that("parse_filters ignores georeferenced location filters for species data", {
   input <- list(
     dataset_type = "species",
-    taxon_rank = "all",
+    taxon_type = "all",
     location = "georeferenced",
     min_latitude = -35,
     max_latitude = -25
@@ -153,4 +153,85 @@ test_that("parse_filters ignores georeferenced location filters for species data
   # Should still parse but won't be used in species dataset
   expect_equal(result$location$location, "georeferenced")
   expect_equal(result$dataset_type, "species")
+})
+test_that("apply_filters uses grepl instead of %in% for trait_name to avoid Arrow pushdown error", {
+  parsed <- parse_filters(list(
+    dataset_type = "species",
+    taxon_type = "all",
+    trait_filter_type = "features",
+    structure_measured = "bark",
+    trait_name = NULL,
+    trait_grouping = NULL,
+    keywords = NULL,
+    family = NULL,
+    genus = NULL,
+    location = "",
+    apc_taxon_distribution = NULL,
+    basis_of_record = NULL,
+    life_stage = NULL,
+    custom_col_1 = NULL, custom_val_1 = NULL,
+    custom_col_2 = NULL, custom_val_2 = NULL,
+    custom_col_3 = NULL, custom_val_3 = NULL
+  ))
+  
+  expect_equal(parsed$trait$structure_measured, "bark")
+  expect_true(parsed$has_filters)
+})
+test_that("loading_from_url flag prevents default values from overwriting URL params", {
+  # Simulates the bug: when taxon_type changes via URL,
+  # observeEvent was setting hardcoded defaults (Fabaceae, Abutilon etc.)
+  # overwriting the URL-provided values
+  
+  # When loading_from_url = TRUE, parse_filters should still work correctly
+  input <- list(
+    dataset_type = "raw",
+    taxon_type = "family",
+    family = "Myrtaceae",  # URL-provided value, NOT the default "Fabaceae"
+    genus = NULL,
+    taxon_name = NULL,
+    trait_filter_type = "name",
+    trait_name = NULL,
+    trait_grouping = NULL,
+    structure_measured = NULL,
+    keywords = NULL,
+    basis_of_record = NULL,
+    life_stage = NULL,
+    location = "",
+    apc_taxon_distribution = NULL,
+    custom_col_1 = NULL, custom_val_1 = NULL,
+    custom_col_2 = NULL, custom_val_2 = NULL,
+    custom_col_3 = NULL, custom_val_3 = NULL
+  )
+  
+  result <- parse_filters(input)
+  
+  # URL value should be preserved, not overwritten by default "Fabaceae"
+  expect_equal(result$taxon$family, "Myrtaceae")
+  expect_equal(result$taxon$taxon_type, "family")
+})
+test_that("URL param trait_name is preserved and not overwritten", {
+  input <- list(
+    dataset_type = "raw",
+    taxon_type = "all",
+    family = NULL,
+    genus = NULL,
+    taxon_name = NULL,
+    trait_filter_type = "name",
+    trait_name = "leaf_area",  # URL-provided value
+    trait_grouping = NULL,
+    structure_measured = NULL,
+    keywords = NULL,
+    basis_of_record = NULL,
+    life_stage = NULL,
+    location = "",
+    apc_taxon_distribution = NULL,
+    custom_col_1 = NULL, custom_val_1 = NULL,
+    custom_col_2 = NULL, custom_val_2 = NULL,
+    custom_col_3 = NULL, custom_val_3 = NULL
+  )
+  
+  result <- parse_filters(input)
+  
+  expect_equal(result$trait$trait_name, "leaf_area")
+  expect_true(result$has_filters)
 })

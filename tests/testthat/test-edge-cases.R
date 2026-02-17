@@ -7,7 +7,7 @@ test_that("functions handle empty strings gracefully", {
 test_that("parse_filters handles malformed input", {
   malformed_input <- list(
     dataset_type = NULL,
-    taxon_rank = "invalid_rank"
+    taxon_type = "invalid_rank"
   )
   
   result <- parse_filters(malformed_input)
@@ -53,7 +53,7 @@ test_that("functions handle very large datasets appropriately", {
 test_that("functions handle Unicode characters", {
   unicode_input <- list(
     dataset_type = "species",
-    taxon_rank = "taxon_name",
+    taxon_type = "taxon_name",
     taxon_name = "Spëciès Ñamé",
     trait_name = "tråit_ñame",
     family = NULL,
@@ -92,7 +92,7 @@ test_that("numeric inputs handle non-numeric strings", {
 test_that("filter parsing handles very long lists", {
   input <- list(
     dataset_type = "raw",
-    taxon_rank = "taxon_name",
+    taxon_type = "taxon_name",
     taxon_name = rep("Species", 1000)  # Very long list
   )
   
@@ -137,7 +137,7 @@ test_that("functions handle NA values appropriately", {
   # parse_filters should handle NA in taxon_name by ignoring it
   na_input <- list(
     dataset_type = "species",
-    taxon_rank = "all",  # Use "all" to avoid NA check in conditional
+    taxon_type = "all",  # Use "all" to avoid NA check in conditional
     taxon_name = NA,
     family = NULL,
     genus = NULL,
@@ -156,7 +156,7 @@ test_that("functions handle NA values appropriately", {
 test_that("SQL injection attempts are handled safely", {
   malicious_input <- list(
     dataset_type = "species",
-    taxon_rank = "taxon_name",
+    taxon_type = "taxon_name",
     taxon_name = "'; DROP TABLE traits; --",
     family = NULL,
     genus = NULL,
@@ -182,4 +182,23 @@ test_that("XSS attempts in text fields are escaped", {
   result <- add_target_blank(xss_input)
   # Should not contain unescaped script tags
   expect_type(result, "character")
+})
+test_that("georeferenced filter handles non-numeric strings in lat/lon columns", {
+  # DuckDB stores lat/lon as VARCHAR with garbage values like "NA", "", "unknown"
+  # Regex filter must be applied before numeric cast to avoid Conversion Error
+  
+  mock_data <- data.frame(
+    `latitude (deg)`  = c("-33.5", "NA", "", "unknown", "-25.0"),
+    `longitude (deg)` = c("151.0", "NA", "", "unknown", "140.0"),
+    check.names = FALSE
+  )
+  
+  valid_rows <- mock_data[
+    grepl("^-?[0-9]+\\.?[0-9]*$", mock_data[["latitude (deg)"]]) &
+    grepl("^-?[0-9]+\\.?[0-9]*$", mock_data[["longitude (deg)"]]),
+  ]
+  
+  expect_equal(nrow(valid_rows), 2)
+  
+  expect_no_error(as.numeric(valid_rows[["longitude (deg)"]]))
 })

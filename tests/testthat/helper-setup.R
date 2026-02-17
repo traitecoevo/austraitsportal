@@ -6,7 +6,7 @@ create_mock_filter_input <- function(type = "basic") {
   if (type == "basic") {
     list(
       dataset_type = "raw",
-      taxon_rank = "all",
+      taxon_type = "all",
       trait_name = NULL,
       location = "",
       basis_of_record = NULL,
@@ -15,7 +15,7 @@ create_mock_filter_input <- function(type = "basic") {
   } else if (type == "filtered") {
     list(
       dataset_type = "raw",
-      taxon_rank = "family",
+      taxon_type = "family",
       family = "Fabaceae",
       trait_name = "leaf_area",
       location = "",
@@ -25,7 +25,7 @@ create_mock_filter_input <- function(type = "basic") {
   } else if (type == "complex") {
     list(
       dataset_type = "species",
-      taxon_rank = "genus",
+      taxon_type = "genus",
       genus = c("Acacia", "Eucalyptus"),
       trait_name = c("leaf_area", "wood_density"),
       trait_grouping = "leaf size",

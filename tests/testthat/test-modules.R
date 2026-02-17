@@ -69,7 +69,7 @@ test_that("mod_taxon_view_server handles taxon selection", {
   
   testServer(mod_taxon_view_server, args = list(
     filters = reactive(list(
-      taxon_rank = "taxon_name",
+      taxon_type = "taxon_name",
       taxon_name = "Acacia dealbata"
     )),
     filtered_database = reactiveVal(test_data),
