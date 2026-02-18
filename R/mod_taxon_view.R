@@ -40,7 +40,7 @@ mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
       start_time <- Sys.time()
       
       filter_vals <- filters()
-      cache_key_rank <- filter_vals$taxon_rank
+      cache_key_rank <- filter_vals$taxon_type
       cache_key_name <- filter_vals$taxon_name
       
       # Must be in taxon_name mode with exactly 1 selected taxon
@@ -76,7 +76,7 @@ mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
         filter_vals <- filters()
         
         # Must be in taxon_name mode with exactly 1 selected taxon
-        if (filter_vals$taxon_rank != "taxon_name" ||
+        if (filter_vals$taxon_type != "taxon_name" ||
             is.null(filter_vals$taxon_name) ||
             length(filter_vals$taxon_name) != 1) {
           
@@ -95,7 +95,7 @@ mod_taxon_view_server <- function(id, filters, filtered_database, current_tab){
         data <- filtered_database()
         if (is.null(data)) {
           data <- austraits_display |>
-            apply_filters_categorical(filter_vals) |>
+            apply_filters(filter_vals) |>
             dplyr::collect()
           filtered_database(data)
         }

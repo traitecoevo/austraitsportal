@@ -6,6 +6,8 @@ library(httr2)
 library(jsonlite)
 
 #' Initialize Supabase Telemetry
+#' @param url Supabase project URL.
+#' @param key Supabase service or anon API key.
 init_supabase_telemetry <- function(url, key) {
   options(supabase_telemetry_url = url)
   options(supabase_telemetry_key = key)
@@ -47,6 +49,8 @@ start_telemetry_session <- function() {
 }
 
 #' Log telemetry event (works in both cloud and local mode)
+#' @param event_type Event type label.
+#' @param details Named list of event details.
 log_telemetry_event <- function(event_type, details = list()) {
   if (getOption("telemetry_mode", "cloud") == "local") {
     # Local SQLite mode
@@ -81,6 +85,8 @@ log_telemetry_event <- function(event_type, details = list()) {
 }
 
 #' Read telemetry metrics (works in both cloud and local mode)
+#' @param from_date Start date (YYYY-MM-DD) for telemetry records.
+#' @param to_date End date (YYYY-MM-DD) for telemetry records.
 read_telemetry_metrics <- function(from_date = "2020-01-01", to_date = NULL) {
   if (getOption("telemetry_mode", "cloud") == "local") {
     # Local SQLite mode

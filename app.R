@@ -1,2 +1,2 @@
 pkgload::load_all(".")
-austraits.portal::open_data_portal()
+shiny::shinyApp(ui = app_ui, server = app_server)

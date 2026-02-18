@@ -14,20 +14,20 @@ options(
 )
 
 # Load data
-## TODO: One day parquet of flattened database may be uploaded to Zenodo,
-## For now will use the R package and store in Github Releases see branch data-load
-## Use austraits R package load_austraits() function to download data to the file path below
-## Then create this parquet following code in data-raw/create-flat-austraits.R
-
 # create place for cache
 dir.create(".cache/taxon_text", showWarnings = FALSE, recursive = TRUE)
 
-# Custom logic
-`%not_in%` <- Negate(`%in%`)
+
 
 # set the path to the data
-data_path <- "inst/extdata/austraits/austraits-5.0.0-lite"
-# data_path <- "inst/extdata/austraits/austraits-7.0.0-full"
+dir_full <- "inst/extdata/austraits/austraits-7.0.0-full"
+dir_lite <- "inst/extdata/austraits/austraits-5.0.0-lite"
+if(!dir.exists(dir_full)) {
+  cat("Full dataset not found, loading lite dataset.")
+  data_path <- dir_lite
+} else {
+  data_path <- dir_full
+}
 
 # Load the datasets
 austraits <- arrow::open_dataset(file.path(data_path, "austraits-data.parquet"))
@@ -44,10 +44,8 @@ austraits_species_display <- arrow::open_dataset(file.path(data_path, "austraits
 cat("[STARTUP] Setting up DuckDB...\n")
 duckdb_setup_start <- Sys.time()
 
-library(duckdb)
-
 # Create DuckDB connection
-duckdb_con <- dbConnect(duckdb::duckdb(), ":memory:")
+duckdb_con <- duckdb::dbConnect(duckdb::duckdb(), ":memory:")
 
 # Register Arrow datasets with DuckDB
 duckdb::duckdb_register_arrow(duckdb_con, "austraits_display", austraits_display)

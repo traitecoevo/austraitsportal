@@ -4,11 +4,9 @@
 \alias{generate_taxon_text}
 \title{Generate Text Summary for a Taxon}
 \usage{
-generate_taxon_text(data, taxon)
+generate_taxon_text(taxon)
 }
 \arguments{
-\item{data}{A data frame or tibble containing taxonomic and trait information.}
-
 \item{taxon}{A character string specifying the name of the taxon to summarize.}
 }
 \value{
@@ -19,6 +17,6 @@ Creates a textual summary for a specified taxon based on the provided data.
 }
 \examples{
 \dontrun{
-generate_taxon_text(austraits_data, "Eucalyptus globulus")
+generate_taxon_text("Eucalyptus globulus")
 }
 }

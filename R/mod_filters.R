@@ -27,7 +27,7 @@ mod_filters_ui <- function(id) {
     h5("Taxonomy"),
 
     radioButtons(
-      ns("taxon_rank"),
+      ns("taxon_type"),
       label = "Filter by which taxon rank:",
       choices = c(
         "All taxa"   = "all",
@@ -39,7 +39,7 @@ mod_filters_ui <- function(id) {
     ),
 
     conditionalPanel(
-      condition = sprintf('input["%s"] == "taxon_name"', ns("taxon_rank")),
+      condition = sprintf('input["%s"] == "taxon_name"', ns("taxon_type")),
       selectizeInput(
         ns("taxon_name"),
         label = "Taxon name:",
@@ -49,7 +49,7 @@ mod_filters_ui <- function(id) {
     ),
 
     conditionalPanel(
-      condition = sprintf('input["%s"] == "genus"', ns("taxon_rank")),
+      condition = sprintf('input["%s"] == "genus"', ns("taxon_type")),
       selectizeInput(
         ns("genus"),
         label = "Genus:",
@@ -59,13 +59,13 @@ mod_filters_ui <- function(id) {
     ),
 
     conditionalPanel(
-      condition = sprintf('input["%s"] == "family"', ns("taxon_rank")),
+      condition = sprintf('input["%s"] == "family"', ns("taxon_type")),
       selectizeInput(
         ns("family"),
         label = "Family:",
         choices = NULL,
         multiple = TRUE,
-        selected = "Fabaceae"
+        selected = character(0)
       )
     ),
 
@@ -139,30 +139,30 @@ mod_filters_ui <- function(id) {
       numericInput(
         ns("min_latitude"),
         label = "Minimum latitude:",
-        value = -10,
-        min = -45,
-        max = -10
+        value = NA,
+        min = -60,
+        max = 45
       ),
       numericInput(
         ns("max_latitude"),
         label = "Maximum latitude:",
-        value = -45,
-        min = -45,
-        max = -10
+        value = NA,
+        min = -60,
+        max = 45
       ),
       numericInput(
         ns("min_longitude"),
         label = "Minimum longitude:",
-        value = 113,
-        min = 113,
-        max = 154
+        value = NA,
+        min = -80,
+        max = 169
       ),
       numericInput(
         ns("max_longitude"),
         label = "Maximum longitude:",
-        value = 154,
-        min = 113,
-        max = 154
+        value = NA,
+        min = -80,
+        max = 169
       )
      ),
 
@@ -240,19 +240,21 @@ mod_filters_server <- function(
   filtered_database,
   family_choices,
   genus_choices,
-  taxon_name_choices
+  taxon_name_choices,
+  loading_from_url
 ) {
   moduleServer(
     id,
     function(input, output, session) {
       # React when taxon rank changes
-      observeEvent(input$taxon_rank, {
-
+      observeEvent(input$taxon_type, {
+        if (loading_from_url()) return()
+        
         # Reset filtered data when rank changes
         filtered_database(NULL)
 
         # Clear family selection if switching away from family
-        if (input$taxon_rank != "family") {
+        if (input$taxon_type != "family") {
           updateSelectizeInput(
             session,
             "family",
@@ -262,7 +264,7 @@ mod_filters_server <- function(
           )
         }
 
-        if (input$taxon_rank == "taxon_name") {
+        if (input$taxon_type == "taxon_name") {
           updateSelectizeInput(
             session,
             "taxon_name",
@@ -271,7 +273,7 @@ mod_filters_server <- function(
             server = TRUE
           )
 
-        } else if (input$taxon_rank == "genus") {
+        } else if (input$taxon_type == "genus") {
           updateSelectizeInput(
             session,
             "genus",
@@ -280,7 +282,7 @@ mod_filters_server <- function(
             server = TRUE
           )
 
-        } else if (input$taxon_rank == "family") {
+        } else if (input$taxon_type == "family") {
           updateSelectizeInput(
             session,
             "family",
@@ -294,7 +296,7 @@ mod_filters_server <- function(
 
         updateRadioButtons(
           session,
-          "taxon_rank",
+          "taxon_type",
           selected = "all"
         )
 
@@ -429,7 +431,7 @@ mod_filters_server <- function(
         reactive({
           list(
             dataset_type = input$dataset_type,
-            taxon_rank = input$taxon_rank,
+            taxon_type = input$taxon_type,
             family = input$family,
             genus = input$genus,
             taxon_name = input$taxon_name,

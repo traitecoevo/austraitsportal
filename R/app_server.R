@@ -10,6 +10,8 @@ app_server <- function(input, output, session) {
   filtered_query_cache <- reactiveVal(NULL)
   full_filtered_cache <- reactiveVal(NULL)
 
+  loading_from_url <- reactiveVal(FALSE)
+
   # Reactive datasets that switch based on user selection
   current_austraits <- reactive({
     if (filters()$dataset_type == "species") {
@@ -55,7 +57,8 @@ filters <- mod_filters_server(
   filtered_database,
   family_choices = family_choices,
   genus_choices = genus_choices,
-  taxon_name_choices = taxon_name_choices
+  taxon_name_choices = taxon_name_choices,
+  loading_from_url = loading_from_url
 )
 observeEvent(input[["filters-clear_filters"]], {
   updateSelectizeInput(session, "filters-trait_name", selected = character(0))
@@ -68,142 +71,15 @@ observeEvent(input[["filters-clear_filters"]], {
   filtered_database(NULL)
 })
   
-  # Server-side selectizeInput update for other options that are not conditional
-  updateSelectizeInput(session, "filters-trait_name", choices = dropdowns$all_traits, server = TRUE)
-  updateSelectizeInput(session, "filters-trait_grouping", choices = dropdowns$all_trait_groupings, server = TRUE)
-  updateSelectizeInput(session, "filters-structure_measured", choices = dropdowns$all_structure_measured, server = TRUE)
-  updateSelectizeInput(session, "filters-keywords", choices = dropdowns$all_keywords, server = TRUE)
-  updateSelectizeInput(session, "filters-basis_of_record", choices = dropdowns$all_bor, server = TRUE)
-  updateSelectizeInput(session, "filters-life_stage", choices = dropdowns$all_age, server = TRUE)
-
-  # Update trait names when trait features are selected
-  observeEvent(
-    list(
-      input[["filters-trait_grouping"]],
-      input[["filters-structure_measured"]],
-      input[["filters-keywords"]]
-    ),
-    {
-      # Get current selections
-      selected_grouping <- input[["filters-trait_grouping"]]
-      selected_structure <- input[["filters-structure_measured"]]
-      selected_keywords <- input[["filters-keywords"]]
-      
-      # If any trait feature is selected, filter traits
-      if (!is.null(selected_grouping) && length(selected_grouping) > 0 ||
-          !is.null(selected_structure) && length(selected_structure) > 0 ||
-          !is.null(selected_keywords) && length(selected_keywords) > 0) {
-        
-        # Use cached helper function
-        matching_traits <- get_matching_traits_cached(
-          trait_groups,
-          selected_grouping,
-          selected_structure,
-          selected_keywords
-        )
-        
-        # Update trait_name dropdown
-        current_trait_selection <- input[["filters-trait_name"]]
-        updateSelectizeInput(session, "filters-trait_name",
-                            choices = matching_traits,
-                            selected = current_trait_selection,
-                            server = TRUE)
-      } else {
-        # No trait features selected - show all traits
-        current_trait_selection <- input[["filters-trait_name"]]
-        updateSelectizeInput(session, "filters-trait_name",
-                            choices = dropdowns$all_traits,
-                            selected = current_trait_selection,
-                            server = TRUE)
-      }
-    },
-    ignoreInit = TRUE
-  )
-
-  # Populate custom column filters (using predefined list from global.R)
-  updateSelectizeInput(session, "filters-custom_col_1", 
-                      choices = custom_filter_columns, 
-                      selected = character(0),
-                      server = TRUE)
-  updateSelectizeInput(session, "filters-custom_col_2", 
-                      choices = custom_filter_columns,
-                      selected = character(0),
-                      server = TRUE)
-  updateSelectizeInput(session, "filters-custom_col_3", 
-                      choices = custom_filter_columns,
-                      selected = character(0),
-                      server = TRUE)
-
-  # Update custom filter columns based on dataset type
-  observeEvent(input[["filters-dataset_type"]], {
-    cols <- if (input[["filters-dataset_type"]] == "species") {
-      custom_filter_columns_species
-    } else {
-      custom_filter_columns
-    }
-    
-    updateSelectizeInput(session, "filters-custom_col_1", 
-                        choices = cols, 
-                        selected = character(0), 
-                        server = TRUE)
-    updateSelectizeInput(session, "filters-custom_col_2", 
-                        choices = cols, 
-                        selected = character(0), 
-                        server = TRUE)
-    updateSelectizeInput(session, "filters-custom_col_3", 
-                        choices = cols, 
-                        selected = character(0), 
-                        server = TRUE)
-  })
-
-
-  # When column selected, populate values (only for controlled vocab)
-  for (i in 1:3) {
-    local({
-      num <- i
-      observeEvent(input[[paste0("filters-custom_col_", num)]], {
-        req(input[[paste0("filters-custom_col_", num)]])
-        
-        column_name <- input[[paste0("filters-custom_col_", num)]]
-        
-        # Only populate dropdown for controlled vocabulary columns
-        if (column_name %in% controlled_vocab_columns) {
-          # ALWAYS use full dataset query, not just loaded 100 rows
-          query <- filtered_query_cache()
-
-          if (!is.null(query) && column_name %in% names(query)) {
-            # Special handling for dataset_id in species averages
-            if (column_name == "dataset_id" && filters()$dataset_type == "species") {
-              unique_values <- dropdowns$all_dataset_ids_species
-            } else {
-              # Use cached helper with limit to avoid large collect operations
-              unique_values <- get_distinct_values_cached(query, column_name, limit = 1000)
-            }
-          } else {
-            # Special handling for dataset_id in species averages
-            if (column_name == "dataset_id" && filters()$dataset_type == "species") {
-              unique_values <- dropdowns$all_dataset_ids_species
-            } else {
-              # Use cached helper with limit
-              unique_values <- get_distinct_values_cached(current_austraits_display(), column_name, limit = 1000)
-            }
-          }
-          
-          updateSelectizeInput(session, paste0("filters-custom_val_", num), 
-                              choices = unique_values, 
-                              server = TRUE,
-                              selected = NULL)
-        }
-        # For free text columns, no need to populate (user types freely)
-      })
-    })
-  }
+  # Setup filter dropdown updates
+  srv_filter_updates(input, output, session, filters, filtered_query_cache, current_austraits_display)
 
   # Debounce filters to prevent double-firing
-  filters_debounced <- debounce(filters, 300)  # Wait 300ms for changes to settle
+  filters_debounced <- debounce(filters, 800)  # Wait 800ms for changes to settle
   
   # Apply all filters only once (after debounce)
   observeEvent(filters_debounced(), {
+    if (loading_from_url()) return()
     start_time <- Sys.time()
 
     # SAFETY CHECK: Wait for data to be loaded
@@ -214,8 +90,8 @@ observeEvent(input[["filters-clear_filters"]], {
     cat("\n\n[FILTER] Start filtering...\n")
     parsed_filters <- parse_filters(filters())
 
-    # # If no filters at all, show nothing (unless taxon_rank = "all")
-    # if (!parsed_filters$has_filters && parsed_filters$taxon$taxon_rank != "all") {
+    # # If no filters at all, show nothing (unless taxon_type = "all")
+    # if (!parsed_filters$has_filters && parsed_filters$taxon$taxon_type != "all") {
     #   filtered_database(NULL)
     #   return()
     # }
@@ -228,14 +104,14 @@ observeEvent(input[["filters-clear_filters"]], {
       base_data <- current_austraits_display()
       
       # Apply all filters in ONE pass
-      filtered_query <- apply_filters_categorical(base_data, parsed_filters)
+      filtered_query <- apply_filters(base_data, parsed_filters)
       
 
       cat("[FILTER] Loading first 100 rows...\n")
       collect_start <- Sys.time()
       
       filtered_data <- filtered_query |> 
-        head(100) |> 
+        utils::head(100) |> 
         dplyr::collect()
       
       elapsed_collect <- as.numeric(Sys.time() - collect_start, units = "secs")
@@ -274,60 +150,20 @@ observeEvent(input[["filters-clear_filters"]], {
       
     }, error = function(e) {
       cat("\n!!! FILTERING ERROR !!!\n")
-      cat("Error:", e$message, "\n")
+      cat("Error:", conditionMessage(e), "\n")
+      cat("Call:", deparse(conditionCall(e)), "\n")
+      traceback()
       cat("Parsed filters:\n")
       print(parsed_filters)
       filtered_database(NULL)
     })
   })
-    
-# Set up download data as reactive expression
-  download_data_table <- reactive({
-    # Use the query cache to get ALL filtered data
-    query <- filtered_query_cache()
-    
-    if (is.null(query)) {
-      return(NULL)
-    }
-    
-    # Check if user applied DataTable column filters
-    if (!is.null(data_table_outputs$visible_rows())) {
-      visible_rows <- data_table_outputs$visible_rows()
-      display_db <- filtered_database()
-      
-      if (!is.null(display_db) && length(visible_rows) > 0 && length(visible_rows) < nrow(display_db)) {
-        # User filtered within DataTable - only download visible rows
-        # Collect filtered query first, then filter in R
-        full_data <- query |> dplyr::collect()
-        display_db_filtered <- display_db[visible_rows, , drop = FALSE]
-        
-        # Filter in R (not DuckDB)
-        result <- full_data |>
-          dplyr::filter(row_id %in% display_db_filtered$row_id)
-        
-        # Join with full dataset to get all columns
-        row_ids <- result$row_id
-        return(current_austraits() |> 
-                 dplyr::collect() |>  # Collect EVERYTHING first
-                 dplyr::filter(row_id %in% row_ids))
-      }
-    }
-    
-    # Default: download ALL filtered data
-    # Just collect the filtered query and join with full dataset
-    filtered_ids <- query |> 
-      dplyr::select(row_id) |> 
-      dplyr::collect() |>
-      dplyr::pull(row_id)
-    
-    # Collect full dataset and filter in R
-    current_austraits() |> 
-      dplyr::collect() |>
-      dplyr::filter(row_id %in% filtered_ids)
-  })
   
   # Data table module
   data_table_outputs <- mod_data_table_server("data_table", filtered_database, filtered_query_cache, current_columns_display)
+
+  # download handlers
+  srv_download(input, output, session, filtered_database, filtered_query_cache, current_austraits, filters, data_table_outputs, full_filtered_cache)
 
 # Reset pagination whenever filtered data changes (e.g. new filter)
   observeEvent(filtered_database(), {
@@ -400,209 +236,9 @@ observeEvent(input[["filters-clear_filters"]], {
   # Trait view module
   mod_trait_view_server("trait_view", filtered_query_cache, filters)
 
-  # URL Query Parameter Handler - Load filters from URL on app startup
-  url_processed <- reactiveVal(FALSE)
-
-  observe({
-    # Only run once
-    if (url_processed()) return()
-    
-    query <- parseQueryString(session$clientData$url_search)
-    
-    # Only process if query parameters exist
-    if (length(query) > 0) {
-      
-      # Handle taxon rank first
-      if (!is.null(query$taxon_rank) && query$taxon_rank %in% c("all", "family", "genus", "taxon_name")) {
-        updateRadioButtons(session, "filters-taxon_rank", selected = query$taxon_rank)
-      }
-      
-      # Handle taxon selections WITH CHOICES
-      if (!is.null(query$family)) {
-        updateSelectizeInput(session, "filters-family", 
-                            choices = family_choices(), 
-                            selected = query$family, 
-                            server = TRUE)
-      }
-      
-      if (!is.null(query$genus)) {
-        updateSelectizeInput(session, "filters-genus", 
-                            choices = genus_choices(), 
-                            selected = query$genus, 
-                            server = TRUE)
-      }
-      
-      if (!is.null(query$taxon_name)) {
-        updateSelectizeInput(session, "filters-taxon_name", 
-                            choices = taxon_name_choices(), 
-                            selected = query$taxon_name, 
-                            server = TRUE)
-      }
-      
-      # Handle trait name WITH CHOICES
-      if (!is.null(query$trait_name)) {
-        updateSelectizeInput(session, "filters-trait_name", 
-                            choices = dropdowns$all_traits, 
-                            selected = query$trait_name, 
-                            server = TRUE)
-      }
-      
-      # Handle location filters
-      if (!is.null(query$location) && query$location %in% c("georeferenced", "apc")) {
-        updateRadioButtons(session, "filters-location", selected = query$location)
-      }
-      
-      if (!is.null(query$apc_taxon_distribution)) {
-        states <- strsplit(query$apc_taxon_distribution, ",")[[1]]
-        updateSelectizeInput(session, "filters-apc_taxon_distribution", 
-                            choices = dropdowns$all_states_territories, 
-                            selected = states, 
-                            server = TRUE)
-      }
-      
-      # Handle basis of record WITH CHOICES
-      if (!is.null(query$basis_of_record)) {
-        updateSelectizeInput(session, "filters-basis_of_record", 
-                            choices = dropdowns$all_bor, 
-                            selected = query$basis_of_record, 
-                            server = TRUE)
-      }
-      
-      # Handle life stage WITH CHOICES
-      if (!is.null(query$life_stage)) {
-        updateSelectizeInput(session, "filters-life_stage", 
-                            choices = dropdowns$all_age, 
-                            selected = query$life_stage, 
-                            server = TRUE)
-      }
-      
-      # Handle tab switching
-      if (!is.null(query$tab)) {
-        tab_name <- URLdecode(query$tab)
-        updateNavbarPage(session, "main_tabs", selected = tab_name)
-      }
-      
-      # Mark as processed
-      url_processed(TRUE)
-    }
-  })
+  # URL parameter handling
+  srv_url_params(input, output, session, family_choices, genus_choices, taxon_name_choices, loading_from_url)
   
-  # Dynamic download UI with warning for large datasets
-  output[["filters-download_ui"]] <- renderUI({
-    display_db <- filtered_database()
-    
-    if (is.null(display_db)) {
-      return(downloadButton("filters-download_data", "Download Data", class = "btn-primary w-100", icon = icon("download")))
-    }
-    
-    total_rows <- attr(display_db, "total_rows")
-    if (is.null(total_rows)) total_rows <- nrow(display_db)
-    
-    if (total_rows >= 100000) {
-      # Large dataset - show warning
-      tagList(
-        div(
-          style = "background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 10px; margin-bottom: 10px;",
-          icon("exclamation-triangle", style = "color: #856404;"),
-          span(
-            style = "color: #856404; margin-left: 5px; font-weight: bold;",
-            sprintf("⚠️ Large download: %s rows", format(total_rows, big.mark = ","))
-          )
-        ),
-        downloadButton(
-          "filters-download_data",
-          sprintf("Confirm & Download (%s rows)", format(total_rows, big.mark = ",")),
-          class = "btn-warning w-100",
-          icon = icon("download")
-        )
-      )
-    } else {
-      # Small dataset - direct download
-      downloadButton("filters-download_data", "Download Data", class = "btn-primary w-100", icon = icon("download"))
-    }
-  })
-
-  output[["filters-download_data"]] <- downloadHandler(
-    filename = function() {
-      paste("austraits-", Sys.Date(), ".zip", sep = "")
-    },
-    content = function(file) {
-      # Clear memory caches before download
-      full_filtered_cache(NULL)
-      gc()
-      
-      tmpdir = tempfile(pattern="tempdir", fileext = ".dir")
-      dir.create(tmpdir)
-      csv_file <- file.path(tmpdir, "austraits-data.csv")
-      bib_file <- file.path(tmpdir, "sources.bib")
-      sources_file <- file.path(tmpdir, "sources.csv")
-      html_file <- file.path(tmpdir, "usage.html")
-
-      data_query <- download_data_table()
-
-      if (is.null(data_query)) {
-        data.frame(message = "No data selected") |> 
-          utils::write.csv(csv_file, row.names = FALSE)
-        writeLines("", bib_file)
-        writeLines("<p>No data selected</p>", html_file)
-      } else {
-        arrow::write_csv_arrow(data_query, csv_file)
-        
-      # Only collect distinct keys, not full dataset
-      keys <- data_query |> 
-        dplyr::select(source_primary_key) |> 
-        dplyr::distinct() |> 
-        dplyr::collect() |> 
-        dplyr::pull(source_primary_key) |>
-        # This handles multiple keys pasted together with "; ", an issue for species averages
-        stringr::str_split(pattern = "; ") |> unlist() |> sort() |> unique()
-
-      sources |>
-        dplyr::filter(source_primary_key %in% keys) |>
-        arrow::write_csv_arrow(sources_file)
-
-      export_bibtex_for_data(keys, bib_file)
-        
-      # Only collect a small sample for usage text to avoid memory crash
-      total_rows <- attr(filtered_database(), "total_rows")
-      if (is.null(total_rows)) total_rows <- nrow(filtered_database())
-
-      if (!is.null(total_rows) && total_rows < 50000) {
-        # Small dataset - generate full usage text
-        sample_data <- data_query |> 
-          dplyr::slice_head(n = 1000) |> 
-          dplyr::collect()
-        usage_text_content <- generate_usage_and_citations_text(sample_data)
-        htmltools::save_html(usage_text_content, html_file)
-        rm(sample_data)
-        gc()
-      } else {
-        # Large dataset - skip usage text to save memory
-        writeLines("<h3>Usage Information</h3><p>For large datasets, please refer to the AusTraits documentation at <a href='https://traitecoevo.github.io/austraits/'>https://traitecoevo.github.io/austraits/</a></p>", html_file)
-      }
-      }
-        # Log download event
-        log_telemetry_event("download", details = list(
-        dataset_type = filters()$dataset_type,
-        trait = filters()$trait_name
-      ))
-      showNotification("Downloading filtered data...",
-                      type = "message",
-                      duration = 3)
-
-      zip::zip(
-        zipfile = file, 
-        files = list.files(tmpdir, full.names = TRUE), 
-        mode = "cherry-pick"
-      )
-
-      unlink(tmpdir, recursive = TRUE)
-
-      # Force garbage collection to free memory
-      gc()
-    },
-    contentType = "application/zip"
-  )
 # Cleanup DuckDB connection when app stops
   onStop(function() {
     if (exists("duckdb_con")) {

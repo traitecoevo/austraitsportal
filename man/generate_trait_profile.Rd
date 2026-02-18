@@ -15,9 +15,3 @@ A character string containing the generated summary for the specified trait.
 \description{
 Creates a textual summary for a specified trait based on the provided data.
 }
-\examples{
-\dontrun{
-data_trait <- arrow::open_dataset("inst/extdata/austraits/austraits-6.0.0-mid-flatten.parquet") |> filter(trait_name == "leaf_area") |> collect()
-generate_trait_profile(data_trait, "leaf_area")
-}
-}

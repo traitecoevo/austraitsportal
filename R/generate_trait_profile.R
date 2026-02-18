@@ -6,13 +6,6 @@
 #' @param data_trait A data frame
 #'
 #' @return A character string containing the generated summary for the specified trait.
-#'
-#' @examples
-#' \dontrun{
-#' data_trait <- arrow::open_dataset("inst/extdata/austraits/austraits-6.0.0-mid-flatten.parquet") |> filter(trait_name == "leaf_area") |> collect()
-#' generate_trait_profile(data_trait, "leaf_area")
-#' }
-
 generate_trait_profile <- function(data_trait) {
 
   # Check validity
