@@ -22,6 +22,13 @@ mod_filters_ui <- function(id) {
       selected = "species"
     ),
     
+    actionButton(
+      ns("apply_filters_btn"),
+      "Apply Filters",
+      class = "btn-primary w-100 mb-0",
+      icon = icon("filter")
+    ),
+
     hr(),
   
     h5("Taxonomy"),
@@ -250,9 +257,6 @@ mod_filters_server <- function(
       observeEvent(input$taxon_type, {
         if (loading_from_url()) return()
         
-        # Reset filtered data when rank changes
-        filtered_database(NULL)
-
         # Clear family selection if switching away from family
         if (input$taxon_type != "family") {
           updateSelectizeInput(

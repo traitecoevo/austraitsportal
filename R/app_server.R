@@ -74,61 +74,75 @@ observeEvent(input[["filters-clear_filters"]], {
   # Setup filter dropdown updates
   srv_filter_updates(input, output, session, filters, filtered_query_cache, current_austraits_display)
 
-  # Debounce filters to prevent double-firing
-  filters_debounced <- debounce(filters, 800)  # Wait 800ms for changes to settle
-  
-  # Apply all filters only once (after debounce)
-  observeEvent(filters_debounced(), {
-    if (loading_from_url()) return()
+  # AUTO-LOAD on startup (once only)
+  observeEvent(current_austraits_display(), {
+    
+    cat("[FILTER] Initial auto-load on app startup\n")
     start_time <- Sys.time()
+    parsed_filters <- parse_filters(filters())
 
-    # SAFETY CHECK: Wait for data to be loaded
+    tryCatch({
+      base_data <- current_austraits_display()
+      filtered_query <- apply_filters(base_data, parsed_filters)
+      
+      if (isTRUE(parsed_filters$location$location == "georeferenced") ||
+          isTRUE(parsed_filters$trait$trait_filter_type == "features")) {
+        filtered_query <- filtered_query |> dplyr::collect()
+      }
+
+      # COUNT FIRST to decide if load all or just 100
+      cat("[FILTER] Counting total rows...\n")
+      total_rows <- filtered_query |> 
+        dplyr::count() |> 
+        dplyr::collect() |> 
+        dplyr::pull(n)
+      
+      cat(sprintf("[FILTER] Total rows: %s\n", format(total_rows, big.mark = ",")))
+      
+      # SMART LOADING: Under 10k = load all, over 10k = load 100
+      if (total_rows < 10000) {
+        cat("[FILTER] Loading all rows (under 10k)...\n")
+        filtered_data <- filtered_query |> dplyr::collect()
+      } else {
+        cat("[FILTER] Loading first 100 rows (over 10k)...\n")
+        filtered_data <- filtered_query |> utils::head(100) |> dplyr::collect()
+      }
+      
+      attr(filtered_data, "total_rows") <- total_rows
+      filtered_query_cache(filtered_query)
+      full_filtered_cache(NULL)
+      filtered_database(filtered_data)
+      
+      elapsed_total <- as.numeric(Sys.time() - start_time, units = "secs")
+      cat(sprintf("[FILTER] ✅ Initial load complete in %.2f sec\n", elapsed_total))
+      
+    }, error = function(e) {
+      cat("Initial load error:", e$message, "\n")
+    })
+    
+  }, once = TRUE)
+
+  # Apply filters ONLY when button clicked
+  observeEvent(input[["filters-apply_filters_btn"]], {
+    
+    start_time <- Sys.time()
     req(exists("austraits_display") || exists("austraits_species_display"))
     if (!exists("austraits_display") && !exists("austraits_species_display")) return()
 
-
-    cat("\n\n[FILTER] Start filtering...\n")
+    cat("\n\n[FILTER] Apply button clicked - Start filtering...\n")
     parsed_filters <- parse_filters(filters())
-
-    # # If no filters at all, show nothing (unless taxon_type = "all")
-    # if (!parsed_filters$has_filters && parsed_filters$taxon$taxon_type != "all") {
-    #   filtered_database(NULL)
-    #   return()
-    # }
-    
 
     tryCatch({
       cat("[FILTER] Applying filters to dataset...\n")
-      
-      # Start with appropriate base dataset
       base_data <- current_austraits_display()
-      
-      # Apply all filters in ONE pass
       filtered_query <- apply_filters(base_data, parsed_filters)
       
+      if (isTRUE(parsed_filters$location$location == "georeferenced") ||
+          isTRUE(parsed_filters$trait$trait_filter_type == "features")) {
+        filtered_query <- filtered_query |> dplyr::collect()
+      }
 
-      cat("[FILTER] Loading first 100 rows...\n")
-      collect_start <- Sys.time()
-      
-      filtered_data <- filtered_query |> 
-        utils::head(100) |> 
-        dplyr::collect()
-      
-      elapsed_collect <- as.numeric(Sys.time() - collect_start, units = "secs")
-      cat(sprintf("[FILTER] ✓ Data loaded: %d rows (%.2f sec)\n", 
-          nrow(filtered_data), elapsed_collect))
-      
-      # Set temporary NA while counting
-      attr(filtered_data, "total_rows") <- NA
-      filtered_query_cache(filtered_query)
-      full_filtered_cache(NULL)
-      
-      # Display table immediately
-      filtered_database(filtered_data)
-      
-      cat(sprintf("[FILTER] 🚀 TABLE DISPLAYED in %.2f sec\n", elapsed_collect))
-      
-
+      # COUNT FIRST to decide if load all or just 100
       cat("[FILTER] Counting total rows...\n")
       count_start <- Sys.time()
       
@@ -141,23 +155,41 @@ observeEvent(input[["filters-clear_filters"]], {
       cat(sprintf("[FILTER] ✓ Count complete: %s rows (%.2f sec)\n", 
           format(total_rows, big.mark = ","), elapsed_count))
       
-      # Update with actual count
+      # SMART LOADING: Under 10k = load all, over 10k = load 100
+      cat("[FILTER] Loading data...\n")
+      collect_start <- Sys.time()
+      
+      if (total_rows < 10000) {
+        cat("[FILTER] Loading all rows (under 10k threshold)...\n")
+        filtered_data <- filtered_query |> dplyr::collect()
+      } else {
+        cat("[FILTER] Loading first 100 rows (over 10k threshold)...\n")
+        filtered_data <- filtered_query |> utils::head(100) |> dplyr::collect()
+      }
+      
+      elapsed_collect <- as.numeric(Sys.time() - collect_start, units = "secs")
+      cat(sprintf("[FILTER] ✓ Data loaded: %d rows (%.2f sec)\n", 
+          nrow(filtered_data), elapsed_collect))
+      
       attr(filtered_data, "total_rows") <- total_rows
+      filtered_query_cache(filtered_query)
+      full_filtered_cache(NULL)
       filtered_database(filtered_data)
       
+      cat(sprintf("[FILTER] 🚀 TABLE DISPLAYED in %.2f sec\n", elapsed_collect))
+      
       elapsed_total <- as.numeric(Sys.time() - start_time, units = "secs")
-      cat(sprintf("[FILTER] ✅ COMPLETE in %.2f sec (parse + filter + display + count)\n", elapsed_total))
+      cat(sprintf("[FILTER] ✅ COMPLETE in %.2f sec (parse + filter + count + display)\n", elapsed_total))
       
     }, error = function(e) {
       cat("\n!!! FILTERING ERROR !!!\n")
-      cat("Error:", conditionMessage(e), "\n")
-      cat("Call:", deparse(conditionCall(e)), "\n")
-      traceback()
+      cat("Error:", e$message, "\n")
       cat("Parsed filters:\n")
       print(parsed_filters)
       filtered_database(NULL)
     })
-  })
+    
+  }, ignoreInit = TRUE)
   
   # Data table module
   data_table_outputs <- mod_data_table_server("data_table", filtered_database, filtered_query_cache, current_columns_display)
