@@ -2532,7 +2532,7 @@
     },
     "plogr": {
       "Source": "CRAN",
-      "Repository": "https://cloud.r-project.org",
+      "Repository": null,
       "description": {
         "Package": "plogr",
         "Title": "The 'plog' C++ Logging Library",
@@ -4373,7 +4373,7 @@
       "checksum": "9b827f13d48a235292b9e71511d968b2"
     },
     "R/app_server.R": {
-      "checksum": "3f3ed3141d754e9d8f987f4e7d8e8eb2"
+      "checksum": "edacbf6bcd4e26cc71e4dd29cfe17bff"
     },
     "R/app_ui.R": {
       "checksum": "9ca8f41597dc198453b527b7739d4db3"
