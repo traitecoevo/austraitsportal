@@ -22,6 +22,8 @@ mod_filters_ui <- function(id) {
       selected = "species"
     ),
     
+    hr(),
+
     actionButton(
       ns("apply_filters_btn"),
       "Apply Filters",
@@ -29,8 +31,6 @@ mod_filters_ui <- function(id) {
       icon = icon("filter")
     ),
 
-    hr(),
-  
     h5("Taxonomy"),
 
     radioButtons(
