@@ -4,7 +4,6 @@
 # austraits.portal
 
 <!-- badges: start -->
-
 <!-- badges: end -->
 
 The goal of austraits.portal is to create a code-free interface for
@@ -21,10 +20,37 @@ leaf area, plant height, seed mass, and more, collected from a wide
 range of sources including published literature, field studies, and
 herbarium records. The database is designed to support research in
 ecology, evolution, and conservation by providing standardized trait
-data for thousands of plant species across Australia.
+data for Australia’s 30,000 plant species.
 
-TODO: Lizzy to complete, including acknowledgements and links to the
-main AusTraits repository and website.
+The AusTraits Data Portal offers an additional interface to explore and
+download data from the AusTraits database, complementing our primary
+access point, versioned releases on
+\[Zenodo\]\[<https://zenodo.org/records/15718081>\], most easily
+accessed via the
+\[`austraits`\]\[<https://github.com/traitecoevo/austraits>\] R package.
+As detailed on Zenodo, AusTraits has been released under an open source
+licence (CC-BY 4.0), enabling re-use by the community.
+
+The database exists because of data submitted by more than 300
+contributors from across Australia and the world. Without their efforts
+to collect, curate and contribute their data, AusTraits could not exist
+and we express our gratitude to all researchers and institutions who are
+part of the AusTraits Project. The project is jointly led by Dr Daniel
+Falster (UNSW Sydney), Dr Elizabeth Wenk (UNSW Sydney), Dr Rachael
+Gallagher (Western Sydney University), and Dr Hervé Sauquet (Royal
+Botanic Gardens and Domain Trust Sydney)
+
+AusTraits has been supported by investment from the Australian Research
+Data Commons (ARDC), via their “Transformative data collections”
+(<https://doi.org/10.47486/TD044>), “Data Partnerships”
+(<https://doi.org/10.47486/DP720>, <https://doi.org/10.47486/DP720A>),
+and “Planet Research Data Commons” programs; and grants from the
+Australian Research Council (FT160100113, DE170100208, FT100100910) and
+Macquarie University, The ARDC is enabled by National Collaborative
+Research Investment Strategy (NCRIS).
+
+Learn more about the AusTraits project on our website:
+<https://austraits.org/>.
 
 ## To open the data portal locally
 
@@ -134,14 +160,14 @@ more on demand) - Cached computations using `memoise` for performance
 
 ### Key Modules
 
-| Module | Purpose | Key Features |
-|----|----|----|
-| **mod_filters** | User filter controls | Taxonomy, traits, location, custom filters |
-| **mod_data_table** | Interactive data table | Sortable, paginated, DT with truncated cells |
-| **mod_taxon_view** | Taxon profile pages | Species info, trait summary, external links |
-| **mod_trait_view** | Trait profile pages | Trait definitions, distributions, maps |
-| **mod_citations** | Citation information | Dynamic reference generation for filtered data |
-| **mod_app_info** | Portal documentation | Usage guide, attribution, telemetry metrics |
+| Module             | Purpose                | Key Features                                   |
+|--------------------|------------------------|------------------------------------------------|
+| **mod_filters**    | User filter controls   | Taxonomy, traits, location, custom filters     |
+| **mod_data_table** | Interactive data table | Sortable, paginated, DT with truncated cells   |
+| **mod_taxon_view** | Taxon profile pages    | Species info, trait summary, external links    |
+| **mod_trait_view** | Trait profile pages    | Trait definitions, distributions, maps         |
+| **mod_citations**  | Citation information   | Dynamic reference generation for filtered data |
+| **mod_app_info**   | Portal documentation   | Usage guide, attribution, telemetry metrics    |
 
 ### Data Processing Pipeline
 
