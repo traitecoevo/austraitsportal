@@ -25,9 +25,8 @@ data for Australia’s 30,000 plant species.
 The AusTraits Data Portal offers an additional interface to explore and
 download data from the AusTraits database, complementing our primary
 access point, versioned releases on
-\[Zenodo\]\[<https://zenodo.org/records/15718081>\], most easily
-accessed via the
-\[`austraits`\]\[<https://github.com/traitecoevo/austraits>\] R package.
+[Zenodo](https://zenodo.org/records/15718081), most easily accessed via
+the [`austraits`](https://github.com/traitecoevo/austraits) R package.
 As detailed on Zenodo, AusTraits has been released under an open source
 licence (CC-BY 4.0), enabling re-use by the community.
 
@@ -68,7 +67,7 @@ AusTraits database and prepare it for use in the portal (see below).
 
 ## Data Preparation
 
-## Lite version
+### Lite version
 
 The portal is designed to work with two versions of the AusTraits
 database: a “lite” version containing a subset of core traits for
