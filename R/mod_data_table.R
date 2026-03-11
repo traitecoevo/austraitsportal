@@ -50,7 +50,7 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
       
       # Get current columns (reactive)
       cols_to_show <- if (is.function(columns_display_reactive)) {
-        columns_display_reactive()
+        isolate(columns_display_reactive())
       } else {
         columns_display_reactive
       }

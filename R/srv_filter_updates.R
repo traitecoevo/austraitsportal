@@ -35,6 +35,8 @@ srv_filter_updates <- function(input, output, session, filters, filtered_query_c
   
   # DYNAMIC DROPDOWN UPDATES
   
+  switching_dataset <- reactiveVal(FALSE)
+
   # Update trait names when trait features are selected
   observeEvent(
     list(
@@ -79,27 +81,53 @@ srv_filter_updates <- function(input, output, session, filters, filtered_query_c
     ignoreInit = TRUE
   )
   
-  # Update custom filter columns based on dataset type
-  observeEvent(input[["filters-dataset_type"]], {
-    cols <- if (input[["filters-dataset_type"]] == "species") {
-      custom_filter_columns_species
-    } else {
-      custom_filter_columns
-    }
-    
-    updateSelectizeInput(session, "filters-custom_col_1", 
-                        choices = cols, 
-                        selected = character(0), 
-                        server = TRUE)
-    updateSelectizeInput(session, "filters-custom_col_2", 
-                        choices = cols, 
-                        selected = character(0), 
-                        server = TRUE)
-    updateSelectizeInput(session, "filters-custom_col_3", 
-                        choices = cols, 
-                        selected = character(0), 
-                        server = TRUE)
-  })
+# Update custom filter columns based on dataset type
+observeEvent(input[["filters-dataset_type"]], {
+  switching_dataset(TRUE)
+  
+  cols <- if (input[["filters-dataset_type"]] == "species") {
+    custom_filter_columns_species
+  } else {
+    custom_filter_columns
+  }
+  
+  # Preserve BOTH column AND value selections
+  current_col_1 <- input[["filters-custom_col_1"]]
+  current_col_2 <- input[["filters-custom_col_2"]]
+  current_col_3 <- input[["filters-custom_col_3"]]
+  
+  current_val_1 <- input[["filters-custom_val_1"]]
+  current_val_2 <- input[["filters-custom_val_2"]]
+  current_val_3 <- input[["filters-custom_val_3"]]
+  
+  # Update columns
+  updateSelectizeInput(session, "filters-custom_col_1", 
+                      choices = cols, 
+                      selected = if (current_col_1 %in% cols) current_col_1 else character(0),
+                      server = TRUE)
+  updateSelectizeInput(session, "filters-custom_col_2", 
+                      choices = cols, 
+                      selected = if (current_col_2 %in% cols) current_col_2 else character(0),
+                      server = TRUE)
+  updateSelectizeInput(session, "filters-custom_col_3", 
+                      choices = cols, 
+                      selected = if (current_col_3 %in% cols) current_col_3 else character(0),
+                      server = TRUE)
+  
+  # Preserve values (if column was preserved)
+  if (current_col_1 %in% cols && !is.null(current_val_1)) {
+    updateSelectizeInput(session, "filters-custom_val_1", selected = current_val_1)
+  }
+  if (current_col_2 %in% cols && !is.null(current_val_2)) {
+    updateSelectizeInput(session, "filters-custom_val_2", selected = current_val_2)
+  }
+  if (current_col_3 %in% cols && !is.null(current_val_3)) {
+    updateSelectizeInput(session, "filters-custom_val_3", selected = current_val_3)
+  }
+  
+  Sys.sleep(0.1)
+  switching_dataset(FALSE)
+})
   
   # When column selected, populate values (only for controlled vocab)
   for (i in 1:3) {
@@ -109,6 +137,7 @@ srv_filter_updates <- function(input, output, session, filters, filtered_query_c
         req(input[[paste0("filters-custom_col_", num)]])
         
         column_name <- input[[paste0("filters-custom_col_", num)]]
+        current_value <- input[[paste0("filters-custom_val_", num)]]
         
         # Only populate dropdown for controlled vocabulary columns
         if (column_name %in% controlled_vocab_columns) {
@@ -136,7 +165,7 @@ srv_filter_updates <- function(input, output, session, filters, filtered_query_c
           updateSelectizeInput(session, paste0("filters-custom_val_", num), 
                               choices = unique_values, 
                               server = TRUE,
-                              selected = NULL)
+                              selected = current_value)
         }
       })
     })

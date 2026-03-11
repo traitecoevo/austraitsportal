@@ -191,6 +191,69 @@ observeEvent(input[["filters-clear_filters"]], {
     
   }, ignoreInit = TRUE)
   
+  # AUTO-APPLY when dataset type changes
+  previous_dataset_type <- reactiveVal(NULL)
+
+  observeEvent(filters()$dataset_type, {
+    
+    current <- filters()$dataset_type
+    previous <- previous_dataset_type()
+    
+    if (is.null(previous)) {
+      previous_dataset_type(current)
+      return()
+    }
+    
+    if (identical(current, previous)) {
+      return()
+    }
+    
+    previous_dataset_type(current)
+    
+    cat("\n[FILTER] Dataset type changed:", previous, "→", current, "\n")
+    start_time <- Sys.time()
+    parsed_filters <- parse_filters(filters())
+
+    tryCatch({
+      base_data <- current_austraits_display()
+      filtered_query <- apply_filters(base_data, parsed_filters)
+      
+      if (isTRUE(parsed_filters$location$location == "georeferenced") ||
+          isTRUE(parsed_filters$trait$trait_filter_type == "features")) {
+        filtered_query <- filtered_query |> dplyr::collect()
+      }
+
+      cat("[FILTER] Counting total rows...\n")
+      total_rows <- filtered_query |> 
+        dplyr::count() |> 
+        dplyr::collect() |> 
+        dplyr::pull(n)
+      
+      cat(sprintf("[FILTER] Total rows: %s\n", format(total_rows, big.mark = ",")))
+      
+      if (total_rows < 10000) {
+        cat("[FILTER] Loading all rows (under 10k)...\n")
+        filtered_data <- filtered_query |> dplyr::collect()
+      } else {
+        cat("[FILTER] Loading first 100 rows (over 10k)...\n")
+        filtered_data <- filtered_query |> utils::head(100) |> dplyr::collect()
+      }
+      
+      attr(filtered_data, "total_rows") <- total_rows
+      filtered_query_cache(filtered_query)
+      full_filtered_cache(NULL)
+      filtered_database(filtered_data)
+      
+      elapsed_total <- as.numeric(Sys.time() - start_time, units = "secs")
+      cat(sprintf("[FILTER] ✅ Dataset switch in %.2f sec\n", elapsed_total))
+      
+    }, error = function(e) {
+      cat("Dataset switch error:", e$message, "\n")
+      filtered_database(NULL)
+    })
+    
+  }, ignoreInit = TRUE)
+
   # Data table module
   data_table_outputs <- mod_data_table_server("data_table", filtered_database, filtered_query_cache, current_columns_display)
 
