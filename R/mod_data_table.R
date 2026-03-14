@@ -95,6 +95,36 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
           serverSide = FALSE
         )
       )
+
+      # Format numeric columns for species averages
+      if ("value_mean" %in% names(display_data)) {
+        numeric_cols <- c("value_mean", "value_median", "value_min", "value_max")
+        existing_numeric <- numeric_cols[numeric_cols %in% names(display_data)]
+        col_indices <- which(names(display_data) %in% existing_numeric) - 1
+        
+        # Add custom JavaScript render function to columnDefs
+        if (length(col_indices) > 0) {
+          # Find existing columnDefs or create new
+          existing_defs <- dt$x$options$columnDefs
+          if (is.null(existing_defs)) existing_defs <- list()
+          
+          # Add formatting for numeric columns
+          existing_defs[[length(existing_defs) + 1]] <- list(
+            targets = col_indices,
+            render = DT::JS("function(data, type, row) {
+              if (type === 'display' && data != null) {
+                var num = parseFloat(data);
+                if (isNaN(num)) return data;
+                // Round to 2 decimals, remove trailing zeros
+                return num.toFixed(2).replace(/\\.?0+$/, '');
+              }
+              return data;
+            }")
+          )
+          
+          dt$x$options$columnDefs <- existing_defs
+        }
+      }
       
       dt_proxy(DT::dataTableProxy(ns("data_table")))
       return(dt)
