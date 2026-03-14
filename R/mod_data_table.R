@@ -44,6 +44,14 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
       if (is.null(display_data)) {
         return(DT::datatable(data.frame(), options = list(pageLength = 10)))
       }
+      
+      # Reorder columns: Family, Genus, Taxon name, Trait name first
+      priority_cols <- c("family", "genus", "taxon_name", "trait_name")
+      existing_priority <- priority_cols[priority_cols %in% names(display_data)]
+      other_cols <- setdiff(names(display_data), existing_priority)
+      
+      display_data <- display_data |> 
+        dplyr::select(dplyr::all_of(existing_priority), dplyr::all_of(other_cols))
             
       total_rows <- attr(display_data, "total_rows")
       if (is.null(total_rows)) total_rows <- nrow(display_data)
