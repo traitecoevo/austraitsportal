@@ -10,13 +10,28 @@
 mod_data_table_ui <- function(id){
   ns <- NS(id)
   
-  card(
-    card_body(
-      div(
-        DT::DTOutput(ns("data_table"))
-      ),
-      div(
-        uiOutput(ns("load_more_button"))
+  tagList(
+    # Add custom CSS for sticky header
+    tags$style(HTML("
+      .dataTables_scrollHead {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        background: white !important;
+      }
+      .dataTables_scrollHeadInner table thead {
+        background: white !important;
+      }
+    ")),
+    
+    card(
+      card_body(
+        div(
+          DT::DTOutput(ns("data_table"))
+        ),
+        div(
+          uiOutput(ns("load_more_button"))
+        )
       )
     )
   )
@@ -80,9 +95,9 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
         filter = "none",
         class = "cell-border stripe nowrap",
         options = list(
-          pageLength = 10,
+          pageLength = 100,
           displayStart = desired_start(),
-          searching = FALSE,  # Keep FALSE - we'll handle filtering manually
+          searching = FALSE,
           autoWidth = FALSE,
           scrollX = TRUE,
           info = TRUE,
