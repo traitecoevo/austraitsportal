@@ -280,7 +280,7 @@ mod_filters_server <- function(
             session,
             "taxon_name",
             choices = taxon_name_choices(),
-            selected = "Abutilon oxycarpum var. oxycarpum",
+            selected = NULL,
             server = TRUE
           )
 
@@ -289,7 +289,7 @@ mod_filters_server <- function(
             session,
             "genus",
             choices = genus_choices(),
-            selected = "Abutilon",
+            selected = NULL,
             server = TRUE
           )
 
@@ -298,7 +298,7 @@ mod_filters_server <- function(
             session,
             "family",
             choices = family_choices(),
-            selected = "Fabaceae",
+            selected = NULL,
             server = TRUE
           )
         }
