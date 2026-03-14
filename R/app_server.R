@@ -74,8 +74,14 @@ observeEvent(input[["filters-clear_filters"]], {
   # Setup filter dropdown updates
   srv_filter_updates(input, output, session, filters, filtered_query_cache, current_austraits_display)
 
-  # AUTO-LOAD on startup (once only)
+  # AUTO-LOAD on startup (once only) - SKIP if URL params exist
   observeEvent(current_austraits_display(), {
+    
+    query <- parseQueryString(session$clientData$url_search)
+    if (length(query) > 0) {
+      cat("[FILTER] Skipping initial auto-load - URL parameters detected\n")
+      return()
+    }
     
     cat("[FILTER] Initial auto-load on app startup\n")
     start_time <- Sys.time()
@@ -331,9 +337,17 @@ observeEvent(input[["filters-clear_filters"]], {
   # Trait view module
   mod_trait_view_server("trait_view", filtered_query_cache, filters)
 
-  # URL parameter handling
-  srv_url_params(input, output, session, family_choices, genus_choices, taxon_name_choices, loading_from_url)
-  
+  # Added url Functionalities  
+  srv_url_params(
+    input, output, session, 
+    family_choices, genus_choices, taxon_name_choices, 
+    loading_from_url,
+    filtered_database,
+    filtered_query_cache,
+    full_filtered_cache,
+    current_austraits_display,
+    filters
+  )  
 # Cleanup DuckDB connection when app stops
   onStop(function() {
     if (exists("duckdb_con")) {
