@@ -227,6 +227,13 @@ mod_filters_ui <- function(id) {
     br(),
 
     actionButton(
+    ns("apply_filters_btn"),
+    "Apply Filters",
+    class = "btn-primary w-100 mb-0",
+    icon = icon("filter")
+    ),
+
+    actionButton(
       ns("clear_filters"),
       "Clear Filters",
       class = "btn-warning w-100"
