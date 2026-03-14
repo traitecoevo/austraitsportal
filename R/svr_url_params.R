@@ -73,7 +73,7 @@ observe({
         if (!is.null(query$apc_taxon_distribution)) {
           states <- strsplit(query$apc_taxon_distribution, ",")[[1]]
           updateSelectizeInput(session, "filters-apc_taxon_distribution", 
-                              choices = dropdowns$all_states_territories, 
+                              choices = c("ACT", "NSW", "NT", "Qld", "SA", "Tas", "Vic", "WA"),
                               selected = states, 
                               server = TRUE)
         }

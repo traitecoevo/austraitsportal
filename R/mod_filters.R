@@ -135,7 +135,7 @@ mod_filters_ui <- function(id) {
       selectizeInput(
         ns("apc_taxon_distribution"),
         label = "State/territory:",
-        choices = dropdowns$all_states_territories,
+        choices = c("ACT", "NSW", "NT", "Qld", "SA", "Tas", "Vic", "WA"),
         multiple = TRUE
       )
     ),
