@@ -224,8 +224,6 @@ mod_filters_ui <- function(id) {
       uiOutput(ns("custom_val_3_ui"))
     ),
 
-    br(),
-
     actionButton(
     ns("apply_filters_btn"),
     "Apply Filters",
