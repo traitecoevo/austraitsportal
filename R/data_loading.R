@@ -129,7 +129,7 @@ custom_filter_columns <- c(controlled_vocab_columns, free_text_columns)
 
 # Custom filter columns for SPECIES AVERAGES (only columns that exist)
 custom_filter_columns_species <- c(
-  "dataset_id", "value_type", 
+  "dataset_id", "value_type", "value_count",
   "taxon_rank", "establishment_means"
   # Only controlled vocab columns that exist in species avg
 )
@@ -140,12 +140,11 @@ target$attribs$href <- "https://github.com/traitecoevo/austraits.portal"
 
 # Columns to display for species averages (different from raw data)
 columns_display_species <- c(
-  "dataset_id", "taxon_name", "genus", "family", "trait_name", 
-  "value_mean", "value_min", "value_max", "value_median", "unit",
-  "value_count", "all_replicates",
+  "family", "genus", "taxon_name", "trait_name",
+  "dataset_id", 
+  "value_count", "value_metric", "value_mean", "all_replicates",
   "taxon_rank", "taxon_distribution", "establishment_means"
 )
-
 # TELEMETRY - Supabase REST API with SQLite fallback
 library(httr2)
 source("R/telemetry_supabase.R")

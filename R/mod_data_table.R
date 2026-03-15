@@ -70,8 +70,26 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
             
       total_rows <- attr(display_data, "total_rows")
       if (is.null(total_rows)) total_rows <- nrow(display_data)
-      
-      # Get current columns (reactive)
+
+      if (all(c("value_min", "value_median", "value_max") %in% names(display_data))) {
+        display_data <- display_data |>
+          dplyr::mutate(
+            min_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_min)),
+            med_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_median)),
+            max_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_max)),
+            # Create value_metric
+            value_metric = dplyr::case_when(
+              !is.na(value_min) & !is.na(value_median) & !is.na(value_max) ~ 
+                paste0(min_fmt, " - ", med_fmt, " - ", max_fmt, 
+                      ifelse(!is.na(unit) & unit != "", paste0(" ", unit), "")),
+              TRUE ~ NA_character_
+            )
+          ) |>
+          dplyr::select(-min_fmt, -med_fmt, -max_fmt) |>  # Remove temp columns
+          dplyr::relocate(value_metric, .after = value_count)
+      }
+
+      # Get current columns (reactive) AFTER creating value_metric
       cols_to_show <- if (is.function(columns_display_reactive)) {
         isolate(columns_display_reactive())
       } else {
@@ -88,13 +106,13 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
       
       info_text <- paste0("Showing _START_ to _END_ of ", total_rows, " entries (loaded ", nrow(display_data), " rows)")
       
-      dt <- DT::datatable(
-        data = display_data,
-        escape = FALSE,
-        rownames = FALSE,
-        filter = "none",
-        class = "cell-border stripe nowrap",
-        options = list(
+        dt <- DT::datatable(
+          data = display_data,
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "none",
+          class = "cell-border stripe nowrap",
+          options = list(
           pageLength = 100,
           displayStart = desired_start(),
           searching = FALSE,
@@ -102,6 +120,16 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
           scrollX = TRUE,
           info = TRUE,
           language = list(info = info_text),
+          headerCallback = DT::JS(
+          "function(thead, data, start, end, display) {",
+          "  $(thead).find('th').each(function(i) {",
+          "    var col = this.textContent.trim();",
+          "    if (col === 'value_metric') {",
+          "      $(this).attr('title', 'Min - Median - Max (Unit) for numerical traits');",
+          "    }",
+          "  });",
+          "}"
+        ),
           columnDefs = list(
             list(targets = no_filter_cols - 1, searchable = FALSE),
             list(targets = hide_cols - 1, visible = FALSE),
