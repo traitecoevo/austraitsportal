@@ -351,7 +351,7 @@ observeEvent(input[["filters-clear_filters"]], {
 # Cleanup DuckDB connection when app stops
   onStop(function() {
     if (exists("duckdb_con")) {
-      dbDisconnect(duckdb_con, shutdown = TRUE)
+      DBI::dbDisconnect(duckdb_con, shutdown = TRUE)
     }
   })
 }
