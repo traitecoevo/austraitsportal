@@ -173,7 +173,6 @@ Tests require:
 - `arrow`
 - `dplyr`
 - `ggplot2`
-- `patchwork`
 - `DT`
 - `RefManageR`
 

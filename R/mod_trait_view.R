@@ -21,7 +21,7 @@ mod_trait_view_ui <- function(id){
         card_header("Observed values"),
         card_body(
           uiOutput(ns("trait_histogram_text")),
-          plotly::plotlyOutput(ns("trait_beeswarm_plot"))
+          plotly::plotlyOutput(ns("trait_histogram_plot"))
         ),
         min_height = 650,
         full_screen = TRUE,
@@ -163,7 +163,7 @@ trait_profile <- reactive({
       }
     })
     
-    output$trait_beeswarm_plot <- plotly::renderPlotly({
+    output$trait_histogram_plot <- plotly::renderPlotly({
       req(filtered_data(), filters()$trait_name)
       
       data <- filtered_data() |>

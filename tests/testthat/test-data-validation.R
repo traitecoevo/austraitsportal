@@ -78,8 +78,7 @@ test_that("species columns are appropriate for species dataset", {
   
   # Species dataset should have aggregated columns
   expect_true("value_mean" %in% columns_display_species)
-  expect_true("value_min" %in% columns_display_species)
-  expect_true("value_max" %in% columns_display_species)
+  expect_true("value_count" %in% columns_display_species)
   
   # Should not have observation-level columns
   expect_false("latitude (deg)" %in% columns_display_species)

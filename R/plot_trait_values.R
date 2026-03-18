@@ -26,7 +26,7 @@ plot_trait_distribution <- function(data, trait, ...) {
     filter(!value_type %in% c("bin", "range")) |>
     mutate(value = as.numeric(value))
 
-    return(plot_trait_distribution_beeswarm(data_plot, trait, "family", hide_ids = FALSE))
+    return(plot_trait_distribution_jitter(data_plot, trait, "family", hide_ids = FALSE))
   }
 }
 
@@ -161,8 +161,8 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
     )
 }
 
-#' @title Beeswarm Trait distribution
-#' @description Plots distribution of trait values by a  grouping variable using ggbeeswarm package
+#' @title Jitter Trait distribution
+#' @description Plots distribution of trait values by a grouping variable using geom_jitter
 #'
 #' @param data data
 #' @param trait_name Name of trait to plot
@@ -174,13 +174,12 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
 #'
 #' @examples
 #' \dontrun{
-#' austraits %>% plot_trait_distribution_beeswarm("wood_density", "dataset_id", "Westoby_2014")
+#' austraits %>% plot_trait_distribution_jitter("wood_density", "dataset_id", "Westoby_2014")
 #' }
 #' @author Daniel Falster - daniel.falster@unsw.edu.au
 #' @export
 
-#
-plot_trait_distribution_beeswarm <- function(data,
+plot_trait_distribution_jitter <- function(data,
                                              trait_name,
                                              y_axis_category,
                                              highlight = NA,
@@ -246,23 +245,7 @@ plot_trait_distribution_beeswarm <- function(data,
   y.text <- ifelse(n_group > 20, 0.75, 1)
   heights <- c(1, max(1, n_group / 7))
 
-  # Top plot - plain histogram of data
-  p1 <-
-    ggplot2::ggplot(data, ggplot2::aes(x = value)) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), color = "darkgrey", fill = "darkgrey", bins = 50) +
-    ggplot2::geom_density(color = "black") +
-    ggplot2::xlab("") +
-    ggplot2::ylab("All data") +
-    ggplot2::theme_bw() +
-    ggplot2::theme(
-      legend.position = "none",
-      panel.grid.minor = ggplot2::element_blank(),
-      panel.grid.major = ggplot2::element_blank(),
-      axis.ticks.y = ggplot2::element_blank(),
-      axis.text = ggplot2::element_blank(),
-      panel.background = ggplot2::element_blank()
-    )
-  # Second plot -- dots by groups, using ggbeeswarm package
+  # Second plot -- dots by groups, using geom_jitter
   p2 <-
     ggplot2::ggplot(data, ggplot2::aes(x = value, y = Group, colour = colour, shape = shapes)) +
     ggplot2::geom_jitter(width = 0) +
@@ -297,18 +280,6 @@ plot_trait_distribution_beeswarm <- function(data,
     p2 <- p2 + ggplot2::theme(axis.text.y = ggplot2::element_blank())
   }
 
-  # Sourced from https://gist.github.com/bbolker/5ba6a37d64b06a176e320b2b696b6733
-  scientific_10 <- function(x, suppress_ones = TRUE) {
-    s <- scales::scientific_format()(x)
-    ## substitute for exact zeros
-    s[s == "0e+00"] <- "0"
-    ## regex: [+]?  = "zero or one occurrences of '+'"
-    s2 <- gsub("e[+]?", " %*% 10^", s)
-    ## suppress 1 x
-    if (suppress_ones) s2 <- gsub("1 %\\*% +", "", s2)
-    parse(text = s2)
-  }
-
 # Define scale on x-axis and transform to log if required
   if (vals$minimum > 0 & !is.infinite(vals$minimum) & 
       vals$maximum > 0 & !is.infinite(vals$maximum) & 
@@ -325,15 +296,8 @@ plot_trait_distribution_beeswarm <- function(data,
       my_breaks <- c(limits[1], limits[2])
     }
     
-    my_labels <- scientific_10(my_breaks)
+    my_labels <- my_breaks # scientific_10(my_breaks)
     
-    p1 <- p1 +
-      ggplot2::scale_x_log10(
-        name = "",
-        breaks = my_breaks,
-        labels = my_labels,
-        limits = limits
-      )
     p2 <- p2 +
       ggplot2::scale_x_log10(
         name = paste(trait_name, " (", data$unit[1], ")"),
@@ -342,12 +306,9 @@ plot_trait_distribution_beeswarm <- function(data,
         limits = limits
       )
   } else {
-    p1 <- p1 + ggplot2::scale_x_continuous(limits = c(vals$minimum, vals$maximum))
     p2 <- p2 + ggplot2::scale_x_continuous(limits = c(vals$minimum, vals$maximum)) +
       ggplot2::xlab(paste(trait_name, " (", data$unit[1], ")"))
   }
 
-  # combine plots
-  requireNamespace("patchwork")
-  p1 + p2 + patchwork::plot_layout(nrow = 2, heights = heights)
+  p2
 }
