@@ -144,7 +144,7 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
   ggplot2::ggplot(ggplot2::aes(y = family, x = value, fill = prop, size = counts_per_value), data = prop_by_family |> filter(prop > 0)) +
     ggplot2::geom_jitter(shape = 21, width = 0.15, height = 0) +
     ggplot2::scale_size_continuous() +
-    ggplot2::scale_fill_viridis_c(option = "C") +
+    ggplot2::scale_fill_viridis_c(option = "D") +
     ggplot2::labs(
       x = NULL, y = NULL,
       fill = "prop of species in family",
@@ -193,14 +193,14 @@ plot_trait_distribution_beeswarm <- function(data,
            ggplot2::theme_void())
   }
   
-  my_shapes <- c("_min" = 60, "_mean" = 16, "_max" = 62, "unknown" = 18)
+  my_shapes <- c("Minimum" = 60, "Mean" = 16, "Maximum" = 62, "Observation" = 18)
 
   as_shape <- function(value_type) {
-    p <- rep("unknown", length(value_type))
+    p <- rep("Observation", length(value_type))
 
-    p[grepl("mean", value_type)] <- "_mean" # 16
-    p[grepl("min", value_type)] <- "_min" # 60
-    p[grepl("max", value_type)] <- "_max" # 62
+    p[grepl("mean", value_type)] <- "Mean"
+    p[grepl("min", value_type)] <- "Minimum"
+    p[grepl("max", value_type)] <- "Maximum"
     factor(p, levels = names(my_shapes))
   }
 
@@ -270,13 +270,25 @@ plot_trait_distribution_beeswarm <- function(data,
     # inclusion of custom shapes: for min, mean, unknown
     # NB: this single line of code makes function about 4-5 slower for some reason
     ggplot2::scale_shape_manual(values = my_shapes) +
+    ggplot2::scale_color_manual(
+      values = c(
+        "a" = "#0072B2",
+        "b" = "#E69F00",
+        "c" = "#D55E00" 
+      )
+    ) +
     ggplot2::theme_bw() +
     ggplot2::theme(
-      legend.position = "none",
+      legend.position = "right",
+      legend.title = ggplot2::element_text(size = 10, face = "bold"),
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank(),
       axis.text.x = ggplot2::element_text(size = ggplot2::rel(1.25)),
       axis.text.y = ggplot2::element_text(size = ggplot2::rel(y.text))
+    ) +
+    ggplot2::guides(
+      shape = ggplot2::guide_legend(title = "Value Type", override.aes = list(size = 4)),
+      colour = "none"  # Hide color legend since it's just for alternating rows
     ) #+
   # guides(colour=FALSE)
 
