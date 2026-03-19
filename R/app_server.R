@@ -250,6 +250,8 @@ observeEvent(input[["filters-clear_filters"]], {
       full_filtered_cache(NULL)
       filtered_database(filtered_data)
       
+      cat(sprintf("[FILTER] 🚀 TABLE DISPLAYED in %.2f sec\n", elapsed_collect))
+      
       elapsed_total <- as.numeric(Sys.time() - start_time, units = "secs")
       cat(sprintf("[FILTER] ✅ Dataset switch in %.2f sec\n", elapsed_total))
       
