@@ -247,7 +247,13 @@ plot_trait_distribution_jitter <- function(data,
 
   # Second plot -- dots by groups, using geom_jitter
   p2 <-
-    ggplot2::ggplot(data, ggplot2::aes(x = value, y = Group, colour = colour, shape = shapes)) +
+    ggplot2::ggplot(data, ggplot2::aes(
+      x = value, 
+      y = Group, 
+      colour = colour, 
+      shape = shapes,
+      text = paste0(dataset_id, " | ", taxon_name)  # Add tooltip text
+    )) +
     ggplot2::geom_jitter(width = 0) +
     ggplot2::ylab(paste("By ", y_axis_category)) +
     # inclusion of custom shapes: for min, mean, unknown

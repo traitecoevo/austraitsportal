@@ -128,7 +128,6 @@ prepare_data_for_portal <- function(austraits, output_dir, overwrite = FALSE) {
   dropdown_cache <- list(
     all_family = austraits_full_flatten |> dplyr::distinct(family) |> dplyr::pull() |> sort(),
     all_genus = austraits_full_flatten |> dplyr::distinct(genus) |> dplyr::pull() |> stringr::str_remove("\\(") |> sort(),
-    all_species = austraits_full_flatten |> dplyr::distinct(species) |> dplyr::pull() |> sort(),
     all_taxon_names = austraits_full_flatten |> dplyr::distinct(taxon_name) |> dplyr::pull() |> sort(),
     all_traits = austraits_full_flatten |> dplyr::distinct(trait_name) |> dplyr::pull() |> sort(),
     all_bor = austraits_full_flatten |> dplyr::distinct(basis_of_record) |> dplyr::pull() |> sort(),
