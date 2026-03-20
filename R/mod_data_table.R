@@ -118,6 +118,7 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
           searching = FALSE,
           autoWidth = FALSE,
           scrollX = TRUE,
+          scrollY = "500px",
           info = TRUE,
           language = list(info = info_text),
           headerCallback = DT::JS(
