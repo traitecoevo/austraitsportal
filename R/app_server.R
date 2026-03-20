@@ -230,12 +230,19 @@ observeEvent(input[["filters-clear_filters"]], {
       }
 
       cat("[FILTER] Counting total rows...\n")
+      count_start <- Sys.time()
+      
       total_rows <- filtered_query |> 
         dplyr::count() |> 
         dplyr::collect() |> 
         dplyr::pull(n)
       
-      cat(sprintf("[FILTER] Total rows: %s\n", format(total_rows, big.mark = ",")))
+      elapsed_count <- as.numeric(Sys.time() - count_start, units = "secs")
+      cat(sprintf("[FILTER] ✓ Count complete: %s rows (%.2f sec)\n", 
+          format(total_rows, big.mark = ","), elapsed_count))
+      
+      cat("[FILTER] Loading data...\n")
+      collect_start <- Sys.time()  # ← ADD THIS LINE
       
       if (total_rows < 10000) {
         cat("[FILTER] Loading all rows (under 10k)...\n")
@@ -245,6 +252,10 @@ observeEvent(input[["filters-clear_filters"]], {
         filtered_data <- filtered_query |> utils::head(100) |> dplyr::collect()
       }
       
+      elapsed_collect <- as.numeric(Sys.time() - collect_start, units = "secs")  # ← NOW THIS WORKS
+      cat(sprintf("[FILTER] ✓ Data loaded: %d rows (%.2f sec)\n", 
+          nrow(filtered_data), elapsed_collect))
+      
       attr(filtered_data, "total_rows") <- total_rows
       filtered_query_cache(filtered_query)
       full_filtered_cache(NULL)
@@ -253,7 +264,7 @@ observeEvent(input[["filters-clear_filters"]], {
       cat(sprintf("[FILTER] 🚀 TABLE DISPLAYED in %.2f sec\n", elapsed_collect))
       
       elapsed_total <- as.numeric(Sys.time() - start_time, units = "secs")
-      cat(sprintf("[FILTER] ✅ Dataset switch in %.2f sec\n", elapsed_total))
+      cat(sprintf("[FILTER] ✅ Dataset switch complete in %.2f sec\n", elapsed_total))
       
     }, error = function(e) {
       cat("Dataset switch error:", e$message, "\n")

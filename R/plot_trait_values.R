@@ -192,10 +192,10 @@ plot_trait_distribution_jitter <- function(data,
            ggplot2::theme_void())
   }
   
-  my_shapes <- c("Minimum" = 60, "Mean" = 16, "Maximum" = 62, "Observation" = 18)
+  my_shapes <- c("Minimum" = 60, "Mean" = 16, "Maximum" = 62, "Unknown" = 18)
 
   as_shape <- function(value_type) {
-    p <- rep("Observation", length(value_type))
+    p <- rep("Unknown", length(value_type))
 
     p[grepl("mean", value_type)] <- "Mean"
     p[grepl("min", value_type)] <- "Minimum"
@@ -252,12 +252,15 @@ plot_trait_distribution_jitter <- function(data,
     ggplot2::ylab(paste("By ", y_axis_category)) +
     # inclusion of custom shapes: for min, mean, unknown
     # NB: this single line of code makes function about 4-5 slower for some reason
-    ggplot2::scale_shape_manual(values = my_shapes) +
+    ggplot2::scale_shape_manual(
+      values = my_shapes,
+      name = "Value Type"
+    ) +
     ggplot2::scale_color_manual(
       values = c(
         "a" = "#0072B2",
         "b" = "#E69F00",
-        "c" = "#D55E00" 
+        "c" = "#D55E00"
       )
     ) +
     ggplot2::theme_bw() +
@@ -269,12 +272,7 @@ plot_trait_distribution_jitter <- function(data,
       axis.text.x = ggplot2::element_text(size = ggplot2::rel(1.25)),
       axis.text.y = ggplot2::element_text(size = ggplot2::rel(y.text))
     ) +
-    ggplot2::guides(
-      shape = ggplot2::guide_legend(title = "Value Type", override.aes = list(size = 4)),
-      colour = "none"  # Hide color legend since it's just for alternating rows
-    ) #+
-  # guides(colour=FALSE)
-
+    ggplot2::guides(colour = "none")
 
   if (hide_ids) {
     p2 <- p2 + ggplot2::theme(axis.text.y = ggplot2::element_blank())
