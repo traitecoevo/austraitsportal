@@ -41,6 +41,7 @@ estimate_species_trait_means <- function(austraits) {
   # Build species means for database
   austraits_species_averages <- 
     data_means_numerical |>
+      dplyr::mutate(value_mean = as.character(value_mean)) |>
     # combine the two datasets
     dplyr::bind_rows(data_means_categorical) |>
     # add in the trait type
@@ -50,10 +51,10 @@ estimate_species_trait_means <- function(austraits) {
     # add in taxon info
     dplyr::left_join(by = "taxon_name",
       austraits |>
-        dplyr::select(taxon_name, taxon_rank:scientific_name_id, -taxon_name_alternatives) |>
+        dplyr::select(taxon_name, taxon_rank:scientific_name_id, -taxon_name_alternatives, -value_type) |>
         dplyr::distinct()
     ) |>
-    dplyr::relocate("value_count", .before = "value_mean") |>
+    dplyr::relocate("value_range", .after = "value_mean") |>
     # Add row_id after aggregation
     dplyr::mutate(row_id = dplyr::row_number())
 
@@ -89,7 +90,7 @@ estimate_species_trait_means_numerical <- function(austraits, traits) {
   
   # combine the two, then take means across site and flora replicates
   means <- location_means |>
-    dplyr::bind_rows(flora_means)  |>
+    dplyr::bind_rows(flora_means) |>
     dplyr::group_by(taxon_name, trait_name, unit) |>
     dplyr::summarise(.groups = "drop",
       value_mean = mean(value_mean),
@@ -102,7 +103,6 @@ estimate_species_trait_means_numerical <- function(austraits, traits) {
       flora_replicates = sum(flora_replicates),
       # record sources
       dataset_id = paste(unique(dataset_id), collapse = "; "),
-      observation_id = paste(unique(observation_id), collapse = "; "),
       source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
     ) |>
     dplyr::distinct()
@@ -179,18 +179,38 @@ estimate_species_trait_means_floras <- function(austraits, traits) {
 
 #' @keywords internal
 #' @noRd
-estimate_species_trait_summary_categorical <- function(austraits, 
+estimate_species_trait_summary_categorical <- function(austraits,
 traits) {
 
   austraits |>
   estimate_species_trait_value_summary_categorical(traits) |>
   dplyr::group_by(taxon_name, trait_name) |>
   dplyr:: mutate(
-      tmp_summary = paste0(value, " (", all_replicates, ")"),
-      value_count = paste0(tmp_summary, collapse = "; ")
-  ) |>
+      tmp_summary = paste0(value, " (", replicates, ")"),
+      value_range = paste0(tmp_summary, collapse = "; "),
+      all_replicates = sum(replicates),
+      dataset_id = paste(unique(dataset_id), collapse = "; "),
+      source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
+    ) |>
+    # for overall value mean, retain the trait value(s) with the maximum number of replicates
+    dplyr::filter(replicates == max(replicates)) |>
+    # for instances with multiple equally reported trait values, merge those into a single string
+    dplyr::mutate(
+      value_mean = paste0(value, collapse = "; ")
+    ) |>
   dplyr::ungroup() |>
-  dplyr::select(-dplyr::all_of(c("tmp_summary", "value"))) |>
+  # sometimes there are equally common trait values and they have each had the same dataset_id,
+  # need to retain only one of these, and want them reordered across various trait values
+  tidyr::separate_longer_delim(c(dataset_id, source_primary_key), delim = "; ") |>
+  dplyr::arrange(taxon_name, trait_name, dataset_id) |>
+  dplyr::group_by(taxon_name, trait_name) |>
+  dplyr:: mutate(
+      dataset_id = paste(unique(dataset_id), collapse = "; "),
+      source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
+    ) |>
+  dplyr::ungroup() |>
+  dplyr::select(-dplyr::all_of(c("tmp_summary", "value", "observation_id", "replicates"))) |>
+  dplyr::select(taxon_name, dataset_id, trait_name, value_mean, value_range, all_replicates, value_type, source_primary_key) |>
   dplyr::distinct()
 }
 
@@ -204,17 +224,17 @@ estimate_species_trait_value_summary_categorical <- function(austraits, traits) 
   dplyr::mutate(value = stringr::str_split(value, " ")) |>
   tidyr::unnest_longer(value) |>
   dplyr::mutate(
-    all_replicates = 1
+    replicates = 1
   ) |>
   dplyr::group_by(taxon_name, trait_name, value) |>
   summarise(.groups = "drop",
     value = first(value),
-    all_replicates = sum(all_replicates),
+    replicates = sum(replicates),
     dataset_id = paste(unique(dataset_id), collapse = "; "),
     observation_id = paste(unique(observation_id), collapse = "; "),
     source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
   ) |>
   mutate(
-    value_type = "value_count"
+    value_type = "value_range"
   )
 }
