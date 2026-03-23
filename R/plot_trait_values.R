@@ -55,13 +55,13 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
 
   # determine proportion of observations for each categorical trait value by taxon
   prop_by_species <- data |>
-    dplyr::select(family, taxon_name, value, dataset_id, observation_id) |>
+    dplyr::select(family, taxon_name, value, dataset_id) |>
     # separate instances with multiple strings in a value cell; as in polymorphic scorings for a single observation
     tidyr::separate_longer_delim(value, delim = " ") |>
     # probably not necessary, but good to retain
     dplyr::distinct() |>
     # for each observation, if multiple values, give each of them a fractional weight
-    dplyr::group_by(family, taxon_name, dataset_id, observation_id) |>
+    dplyr::group_by(family, taxon_name, dataset_id) |>
     dplyr::mutate(
       total_per_obs = n(),
       scaled_by_obs = 1 / total_per_obs
