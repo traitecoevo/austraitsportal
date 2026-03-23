@@ -72,28 +72,16 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
       if (is.null(total_rows)) total_rows <- nrow(display_data)
 
       if (all(c("value_min", "value_median", "value_max") %in% names(display_data))) {
+        # value_range now pre-computed at prep time, just format value_mean with unit
         display_data <- display_data |>
           dplyr::mutate(
-            min_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_min)),
-            med_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_median)),
-            max_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_max)),
-            # Create value_range
-            value_range = dplyr::case_when(
-              #is.na(value_range) & # XXX this is required because column already exists for categorical traits
-              !is.na(value_min) & !is.na(value_median) & !is.na(value_max) ~ 
-                paste0(min_fmt, " - ", med_fmt, " - ", max_fmt, 
-                      ifelse(!is.na(unit) & unit != "", paste0(" ", unit), "")),
-              TRUE ~ NA_character_#value_range # XXX- should be `value_range` to retain categorical value_ranges from summary function
-            ),
             value_mean = dplyr::case_when(
               !is.na(value_mean) ~
                 paste0(value_mean,
-                    ifelse(!is.na(unit) & unit != "", paste0(value_mean, " ", unit), "")), #XXX not breaking but also not doing anything
+                    ifelse(!is.na(unit) & unit != "", paste0(" ", unit), "")),
               TRUE ~ NA_character_
             )
-          ) |>
-          dplyr::select(-min_fmt, -med_fmt, -max_fmt) |>  # Remove temp columns
-          dplyr::relocate(value_range, .after = value_mean)
+          )
       }
 
       # Get current columns (reactive) AFTER creating value_range

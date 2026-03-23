@@ -105,8 +105,16 @@ estimate_species_trait_means_numerical <- function(austraits, traits) {
       dataset_id = paste(unique(dataset_id), collapse = "; "),
       source_primary_key = paste(unique(na.omit(source_primary_key)), collapse = "; ")
     ) |>
+    dplyr::mutate(
+      min_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_min)),
+      med_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_median)),
+      max_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_max)),
+      value_range = paste0(min_fmt, " - ", med_fmt, " - ", max_fmt,
+                          ifelse(!is.na(unit) & unit != "", paste0(" ", unit), ""))
+    ) |>
+    dplyr::select(-min_fmt, -med_fmt, -max_fmt) |>
     dplyr::distinct()
-  
+
   means
 }
 

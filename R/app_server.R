@@ -7,6 +7,7 @@
 app_server <- function(input, output, session) {
   # Reactive value to store the filtered data later
   filtered_database <- reactiveVal(NULL)
+  apply_filters_trigger <- reactiveVal(0)
   filtered_query_cache <- reactiveVal(NULL)
   full_filtered_cache <- reactiveVal(NULL)
 
@@ -130,6 +131,7 @@ observeEvent(input[["filters-clear_filters"]], {
 
   # Apply filters ONLY when button clicked
   observeEvent(input[["filters-apply_filters_btn"]], {
+    apply_filters_trigger(apply_filters_trigger() + 1)
     
     start_time <- Sys.time()
     req(exists("austraits_display") || exists("austraits_species_display"))
@@ -345,7 +347,7 @@ observeEvent(input[["filters-clear_filters"]], {
   mod_app_info_server("app_info")
 
   # Taxon view module
-  mod_taxon_view_server("taxon_view", filters, filtered_database, reactive(input$main_tabs))
+  mod_taxon_view_server("taxon_view", filters, filtered_database, reactive(input$main_tabs), apply_filters_trigger)
 
   # Trait view module
   mod_trait_view_server("trait_view", filtered_query_cache, filters)

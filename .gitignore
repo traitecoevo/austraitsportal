@@ -4,10 +4,13 @@
 .Renviron
 .cache/
 *.parquet
+*.sh
 *.rds
 *.bib
 *.Renviron
 definitions.yml
+*.pem
+*.gz
 
 ignore/
 data
