@@ -142,7 +142,7 @@ target$attribs$href <- "https://github.com/traitecoevo/austraits.portal"
 columns_display_species <- c(
   "family", "genus", "taxon_name", "trait_name",
   "dataset_id", 
-  "value_count", "value_metric", "value_mean", "all_replicates",
+  "value_mean", "value_range", "replicates",
   "taxon_rank", "taxon_distribution", "establishment_means"
 )
 # TELEMETRY - Supabase REST API with SQLite fallback

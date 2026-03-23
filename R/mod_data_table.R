@@ -77,19 +77,26 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
             min_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_min)),
             med_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_median)),
             max_fmt = sub("\\.?0+$", "", sprintf("%.2f", value_max)),
-            # Create value_metric
-            value_metric = dplyr::case_when(
+            # Create value_range
+            value_range = dplyr::case_when(
+              #is.na(value_range) & # XXX this is required because column already exists for categorical traits
               !is.na(value_min) & !is.na(value_median) & !is.na(value_max) ~ 
                 paste0(min_fmt, " - ", med_fmt, " - ", max_fmt, 
                       ifelse(!is.na(unit) & unit != "", paste0(" ", unit), "")),
+              TRUE ~ NA_character_#value_range # XXX- should be `value_range` to retain categorical value_ranges from summary function
+            ),
+            value_mean = dplyr::case_when(
+              !is.na(value_mean) ~
+                paste0(value_mean,
+                    ifelse(!is.na(unit) & unit != "", paste0(value_mean, " ", unit), "")), #XXX not breaking but also not doing anything
               TRUE ~ NA_character_
             )
           ) |>
           dplyr::select(-min_fmt, -med_fmt, -max_fmt) |>  # Remove temp columns
-          dplyr::relocate(value_metric, .after = value_count)
+          dplyr::relocate(value_range, .after = value_mean)
       }
 
-      # Get current columns (reactive) AFTER creating value_metric
+      # Get current columns (reactive) AFTER creating value_range
       cols_to_show <- if (is.function(columns_display_reactive)) {
         isolate(columns_display_reactive())
       } else {
@@ -125,7 +132,7 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
           "function(thead, data, start, end, display) {",
           "  $(thead).find('th').each(function(i) {",
           "    var col = this.textContent.trim();",
-          "    if (col === 'value_metric') {",
+          "    if (col === 'value_range') {",
           "      $(this).attr('title', 'Min - Median - Max (Unit) for numerical traits');",
           "    }",
           "  });",
