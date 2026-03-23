@@ -196,7 +196,7 @@ traits) {
     dplyr::filter(replicates == max(replicates)) |>
     # for instances with multiple equally reported trait values, merge those into a single string
     dplyr::mutate(
-      value_mean = paste0(value, collapse = "; ")
+      value_mean = paste0(value, collapse = " ")
     ) |>
   dplyr::ungroup() |>
   # sometimes there are equally common trait values and they have each had the same dataset_id,
