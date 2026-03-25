@@ -350,7 +350,7 @@ observeEvent(input[["filters-clear_filters"]], {
   mod_taxon_view_server("taxon_view", filters, filtered_database, reactive(input$main_tabs), apply_filters_trigger)
 
   # Trait view module
-  mod_trait_view_server("trait_view", filtered_query_cache, filters)
+  mod_trait_view_server("trait_view", filtered_query_cache, filters, reactive(input$main_tabs))
 
   # Added url Functionalities  
   srv_url_params(

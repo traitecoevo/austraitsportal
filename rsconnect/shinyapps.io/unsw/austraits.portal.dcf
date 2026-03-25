@@ -5,6 +5,6 @@ account: unsw
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14773873
-bundleId: 11691892
+bundleId: 11757219
 url: https://unsw.shinyapps.io/austraits-portal/
 version: 1

@@ -38,9 +38,10 @@ mod_trait_view_ui <- function(id){
 #' @param id Internal parameter for {shiny}
 #' @param filtered_data Reactive containing filtered data
 #' @param filters Reactive containing filter values
+#' @param main_tabs Reactive containing the active tab name
 #'
 #' @noRd 
-mod_trait_view_server <- function(id, filtered_data, filters){
+mod_trait_view_server <- function(id, filtered_data, filters, main_tabs){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
@@ -52,6 +53,9 @@ mod_trait_view_server <- function(id, filtered_data, filters){
     })
     
 trait_profile <- reactive({
+  # Only compute when Trait View tab is visible
+  req(main_tabs() == "Trait View")
+  
   start_time <- Sys.time()
   
   req(filtered_data())

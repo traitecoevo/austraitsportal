@@ -4143,6 +4143,9 @@
     ".cache/taxon_text/24c7faf58bd42bcc": {
       "checksum": "d5284252b75b0a7dc3dc91b7c8a86d32"
     },
+    ".cache/taxon_text/a72e5a6cbc51f754": {
+      "checksum": "3a18bd57256bc34d103e4be5699343c5"
+    },
     ".github/workflows/rcmd-check.yml": {
       "checksum": "6fa9f818ed2c56ebd5a0d09dbd4ae053"
     },
@@ -4150,7 +4153,7 @@
       "checksum": "3da728583e4db3216b6b3dfcd809eb76"
     },
     ".RData": {
-      "checksum": "757aab9e01804ecc785ef5ab1d2738c1"
+      "checksum": "44631ce8e3cafaab278f0c228a97a542"
     },
     ".Renviron": {
       "checksum": "bbc079fb8f94c9d8e2dc9156a01e374d"
@@ -4160,6 +4163,12 @@
     },
     "app.R": {
       "checksum": "cb389d29182c98e519a244f8d9197136"
+    },
+    "austraits-key.pem": {
+      "checksum": "318bce19d77454f31d999bcd012664a4"
+    },
+    "austraits-portal.tar.gz": {
+      "checksum": "f0c430ee514b86df6849bda276bad406"
     },
     "CODE_OF_CONDUCT.md": {
       "checksum": "ffda7f4f205ee1966066a2b632bbf720"
@@ -4174,7 +4183,7 @@
       "checksum": "c040dada5776177a1fabaced7ac0afdb"
     },
     "DESCRIPTION": {
-      "checksum": "2af621b7914791904d639ce6591a184c"
+      "checksum": "88cbb996dad6894e694d1c0524a77fad"
     },
     "inst/extdata/ATRP_links.csv": {
       "checksum": "62e573ae6dd303034ba0572c08dcf5b1"
@@ -4219,10 +4228,10 @@
       "checksum": "6ecc67a70645a415d8859e361ade0d3b"
     },
     "inst/extdata/austraits/austraits-7.0.0-full/austraits-species-averages-display.parquet": {
-      "checksum": "298cbca90843c37a7ed885fcb8dbc02a"
+      "checksum": "12af87caf79f7bec58ad60ca4acadf3e"
     },
     "inst/extdata/austraits/austraits-7.0.0-full/austraits-species-averages.parquet": {
-      "checksum": "32a465d1988ce89f11c330c9ef032303"
+      "checksum": "12af87caf79f7bec58ad60ca4acadf3e"
     },
     "inst/extdata/austraits/austraits-7.0.0-full/definitions.rds": {
       "checksum": "3bcb7a24d3db67c754e646f167507591"
@@ -4267,7 +4276,7 @@
       "checksum": "9d6e4da8701f5a25ae85733cd4e2791b"
     },
     "inst/WORDLIST": {
-      "checksum": "9d9b7e3fe1e803b0bf598f88384f9204"
+      "checksum": "041ef02f93706b5dc8128f401959f3b5"
     },
     "LICENSE": {
       "checksum": "c2b69cea79405efd14cca910fbc5c070"
@@ -4314,6 +4323,9 @@
     "man/plot_trait_distribution_beeswarm.Rd": {
       "checksum": "698e44486667a6397ecd611b7f5d8763"
     },
+    "man/plot_trait_distribution_jitter.Rd": {
+      "checksum": "e2cc5445db44221039c90b296aa5c20f"
+    },
     "man/plot_trait_distribution.Rd": {
       "checksum": "ef54bc752bfac18939115daaa3fcef5f"
     },
@@ -4345,7 +4357,7 @@
       "checksum": "9b827f13d48a235292b9e71511d968b2"
     },
     "R/app_server.R": {
-      "checksum": "9bd9c2cf1148d8dbe1de4dee17750889"
+      "checksum": "432a58b375b00eb7e876e5bb55b996b3"
     },
     "R/app_ui.R": {
       "checksum": "9ca8f41597dc198453b527b7739d4db3"
@@ -4354,22 +4366,22 @@
       "checksum": "ff92f0eb2b8ef0e3f4d64665fa01b3d6"
     },
     "R/data_loading.R": {
-      "checksum": "245f5bd95ff02e7556c03f0c49f82906"
+      "checksum": "4839751989f413d6b143c6d297508006"
     },
     "R/fct_filter_application.R": {
-      "checksum": "513bda8ed6c071580540beeff3818bd6"
+      "checksum": "b8fa4cc10eb81e219a0e64060469159c"
     },
     "R/fct_filter_parsing.R": {
       "checksum": "af814c46116b65d0909c95810417bc1a"
     },
     "R/fct_prepare_data.R": {
-      "checksum": "2e545a3e67e35dccfe5900a11670756b"
+      "checksum": "4f622b2365a677978e2545efbe1952f5"
     },
     "R/generate_taxon_text.R": {
       "checksum": "fb430d207d6389e4e733bd8bdb13c4e2"
     },
     "R/generate_trait_profile.R": {
-      "checksum": "dceeaef3bc47710bbecb8722dd8c9c5f"
+      "checksum": "e2d92d68b459ae9f687300337d4e06a3"
     },
     "R/generate_usage_text.R": {
       "checksum": "3ab5689142e29f414b06ec6078c8fd24"
@@ -4381,22 +4393,22 @@
       "checksum": "406bdf8adfad680cd1153922ebb485fc"
     },
     "R/mod_data_table.R": {
-      "checksum": "2b037b4212282105c5b0eae52c801e8d"
+      "checksum": "f2e50a135aaa3746cc2505b4e6988a83"
     },
     "R/mod_filters.R": {
-      "checksum": "74f2edb2a9faab72de216ab765946355"
+      "checksum": "076888b6b46834aa74e7af582d2f895b"
     },
     "R/mod_taxon_view.R": {
-      "checksum": "3d8d4bf913c1e96855427e7ef4e55210"
+      "checksum": "ea6ae9f1b01b086413c2b0caf90ca84b"
     },
     "R/mod_trait_view.R": {
-      "checksum": "6797d6f384a05471a6340295b078e8bd"
+      "checksum": "72b8df143d8a2296344f54444135e209"
     },
     "R/plot_trait_values.R": {
-      "checksum": "c3a8b62d53945d9dafc40116de2ef2ac"
+      "checksum": "aafaf85afc9a768e7fe63559e86cd96b"
     },
     "R/species_means.R": {
-      "checksum": "e3887830896125803989eeed4e5e29f0"
+      "checksum": "4b2c490300c5346c0c4524ba0a98c63a"
     },
     "R/srv_download.R": {
       "checksum": "73e475f17e5393569c8452fa5456a0df"
@@ -4405,7 +4417,7 @@
       "checksum": "9657d8aaa67b13c8e085f04b1d970054"
     },
     "R/svr_url_params.R": {
-      "checksum": "9b17a2f7c853317a40e79e5d75ced7f7"
+      "checksum": "b3eeab3cd5c515eeb3a3d7028cbf4879"
     },
     "R/telemetry_supabase.R": {
       "checksum": "ab4edf842a5190f0db0c33219d686fa7"
@@ -4420,16 +4432,22 @@
       "checksum": "37fa41fd68cc12e726dd330cfe4b7c3d"
     },
     "README.md": {
-      "checksum": "1465a7db38106fa16b53fa7bafe8d5d3"
+      "checksum": "feaab1fe2a6058c32c8e421cfdfdb28f"
     },
     "README.Rmd": {
-      "checksum": "b4e94d736f4c26cf6cae1c442751132b"
+      "checksum": "dce7ce787fc3e074883a3913173b31f4"
+    },
+    "setup_vm_fixed.sh": {
+      "checksum": "a0aa511eb1c03beef5bf838622ee9300"
+    },
+    "setup_vm.sh": {
+      "checksum": "d5bfa557eb276eb3c2f428eff642ac0b"
     },
     "tests/spelling.R": {
       "checksum": "8ab01e2978c6a97f4b4897427e4a1052"
     },
     "tests/TEST_COVERAGE.md": {
-      "checksum": "849a973248a00200e1adbda8cde67b18"
+      "checksum": "e1ce6affb976abaca2f379421566ad2d"
     },
     "tests/testthat.R": {
       "checksum": "c234f1bff547a38380f9cb098f8d1112"
@@ -4447,10 +4465,10 @@
       "checksum": "9ad5ed94d9b23481309ab6c4100750db"
     },
     "tests/testthat/test-data-validation.R": {
-      "checksum": "a762f8712064ba5a8af89450c0a039ef"
+      "checksum": "f38345c3f9ce6ef7e223dcf048200d74"
     },
     "tests/testthat/test-edge-cases.R": {
-      "checksum": "384e84309b2cb86ca3b653c1bcd4898a"
+      "checksum": "240a774736dd71543882a32571378e96"
     },
     "tests/testthat/test-filter-parsing.R": {
       "checksum": "68cbddd9d3654cef3a1b1d1e29406500"
@@ -4462,10 +4480,10 @@
       "checksum": "e2185b0ebcef2275a46ce25d266a6925"
     },
     "tests/testthat/test-plotting.R": {
-      "checksum": "04ac36a9f354171177f24ed3c498a525"
+      "checksum": "ffdb96991eff24ec49a61b368f0d62c0"
     },
     "tests/testthat/test-species-means.R": {
-      "checksum": "395246af909e668d9a3429ff5513fb10"
+      "checksum": "69a6b2a173a55059d82b9e72e8e3a879"
     },
     "tests/testthat/test-telemetry.R": {
       "checksum": "c4c615d182e7a9117b9f105510c43cad"
