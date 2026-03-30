@@ -23,7 +23,14 @@ mod_filters_ui <- function(id) {
     ),
     
     hr(),
-  
+
+    actionButton(
+      ns("apply_filters_btn"),
+      "Apply Filters",
+      class = "btn-primary w-100 mb-0",
+      icon = icon("filter")
+    ),
+
     h5("Taxonomy"),
 
     radioButtons(
@@ -128,7 +135,7 @@ mod_filters_ui <- function(id) {
       selectizeInput(
         ns("apc_taxon_distribution"),
         label = "State/territory:",
-        choices = dropdowns$all_states_territories,
+        choices = c("ACT", "NSW", "NT", "Qld", "SA", "Tas", "Vic", "WA"),
         multiple = TRUE
       )
     ),
@@ -217,7 +224,12 @@ mod_filters_ui <- function(id) {
       uiOutput(ns("custom_val_3_ui"))
     ),
 
-    br(),
+    actionButton(
+    ns("apply_filters_btn"),
+    "Apply Filters",
+    class = "btn-primary w-100 mb-0",
+    icon = icon("filter")
+    ),
 
     actionButton(
       ns("clear_filters"),
@@ -250,9 +262,6 @@ mod_filters_server <- function(
       observeEvent(input$taxon_type, {
         if (loading_from_url()) return()
         
-        # Reset filtered data when rank changes
-        filtered_database(NULL)
-
         # Clear family selection if switching away from family
         if (input$taxon_type != "family") {
           updateSelectizeInput(
@@ -269,7 +278,7 @@ mod_filters_server <- function(
             session,
             "taxon_name",
             choices = taxon_name_choices(),
-            selected = "Abutilon oxycarpum var. oxycarpum",
+            selected = NULL,
             server = TRUE
           )
 
@@ -278,7 +287,7 @@ mod_filters_server <- function(
             session,
             "genus",
             choices = genus_choices(),
-            selected = "Abutilon",
+            selected = NULL,
             server = TRUE
           )
 
@@ -287,7 +296,7 @@ mod_filters_server <- function(
             session,
             "family",
             choices = family_choices(),
-            selected = "Fabaceae",
+            selected = NULL,
             server = TRUE
           )
         }

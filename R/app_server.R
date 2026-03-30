@@ -7,6 +7,7 @@
 app_server <- function(input, output, session) {
   # Reactive value to store the filtered data later
   filtered_database <- reactiveVal(NULL)
+  apply_filters_trigger <- reactiveVal(0)
   filtered_query_cache <- reactiveVal(NULL)
   full_filtered_cache <- reactiveVal(NULL)
 
@@ -74,30 +75,81 @@ observeEvent(input[["filters-clear_filters"]], {
   # Setup filter dropdown updates
   srv_filter_updates(input, output, session, filters, filtered_query_cache, current_austraits_display)
 
-  # Debounce filters to prevent double-firing
-  filters_debounced <- debounce(filters, 800)  # Wait 800ms for changes to settle
-  
-  # Apply all filters only once (after debounce)
-  observeEvent(filters_debounced(), {
-    if (loading_from_url()) return()
+  # AUTO-LOAD on startup (once only) - SKIP if URL params exist
+  observeEvent(current_austraits_display(), {
+    
+    query <- parseQueryString(session$clientData$url_search)
+    if (length(query) > 0) {
+      cat("[FILTER] Skipping initial auto-load - URL parameters detected\n")
+      return()
+    }
+    
+    cat("[FILTER] Initial auto-load on app startup\n")
     start_time <- Sys.time()
+    parsed_filters <- parse_filters(filters())
 
-    # SAFETY CHECK: Wait for data to be loaded
+    tryCatch({
+      base_data <- current_austraits_display()
+      filtered_query <- apply_filters(base_data, parsed_filters)
+      
+      if (isTRUE(parsed_filters$location$location == "georeferenced") ||
+          isTRUE(parsed_filters$trait$trait_filter_type == "features")) {
+        filtered_query <- filtered_query |> dplyr::collect()
+      }
+
+      # COUNT FIRST to decide if load all or just 100
+      cat("[FILTER] Counting total rows...\n")
+      total_rows <- filtered_query |> 
+        dplyr::count() |> 
+        dplyr::collect() |> 
+        dplyr::pull(n)
+      
+      cat(sprintf("[FILTER] Total rows: %s\n", format(total_rows, big.mark = ",")))
+      
+      # SMART LOADING: Under 10k = load all, over 10k = load 100
+      if (total_rows < 10000) {
+        cat("[FILTER] Loading all rows (under 10k)...\n")
+        filtered_data <- filtered_query |> dplyr::collect()
+      } else {
+        cat("[FILTER] Loading first 100 rows (over 10k)...\n")
+        filtered_data <- filtered_query |> utils::head(100) |> dplyr::collect()
+      }
+      
+      attr(filtered_data, "total_rows") <- total_rows
+      filtered_query_cache(filtered_query)
+      full_filtered_cache(NULL)
+      filtered_database(filtered_data)
+      
+      elapsed_total <- as.numeric(Sys.time() - start_time, units = "secs")
+      cat(sprintf("[FILTER] ✅ Initial load complete in %.2f sec\n", elapsed_total))
+      
+    }, error = function(e) {
+      cat("Initial load error:", e$message, "\n")
+    })
+    
+  }, once = TRUE)
+
+  # Apply filters ONLY when button clicked
+  observeEvent(input[["filters-apply_filters_btn"]], {
+    apply_filters_trigger(apply_filters_trigger() + 1)
+    
+    start_time <- Sys.time()
     req(exists("austraits_display") || exists("austraits_species_display"))
     if (!exists("austraits_display") && !exists("austraits_species_display")) return()
 
-    cat("\n\n[FILTER] Start filtering...\n")
+    cat("\n\n[FILTER] Apply button clicked - Start filtering...\n")
     parsed_filters <- parse_filters(filters())
 
     tryCatch({
       cat("[FILTER] Applying filters to dataset...\n")
-      
-      # Start with appropriate base dataset
       base_data <- current_austraits_display()
-      
-      # Apply all filters in ONE pass
       filtered_query <- apply_filters(base_data, parsed_filters)
       
+      if (isTRUE(parsed_filters$location$location == "georeferenced") ||
+          isTRUE(parsed_filters$trait$trait_filter_type == "features")) {
+        filtered_query <- filtered_query |> dplyr::collect()
+      }
+
       # COUNT FIRST to decide if load all or just 100
       cat("[FILTER] Counting total rows...\n")
       count_start <- Sys.time()
@@ -111,6 +163,7 @@ observeEvent(input[["filters-clear_filters"]], {
       cat(sprintf("[FILTER] ✓ Count complete: %s rows (%.2f sec)\n", 
           format(total_rows, big.mark = ","), elapsed_count))
       
+      # SMART LOADING: Under 10k = load all, over 10k = load 100
       cat("[FILTER] Loading data...\n")
       collect_start <- Sys.time()
       
@@ -126,7 +179,6 @@ observeEvent(input[["filters-clear_filters"]], {
       cat(sprintf("[FILTER] ✓ Data loaded: %d rows (%.2f sec)\n", 
           nrow(filtered_data), elapsed_collect))
       
-      # Set count and cache
       attr(filtered_data, "total_rows") <- total_rows
       filtered_query_cache(filtered_query)
       full_filtered_cache(NULL)
@@ -139,15 +191,90 @@ observeEvent(input[["filters-clear_filters"]], {
       
     }, error = function(e) {
       cat("\n!!! FILTERING ERROR !!!\n")
-      cat("Error:", conditionMessage(e), "\n")
-      cat("Call:", deparse(conditionCall(e)), "\n")
-      traceback()
+      cat("Error:", e$message, "\n")
       cat("Parsed filters:\n")
       print(parsed_filters)
       filtered_database(NULL)
     })
-  })
+    
+  }, ignoreInit = TRUE)
   
+  # AUTO-APPLY when dataset type changes
+  previous_dataset_type <- reactiveVal(NULL)
+
+  observeEvent(filters()$dataset_type, {
+    
+    current <- filters()$dataset_type
+    previous <- previous_dataset_type()
+    
+    if (is.null(previous)) {
+      previous_dataset_type(current)
+      return()
+    }
+    
+    if (identical(current, previous)) {
+      return()
+    }
+    
+    previous_dataset_type(current)
+    
+    cat("\n[FILTER] Dataset type changed:", previous, "→", current, "\n")
+    start_time <- Sys.time()
+    parsed_filters <- parse_filters(filters())
+
+    tryCatch({
+      base_data <- current_austraits_display()
+      filtered_query <- apply_filters(base_data, parsed_filters)
+      
+      if (isTRUE(parsed_filters$location$location == "georeferenced") ||
+          isTRUE(parsed_filters$trait$trait_filter_type == "features")) {
+        filtered_query <- filtered_query |> dplyr::collect()
+      }
+
+      cat("[FILTER] Counting total rows...\n")
+      count_start <- Sys.time()
+      
+      total_rows <- filtered_query |> 
+        dplyr::count() |> 
+        dplyr::collect() |> 
+        dplyr::pull(n)
+      
+      elapsed_count <- as.numeric(Sys.time() - count_start, units = "secs")
+      cat(sprintf("[FILTER] ✓ Count complete: %s rows (%.2f sec)\n", 
+          format(total_rows, big.mark = ","), elapsed_count))
+      
+      cat("[FILTER] Loading data...\n")
+      collect_start <- Sys.time()  # ← ADD THIS LINE
+      
+      if (total_rows < 10000) {
+        cat("[FILTER] Loading all rows (under 10k)...\n")
+        filtered_data <- filtered_query |> dplyr::collect()
+      } else {
+        cat("[FILTER] Loading first 100 rows (over 10k)...\n")
+        filtered_data <- filtered_query |> utils::head(100) |> dplyr::collect()
+      }
+      
+      elapsed_collect <- as.numeric(Sys.time() - collect_start, units = "secs")  # ← NOW THIS WORKS
+      cat(sprintf("[FILTER] ✓ Data loaded: %d rows (%.2f sec)\n", 
+          nrow(filtered_data), elapsed_collect))
+      
+      attr(filtered_data, "total_rows") <- total_rows
+      filtered_query_cache(filtered_query)
+      full_filtered_cache(NULL)
+      filtered_database(filtered_data)
+      
+      cat(sprintf("[FILTER] 🚀 TABLE DISPLAYED in %.2f sec\n", elapsed_collect))
+      
+      elapsed_total <- as.numeric(Sys.time() - start_time, units = "secs")
+      cat(sprintf("[FILTER] ✅ Dataset switch complete in %.2f sec\n", elapsed_total))
+      
+    }, error = function(e) {
+      cat("Dataset switch error:", e$message, "\n")
+      filtered_database(NULL)
+    })
+    
+  }, ignoreInit = TRUE)
+
   # Data table module
   data_table_outputs <- mod_data_table_server("data_table", filtered_database, filtered_query_cache, current_columns_display)
 
@@ -220,18 +347,26 @@ observeEvent(input[["filters-clear_filters"]], {
   mod_app_info_server("app_info")
 
   # Taxon view module
-  mod_taxon_view_server("taxon_view", filters, filtered_database, reactive(input$main_tabs))
+  mod_taxon_view_server("taxon_view", filters, filtered_database, reactive(input$main_tabs), apply_filters_trigger)
 
   # Trait view module
-  mod_trait_view_server("trait_view", filtered_query_cache, filters)
+  mod_trait_view_server("trait_view", filtered_query_cache, filters, reactive(input$main_tabs))
 
-  # URL parameter handling
-  srv_url_params(input, output, session, family_choices, genus_choices, taxon_name_choices, loading_from_url)
-  
+  # Added url Functionalities  
+  srv_url_params(
+    input, output, session, 
+    family_choices, genus_choices, taxon_name_choices, 
+    loading_from_url,
+    filtered_database,
+    filtered_query_cache,
+    full_filtered_cache,
+    current_austraits_display,
+    filters
+  )  
 # Cleanup DuckDB connection when app stops
   onStop(function() {
     if (exists("duckdb_con")) {
-      dbDisconnect(duckdb_con, shutdown = TRUE)
+      DBI::dbDisconnect(duckdb_con, shutdown = TRUE)
     }
   })
 }

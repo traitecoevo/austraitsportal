@@ -77,7 +77,12 @@ parse_filters <- function(input) {
   for (i in 1:3) {
     col <- input[[paste0("custom_col_", i)]]
     val <- input[[paste0("custom_val_", i)]]
-    if (!is.null(col) && !is.null(val) && length(val) > 0 && nchar(paste(val, collapse = "")) > 0) {
+    
+    # Check BOTH column and value are valid (not NULL, not empty)
+    if (!is.null(col) && !is.null(val) && 
+        nchar(col) > 0 &&
+        length(val) > 0 && 
+        nchar(paste(val, collapse = "")) > 0) {
       custom_filters[[i]] <- list(column = col, value = val)
     }
   }

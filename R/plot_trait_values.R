@@ -26,7 +26,7 @@ plot_trait_distribution <- function(data, trait, ...) {
     filter(!value_type %in% c("bin", "range")) |>
     mutate(value = as.numeric(value))
 
-    return(plot_trait_distribution_beeswarm(data_plot, trait, "family", hide_ids = FALSE))
+    return(plot_trait_distribution_jitter(data_plot, trait, "family", hide_ids = FALSE))
   }
 }
 
@@ -55,13 +55,13 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
 
   # determine proportion of observations for each categorical trait value by taxon
   prop_by_species <- data |>
-    dplyr::select(family, taxon_name, value, dataset_id, observation_id) |>
+    dplyr::select(family, taxon_name, value, dataset_id) |>
     # separate instances with multiple strings in a value cell; as in polymorphic scorings for a single observation
     tidyr::separate_longer_delim(value, delim = " ") |>
     # probably not necessary, but good to retain
     dplyr::distinct() |>
     # for each observation, if multiple values, give each of them a fractional weight
-    dplyr::group_by(family, taxon_name, dataset_id, observation_id) |>
+    dplyr::group_by(family, taxon_name, dataset_id) |>
     dplyr::mutate(
       total_per_obs = n(),
       scaled_by_obs = 1 / total_per_obs
@@ -144,7 +144,7 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
   ggplot2::ggplot(ggplot2::aes(y = family, x = value, fill = prop, size = counts_per_value), data = prop_by_family |> filter(prop > 0)) +
     ggplot2::geom_jitter(shape = 21, width = 0.15, height = 0) +
     ggplot2::scale_size_continuous() +
-    ggplot2::scale_fill_viridis_c(option = "C") +
+    ggplot2::scale_fill_viridis_c(option = "D") +
     ggplot2::labs(
       x = NULL, y = NULL,
       fill = "prop of species in family",
@@ -161,8 +161,8 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
     )
 }
 
-#' @title Beeswarm Trait distribution
-#' @description Plots distribution of trait values by a  grouping variable using ggbeeswarm package
+#' @title Jitter Trait distribution
+#' @description Plots distribution of trait values by a grouping variable using geom_jitter
 #'
 #' @param data data
 #' @param trait_name Name of trait to plot
@@ -174,13 +174,12 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
 #'
 #' @examples
 #' \dontrun{
-#' austraits %>% plot_trait_distribution_beeswarm("wood_density", "dataset_id", "Westoby_2014")
+#' austraits %>% plot_trait_distribution_jitter("wood_density", "dataset_id", "Westoby_2014")
 #' }
 #' @author Daniel Falster - daniel.falster@unsw.edu.au
 #' @export
 
-#
-plot_trait_distribution_beeswarm <- function(data,
+plot_trait_distribution_jitter <- function(data,
                                              trait_name,
                                              y_axis_category,
                                              highlight = NA,
@@ -193,14 +192,14 @@ plot_trait_distribution_beeswarm <- function(data,
            ggplot2::theme_void())
   }
   
-  my_shapes <- c("_min" = 60, "_mean" = 16, "_max" = 62, "unknown" = 18)
+  my_shapes <- c("Minimum" = 60, "Mean" = 16, "Maximum" = 62, "Unknown" = 18)
 
   as_shape <- function(value_type) {
-    p <- rep("unknown", length(value_type))
+    p <- rep("Unknown", length(value_type))
 
-    p[grepl("mean", value_type)] <- "_mean" # 16
-    p[grepl("min", value_type)] <- "_min" # 60
-    p[grepl("max", value_type)] <- "_max" # 62
+    p[grepl("mean", value_type)] <- "Mean"
+    p[grepl("min", value_type)] <- "Minimum"
+    p[grepl("max", value_type)] <- "Maximum"
     factor(p, levels = names(my_shapes))
   }
 
@@ -246,55 +245,43 @@ plot_trait_distribution_beeswarm <- function(data,
   y.text <- ifelse(n_group > 20, 0.75, 1)
   heights <- c(1, max(1, n_group / 7))
 
-  # Top plot - plain histogram of data
-  p1 <-
-    ggplot2::ggplot(data, ggplot2::aes(x = value)) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::after_stat(density)), color = "darkgrey", fill = "darkgrey", bins = 50) +
-    ggplot2::geom_density(color = "black") +
-    ggplot2::xlab("") +
-    ggplot2::ylab("All data") +
-    ggplot2::theme_bw() +
-    ggplot2::theme(
-      legend.position = "none",
-      panel.grid.minor = ggplot2::element_blank(),
-      panel.grid.major = ggplot2::element_blank(),
-      axis.ticks.y = ggplot2::element_blank(),
-      axis.text = ggplot2::element_blank(),
-      panel.background = ggplot2::element_blank()
-    )
-  # Second plot -- dots by groups, using ggbeeswarm package
+  # Second plot -- dots by groups, using geom_jitter
   p2 <-
-    ggplot2::ggplot(data, ggplot2::aes(x = value, y = Group, colour = colour, shape = shapes)) +
+    ggplot2::ggplot(data, ggplot2::aes(
+      x = value, 
+      y = Group, 
+      colour = colour, 
+      shape = shapes,
+      text = paste0(dataset_id, " | ", taxon_name)  # Add tooltip text
+    )) +
     ggplot2::geom_jitter(width = 0) +
     ggplot2::ylab(paste("By ", y_axis_category)) +
     # inclusion of custom shapes: for min, mean, unknown
     # NB: this single line of code makes function about 4-5 slower for some reason
-    ggplot2::scale_shape_manual(values = my_shapes) +
+    ggplot2::scale_shape_manual(
+      values = my_shapes,
+      name = "Value Type"
+    ) +
+    ggplot2::scale_color_manual(
+      values = c(
+        "a" = "#0072B2",
+        "b" = "#E69F00",
+        "c" = "#D55E00"
+      )
+    ) +
     ggplot2::theme_bw() +
     ggplot2::theme(
-      legend.position = "none",
+      legend.position = "right",
+      legend.title = ggplot2::element_text(size = 10, face = "bold"),
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank(),
       axis.text.x = ggplot2::element_text(size = ggplot2::rel(1.25)),
       axis.text.y = ggplot2::element_text(size = ggplot2::rel(y.text))
-    ) #+
-  # guides(colour=FALSE)
-
+    ) +
+    ggplot2::guides(colour = "none")
 
   if (hide_ids) {
     p2 <- p2 + ggplot2::theme(axis.text.y = ggplot2::element_blank())
-  }
-
-  # Sourced from https://gist.github.com/bbolker/5ba6a37d64b06a176e320b2b696b6733
-  scientific_10 <- function(x, suppress_ones = TRUE) {
-    s <- scales::scientific_format()(x)
-    ## substitute for exact zeros
-    s[s == "0e+00"] <- "0"
-    ## regex: [+]?  = "zero or one occurrences of '+'"
-    s2 <- gsub("e[+]?", " %*% 10^", s)
-    ## suppress 1 x
-    if (suppress_ones) s2 <- gsub("1 %\\*% +", "", s2)
-    parse(text = s2)
   }
 
 # Define scale on x-axis and transform to log if required
@@ -313,15 +300,8 @@ plot_trait_distribution_beeswarm <- function(data,
       my_breaks <- c(limits[1], limits[2])
     }
     
-    my_labels <- scientific_10(my_breaks)
+    my_labels <- my_breaks # scientific_10(my_breaks)
     
-    p1 <- p1 +
-      ggplot2::scale_x_log10(
-        name = "",
-        breaks = my_breaks,
-        labels = my_labels,
-        limits = limits
-      )
     p2 <- p2 +
       ggplot2::scale_x_log10(
         name = paste(trait_name, " (", data$unit[1], ")"),
@@ -330,12 +310,9 @@ plot_trait_distribution_beeswarm <- function(data,
         limits = limits
       )
   } else {
-    p1 <- p1 + ggplot2::scale_x_continuous(limits = c(vals$minimum, vals$maximum))
     p2 <- p2 + ggplot2::scale_x_continuous(limits = c(vals$minimum, vals$maximum)) +
       ggplot2::xlab(paste(trait_name, " (", data$unit[1], ")"))
   }
 
-  # combine plots
-  requireNamespace("patchwork")
-  p1 + p2 + patchwork::plot_layout(nrow = 2, heights = heights)
+  p2
 }

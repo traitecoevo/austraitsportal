@@ -128,18 +128,18 @@ apply_filters <- function(data = austraits, parsed_filters) {
     column <- custom_filter$column
     values <- custom_filter$value
     
-    if (column %in% controlled_vocab) {
-      # Special case: dataset_id with semicolon-separated values
-      if (column == "dataset_id") {
-        pattern <- paste(values, collapse = "|")
-        filter_expressions[[length(filter_expressions) + 1]] <- expr(stringr::str_detect(!!rlang::sym(column), !!pattern))
-      } else {
-        filter_expressions[[length(filter_expressions) + 1]] <- expr(!!rlang::sym(column) %in% !!values)
-      }
+  if (column %in% controlled_vocab) {
+    # Special case: dataset_id with semicolon-separated values
+    if (column == "dataset_id") {
+      pattern <- paste(values, collapse = "|")
+      filter_expressions[[length(filter_expressions) + 1]] <- expr(stringr::str_detect(!!rlang::sym(column), !!pattern))
     } else {
-      # Free text - pattern matching
-      filter_expressions[[length(filter_expressions) + 1]] <- expr(stringr::str_detect(!!rlang::sym(column), regex(!!values, ignore_case = TRUE)))
+      filter_expressions[[length(filter_expressions) + 1]] <- expr(!!rlang::sym(column) %in% !!values)
     }
+  } else {
+  pattern <- tolower(values)
+  filter_expressions[[length(filter_expressions) + 1]] <- expr(stringr::str_detect(tolower(!!rlang::sym(column)), !!pattern))
+  }
   }
   
   # APPLY ALL FILTERS

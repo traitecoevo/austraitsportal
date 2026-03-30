@@ -21,7 +21,7 @@ mod_trait_view_ui <- function(id){
         card_header("Observed values"),
         card_body(
           uiOutput(ns("trait_histogram_text")),
-          plotly::plotlyOutput(ns("trait_beeswarm_plot"))
+          plotly::plotlyOutput(ns("trait_histogram_plot"))
         ),
         min_height = 650,
         full_screen = TRUE,
@@ -38,9 +38,10 @@ mod_trait_view_ui <- function(id){
 #' @param id Internal parameter for {shiny}
 #' @param filtered_data Reactive containing filtered data
 #' @param filters Reactive containing filter values
+#' @param main_tabs Reactive containing the active tab name
 #'
 #' @noRd 
-mod_trait_view_server <- function(id, filtered_data, filters){
+mod_trait_view_server <- function(id, filtered_data, filters, main_tabs){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
@@ -52,13 +53,17 @@ mod_trait_view_server <- function(id, filtered_data, filters){
     })
     
 trait_profile <- reactive({
+  # Only compute when Trait View tab is visible
+  req(main_tabs() == "Trait View")
+  
   start_time <- Sys.time()
-  cache_key_trait <- filters()$trait_name
-  cache_key_dataset <- filters()$dataset_type
-  cache_key_species <- is_species_avg()
-  cat("\n[TRAIT PROFILE] Starting for trait:", cache_key_trait, "| dataset:", cache_key_dataset, "| is_species:", cache_key_species, "\n")
   
   req(filtered_data())
+  
+  cache_key_trait <- isolate(filters()$trait_name)
+  cache_key_dataset <- isolate(filters()$dataset_type)
+  cache_key_species <- isolate(is_species_avg())
+  cat("\n[TRAIT PROFILE] Starting for trait:", cache_key_trait, "| dataset:", cache_key_dataset, "| is_species:", cache_key_species, "\n")
   
   # Collect ALL data for profile generation
   full_data <- filtered_data() |> dplyr::collect()
@@ -162,7 +167,7 @@ trait_profile <- reactive({
       }
     })
     
-    output$trait_beeswarm_plot <- plotly::renderPlotly({
+    output$trait_histogram_plot <- plotly::renderPlotly({
       req(filtered_data(), filters()$trait_name)
       
       data <- filtered_data() |>
@@ -179,7 +184,7 @@ trait_profile <- reactive({
       # Min 400px, add 15px per family after first 20
       plot_height <- max(400, 300 + (num_families * 15))
       
-      plot_trait_distribution(data, filters()$trait_name) |>
+      plot_trait_distribution(data, isolate(filters()$trait_name)) |>
         plotly::ggplotly(tooltip = c("x", "y", "text"), height = plot_height)
     })
     

@@ -116,7 +116,7 @@ Of the %s records for this trait, **%s** have latitude and longitude coordinates
         leaflet::addCircleMarkers(
           lng = ~lon_num,
           lat = ~lat_num,
-          label = ~as.character(dataset_id),
+          label = ~paste0(dataset_id, " | ", taxon_name),
           radius = 4,
           fillOpacity = 0.7
         )

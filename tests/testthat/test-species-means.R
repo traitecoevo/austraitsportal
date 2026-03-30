@@ -87,12 +87,12 @@ test_that("estimate_species_trait_means handles categorical traits", {
   result <- estimate_species_trait_means(test_arrow)
   
   expect_s3_class(result, "data.frame")
-  expect_true("value_count" %in% names(result))
+  expect_true("replicates" %in% names(result))
   expect_true("type" %in% names(result))
   
   # Check categorical summary format
   species_a <- result[result$taxon_name == "Species A", ]
-  expect_true(grepl("\\(", species_a$value_count))  # Should contain counts in parentheses
+  expect_true(grepl("\\(", species_a$replicates))  # Should contain counts in parentheses
 })
 
 test_that("estimate_species_trait_means handles mixed location and flora data", {

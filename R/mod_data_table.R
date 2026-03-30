@@ -10,13 +10,28 @@
 mod_data_table_ui <- function(id){
   ns <- NS(id)
   
-  card(
-    card_body(
-      div(
-        DT::DTOutput(ns("data_table"))
-      ),
-      div(
-        uiOutput(ns("load_more_button"))
+  tagList(
+    # Add custom CSS for sticky header
+    tags$style(HTML("
+      .dataTables_scrollHead {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        background: white !important;
+      }
+      .dataTables_scrollHeadInner table thead {
+        background: white !important;
+      }
+    ")),
+    
+    card(
+      card_body(
+        div(
+          DT::DTOutput(ns("data_table"))
+        ),
+        div(
+          uiOutput(ns("load_more_button"))
+        )
       )
     )
   )
@@ -44,13 +59,34 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
       if (is.null(display_data)) {
         return(DT::datatable(data.frame(), options = list(pageLength = 10)))
       }
+      
+      # Reorder columns: Family, Genus, Taxon name, Trait name first
+      priority_cols <- c("family", "genus", "taxon_name", "trait_name")
+      existing_priority <- priority_cols[priority_cols %in% names(display_data)]
+      other_cols <- setdiff(names(display_data), existing_priority)
+      
+      display_data <- display_data |> 
+        dplyr::select(dplyr::all_of(existing_priority), dplyr::all_of(other_cols))
             
       total_rows <- attr(display_data, "total_rows")
       if (is.null(total_rows)) total_rows <- nrow(display_data)
-      
-      # Get current columns (reactive)
+
+      if (all(c("value_min", "value_median", "value_max") %in% names(display_data))) {
+        # value_range now pre-computed at prep time, just format value_mean with unit
+        display_data <- display_data |>
+          dplyr::mutate(
+            value_mean = dplyr::case_when(
+              !is.na(value_mean) ~
+                paste0(value_mean,
+                    ifelse(!is.na(unit) & unit != "", paste0(" ", unit), "")),
+              TRUE ~ NA_character_
+            )
+          )
+      }
+
+      # Get current columns (reactive) AFTER creating value_range
       cols_to_show <- if (is.function(columns_display_reactive)) {
-        columns_display_reactive()
+        isolate(columns_display_reactive())
       } else {
         columns_display_reactive
       }
@@ -65,20 +101,31 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
       
       info_text <- paste0("Showing _START_ to _END_ of ", total_rows, " entries (loaded ", nrow(display_data), " rows)")
       
-      dt <- DT::datatable(
-        data = display_data,
-        escape = FALSE,
-        rownames = FALSE,
-        filter = "none",
-        class = "cell-border stripe nowrap",
-        options = list(
-          pageLength = 10,
+        dt <- DT::datatable(
+          data = display_data,
+          escape = FALSE,
+          rownames = FALSE,
+          filter = "none",
+          class = "cell-border stripe nowrap",
+          options = list(
+          pageLength = 100,
           displayStart = desired_start(),
-          searching = FALSE,  # Keep FALSE - we'll handle filtering manually
+          searching = FALSE,
           autoWidth = FALSE,
           scrollX = TRUE,
+          scrollY = "500px",
           info = TRUE,
           language = list(info = info_text),
+          headerCallback = DT::JS(
+          "function(thead, data, start, end, display) {",
+          "  $(thead).find('th').each(function(i) {",
+          "    var col = this.textContent.trim();",
+          "    if (col === 'value_range') {",
+          "      $(this).attr('title', 'Min - Median - Max (Unit) for numerical traits');",
+          "    }",
+          "  });",
+          "}"
+        ),
           columnDefs = list(
             list(targets = no_filter_cols - 1, searchable = FALSE),
             list(targets = hide_cols - 1, visible = FALSE),
@@ -87,6 +134,36 @@ mod_data_table_server <- function(id, filtered_database, filtered_query_cache, c
           serverSide = FALSE
         )
       )
+
+      # Format numeric columns for species averages
+      if ("value_mean" %in% names(display_data)) {
+        numeric_cols <- c("value_mean", "value_median", "value_min", "value_max")
+        existing_numeric <- numeric_cols[numeric_cols %in% names(display_data)]
+        col_indices <- which(names(display_data) %in% existing_numeric) - 1
+        
+        # Add custom JavaScript render function to columnDefs
+        if (length(col_indices) > 0) {
+          # Find existing columnDefs or create new
+          existing_defs <- dt$x$options$columnDefs
+          if (is.null(existing_defs)) existing_defs <- list()
+          
+          # Add formatting for numeric columns
+          existing_defs[[length(existing_defs) + 1]] <- list(
+            targets = col_indices,
+            render = DT::JS("function(data, type, row) {
+              if (type === 'display' && data != null) {
+                var num = parseFloat(data);
+                if (isNaN(num)) return data;
+                // Round to 2 decimals, remove trailing zeros
+                return num.toFixed(2).replace(/\\.?0+$/, '');
+              }
+              return data;
+            }")
+          )
+          
+          dt$x$options$columnDefs <- existing_defs
+        }
+      }
       
       dt_proxy(DT::dataTableProxy(ns("data_table")))
       return(dt)

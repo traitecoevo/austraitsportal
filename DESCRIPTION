@@ -47,7 +47,6 @@ Imports:
     tidyr,
     tibble,
     ggplot2,
-    patchwork,
     kableExtra,
     purrr,
     stringr,

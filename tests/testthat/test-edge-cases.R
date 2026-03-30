@@ -109,7 +109,6 @@ test_that("text generation handles missing metadata gracefully", {
 
 test_that("plotting handles zero variance data", {
   skip_if_not_installed("ggplot2")
-  skip_if_not_installed("patchwork")
   
   # All same value
   uniform_data <- data.frame(
@@ -122,7 +121,7 @@ test_that("plotting handles zero variance data", {
   )
   
   expect_error(
-    plot_trait_distribution_beeswarm(uniform_data, "trait", "family"),
+    plot_trait_distribution_jitter(uniform_data, "trait", "family"),
     NA
   )
 })

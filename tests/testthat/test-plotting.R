@@ -34,9 +34,8 @@ test_that("plot_trait_distribution routes to categorical plot for NA units", {
   expect_s3_class(result, "gg")
 })
 
-test_that("plot_trait_distribution_beeswarm handles numerical data", {
+test_that("plot_trait_distribution_jitter handles numerical data", {
   skip_if_not_installed("ggplot2")
-  skip_if_not_installed("patchwork")
   
   test_data <- data.frame(
     taxon_name = rep("Species A", 5),
@@ -47,19 +46,19 @@ test_that("plot_trait_distribution_beeswarm handles numerical data", {
     value_type = rep("mean", 5)
   )
   
-  result <- plot_trait_distribution_beeswarm(
+  result <- plot_trait_distribution_jitter(
     test_data, 
     "leaf_area", 
     "family"
   )
   
-  expect_s3_class(result, "patchwork")
+  expect_s3_class(result, "ggplot")
 })
 
-test_that("plot_trait_distribution_beeswarm handles empty data gracefully", {
+test_that("plot_trait_distribution_jitter handles empty data gracefully", {
   skip_if_not_installed("ggplot2")
   
-  result <- plot_trait_distribution_beeswarm(
+  result <- plot_trait_distribution_jitter(
     NULL, 
     "leaf_area", 
     "family"
@@ -68,9 +67,8 @@ test_that("plot_trait_distribution_beeswarm handles empty data gracefully", {
   expect_s3_class(result, "gg")
 })
 
-test_that("plot_trait_distribution_beeswarm handles single value", {
+test_that("plot_trait_distribution_jitter handles single value", {
   skip_if_not_installed("ggplot2")
-  skip_if_not_installed("patchwork")
   
   test_data <- data.frame(
     taxon_name = "Species A",
@@ -81,13 +79,13 @@ test_that("plot_trait_distribution_beeswarm handles single value", {
     value_type = "mean"
   )
   
-  result <- plot_trait_distribution_beeswarm(
+  result <- plot_trait_distribution_jitter(
     test_data,
     "leaf_area",
     "family"
   )
   
-  expect_s3_class(result, "patchwork")
+  expect_s3_class(result, "ggplot")
 })
 
 test_that("plot_categorical_trait_distribution groups by family", {
@@ -108,9 +106,8 @@ test_that("plot_categorical_trait_distribution groups by family", {
   expect_s3_class(result, "ggplot")
 })
 
-test_that("plot_trait_distribution_beeswarm uses log scale for wide ranges", {
+test_that("plot_trait_distribution_jitter uses log scale for wide ranges", {
   skip_if_not_installed("ggplot2")
-  skip_if_not_installed("patchwork")
   
   # Data with wide range (> 20x)
   test_data <- data.frame(
@@ -122,13 +119,13 @@ test_that("plot_trait_distribution_beeswarm uses log scale for wide ranges", {
     value_type = rep("mean", 3)
   )
   
-  result <- plot_trait_distribution_beeswarm(
+  result <- plot_trait_distribution_jitter(
     test_data,
     "seed_mass",
     "family"
   )
   
-  expect_s3_class(result, "patchwork")
+  expect_s3_class(result, "ggplot")
   # Log scale should be applied automatically for wide ranges
 })
 
