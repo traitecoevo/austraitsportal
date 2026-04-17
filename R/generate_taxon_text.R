@@ -70,7 +70,7 @@ generate_taxon_text <- function(taxon) {
     dplyr::filter(data_available) |> 
     dplyr::mutate(text = 
       ifelse(type == "categorical", 
-        sprintf("- [%s](%s) (categorical): %s  [sources: %s]", trait_name, Entity, value_count, dataset_id),
+        sprintf("- [%s](%s) (categorical): %s  [sources: %s]", trait_name, Entity, all_replicates, dataset_id),
         sprintf("- [%s](%s) (numerical): %s %s (%s-%s %s)  [sources: %s]", 
           trait_name, Entity, 
           round(as.numeric(value_mean), 2), units,
