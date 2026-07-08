@@ -65,12 +65,12 @@ taxon_text_generated <- eventReactive(apply_filters_trigger(), {
       # Helper function to show empty state message
       show_empty_state <- function() {
         tags$div(
-          style = "background: #e3f2fd; border-left: 4px solid #2196f3; padding: 20px; margin: 20px 0; border-radius: 4px;",
+          style = "background: #f2f6f3; border-left: 4px solid #2f7d55; padding: 20px; margin: 20px 0; border-radius: 4px;",
           tags$div(
             style = "display: flex; align-items: center; gap: 10px; margin-bottom: 12px;",
-            icon("info-circle", style = "color: #1976d2; font-size: 24px;"),
+            icon("info-circle", style = "color: #2f7d55; font-size: 24px;"),
             tags$h4(
-              style = "color: #1565c0; margin: 0;",
+              style = "color: #235c43; margin: 0;",
               "Select a Taxon to View Profile"
             )
           ),
