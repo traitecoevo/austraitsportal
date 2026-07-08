@@ -15,13 +15,25 @@ knitr::opts_chunk$set(
 
 # austraits.portal
 
-<!-- badges: start -->
-<!-- badges: end -->
+The goal of austraits.portal is to create a code-free interface for users to access the AusTraits Plant Trait database. The portal is live at
 
-The goal of austraits.portal is to create a code-free interface for users to access the AusTraits Plant Trait database. The portal is visible at
+**<https://app.austraits.org/austraits/>**
 
-<https://unsw.shinyapps.io/austraits-portal/> 
+> **Note:** the portal is now hosted on AWS at the address above. The previous ShinyApps deployment (`https://unsw.shinyapps.io/austraits-portal/`) is deprecated.
 
+For programmatic (code-based) access to the same data, use the [`austraits`](https://github.com/traitecoevo/austraits) R package.
+
+## Using the portal
+
+The portal provides a code-free, point-and-click interface for exploring and downloading AusTraits data — no R or programming required. To get started, open **<https://app.austraits.org/austraits/>** in a web browser and:
+
+- **Browse and filter** the data using the controls in the sidebar. You can narrow the data by taxonomy (family, genus, species), by trait, by geographic location, and with custom filters.
+- **Preview results** in the interactive data table, which updates as you adjust filters. Columns are sortable and the table paginates through matching records.
+- **Explore taxa and traits** via the dedicated Taxon View and Trait View tabs, which show species profiles, trait summaries, trait definitions, distributions, and maps.
+- **Query by URL** — filter states can be shared via links, e.g. `?taxon_name=Eucalyptus+globulus`, `?trait_name=leaf_area`, or `?tab=Trait+View`.
+- **Download** the filtered data for your own analysis, along with the matching citations shown in the Citations tab.
+
+The sections below are for developers who want to run, prepare data for, or deploy the portal.
 
 ## About AusTraits
 
@@ -30,8 +42,6 @@ The AusTraits database is a comprehensive collection of plant trait data for Aus
 The AusTraits Data Portal offers an additional interface to explore and download data from the AusTraits database, complementing our primary access point, versioned releases on [Zenodo](https://zenodo.org/records/15718081), most easily accessed via the [`austraits`](https://github.com/traitecoevo/austraits) R package. As detailed on Zenodo, AusTraits has been released under an open source licence (CC-BY 4.0), enabling re-use by the community.
 
 The database exists because of data submitted by more than 300 contributors from across Australia and the world. Without their efforts to collect, curate and contribute their data, AusTraits could not exist and we express our gratitude to all researchers and institutions who are part of the AusTraits Project. The project is jointly led by Dr Daniel Falster (UNSW Sydney), Dr Elizabeth Wenk (UNSW Sydney), Dr Rachael Gallagher (Western Sydney University), and Dr Hervé Sauquet (Royal Botanic Gardens and Domain Trust Sydney)
-
-AusTraits has been supported by investment from the Australian Research Data Commons (ARDC), via their "Transformative data collections" (https://doi.org/10.47486/TD044), "Data Partnerships" (https://doi.org/10.47486/DP720, https://doi.org/10.47486/DP720A), and "Planet Research Data Commons" programs; and grants from the Australian Research Council (FT160100113, DE170100208, FT100100910) and Macquarie University, The ARDC is enabled by National Collaborative Research Investment Strategy (NCRIS).
 
 Learn more about the AusTraits project on our website: <https://austraits.org/>.
 
@@ -76,12 +86,14 @@ austraits_7.0.0 |>
   prepare_data_for_portal("inst/extdata/austraits/austraits-7.0.0-full", overwrite = TRUE)
 ```
 
-## Deploying to shinyapps.io
+## Deploying to shinyapps.io (deprecated)
 
-App is deployed at https://unsw.shinyapps.io/austraits-portal/ with configuration 
+> **Note:** the portal is now served from AWS at <https://app.austraits.org/austraits/>. The ShinyApps deployment described below is deprecated and retained for reference only.
+
+App was deployed at https://unsw.shinyapps.io/austraits-portal/ with configuration
 details stored at `rsconnect/shinyapps.io/unsw/austraits.portal.dcf`.
 
-To update deployment, open in RStudio and run: 
+To update deployment, open in RStudio and run:
 
 ``` r
 rsconnect::deployApp()
@@ -198,4 +210,42 @@ The app supports deep linking via URL query parameters:
 - `?trait_name=leaf_area`
 - `?tab=Trait+View`
 - All filter states can be encoded in URLs for sharing
+
+## Citation
+
+The portal provides access to the AusTraits dataset. If you use AusTraits data, please cite:
+
+> Falster D, Gallagher R, Wenk EH, Wright IJ, Indiarto D, Andrew SC, *et al.* (2021) **AusTraits, a curated plant trait database for the Australian flora.** *Scientific Data* 8:254. <https://doi.org/10.1038/s41597-021-01006-6>
+
+## AusTraits family
+
+`austraits.portal` is part of the **AusTraits family** of packages maintained by the
+[AusTraits](https://austraits.org) team. See **[austraits.org](https://austraits.org)** for the
+project, the data, and the people behind it.
+
+Contributing? Issues across the family are tracked on one board,
+[AusTraits #9](https://github.com/orgs/traitecoevo/projects/9), and new issues are auto-added. Please
+read the [issue & labelling guide](https://github.com/traitecoevo/austraits-meta/blob/main/governance/issue-guide.md)
+in [`austraits-meta`](https://github.com/traitecoevo/austraits-meta) — the family's cross-package
+knowledge and governance hub — before filing.
+
+## Acknowledgements
+
+AusTraits is made possible by contributions from our partner organisations — the
+[University of New South Wales](https://www.unsw.edu.au/),
+[Western Sydney University](https://www.westernsydney.edu.au/),
+[Botanic Gardens of Sydney](https://www.botanicgardens.org.au/),
+[the University of Melbourne](https://www.unimelb.edu.au/),
+the [Atlas of Living Australia](https://www.ala.org.au/), and the Australian Government
+[Department of Climate Change, Energy, the Environment and Water](https://www.dcceew.gov.au) — and
+from our [advisory board, data contributors, and past partners](https://austraits.org/team/team-partners.html).
+
+AusTraits is a co-investment partnership with the
+[Australian Research Data Commons](https://ardc.edu.au/) (ARDC) through the Planet Research Data
+Commons ([DOI: 10.3565/nyk4-4r91](https://doi.org/10.3565/nyk4-4r91)). The ARDC is enabled by the
+Australian Government's [National Collaborative Research Infrastructure Strategy](https://www.education.gov.au/ncris)
+(NCRIS).
+
+This work received investment ([DP720](https://doi.org/10.47486/DP720),
+[DP720A](https://doi.org/10.47486/DP720A)) from the ARDC.
 
