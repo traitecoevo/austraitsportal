@@ -247,8 +247,17 @@ The app supports deep linking via URL query parameters: -
 
 ## Citation
 
-The portal provides access to the AusTraits dataset. If you use AusTraits
-data, please cite:
+The portal is a distinct piece of software from the AusTraits dataset it
+serves. If you use the AusTraits Data Portal, please cite **both** the
+portal and the underlying AusTraits dataset.
+
+**The portal:**
+
+> Garg P, Kar F, Falster D, Wenk E (2025) *austraits.portal: A code-free
+> web interface to the AusTraits database.*
+> <https://app.austraits.org/austraits/>
+
+**The AusTraits data:**
 
 > Falster D, Gallagher R, Wenk EH, Wright IJ, Indiarto D, Andrew SC, *et
 > al.* (2021) **AusTraits, a curated plant trait database for the
@@ -284,5 +293,7 @@ Commons ([DOI: 10.3565/nyk4-4r91](https://doi.org/10.3565/nyk4-4r91)). The ARDC 
 Australian Government's [National Collaborative Research Infrastructure Strategy](https://www.education.gov.au/ncris)
 (NCRIS).
 
-This work received investment ([DP720](https://doi.org/10.47486/DP720),
+Development of this portal was supported by a UNSW Research Infrastructure
+Grant. This work received investment
+([DP720](https://doi.org/10.47486/DP720),
 [DP720A](https://doi.org/10.47486/DP720A)) from the ARDC.

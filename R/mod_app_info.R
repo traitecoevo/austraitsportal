@@ -40,8 +40,9 @@ profile_links <- function(github = NULL, orcid = NULL) {
         tags$strong("Ray Miles"), " ", profile_links(github = "https://github.com/raymiles"), "."
       ),
       
-      p("The AusTraits Database and design of this portal are supported by an UNSW Research Infrastructure Grant ",
-        "and Australian Research Data Commons co-investment. ",
+      p("Development of this portal was supported by a UNSW Research Infrastructure Grant. ",
+        "AusTraits is a co-investment partnership with the Australian Research Data Commons (ARDC) ",
+        "through the Planet Research Data Commons. ",
         "The ARDC is enabled by the Australian Government's National Collaborative Research Infrastructure Strategy (NCRIS)."),
       
       tags$style(".logo-link img { transition: transform 0.2s ease, opacity 0.2s ease; }

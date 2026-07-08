@@ -1,4 +1,26 @@
-citHeader("The portal provides access to the AusTraits dataset. To cite AusTraits use:")
+citHeader(
+  "The portal is a distinct piece of software from the AusTraits dataset it serves. ",
+  "Please cite the portal software, and separately cite the AusTraits dataset when you use the data:"
+)
+
+bibentry(
+  bibtype  = "Manual",
+  title    = "austraits.portal: A code-free web interface to the AusTraits database",
+  author   = c(
+    person("Pushkal", "Garg"),
+    person("Fonti", "Kar"),
+    person("Daniel", "Falster"),
+    person("Elizabeth", "Wenk")
+  ),
+  year     = "2025",
+  note     = "Shiny web application, version 0.0.0.9000",
+  url      = "https://app.austraits.org/austraits/",
+  textVersion = paste(
+    "Garg, P., Kar, F., Falster, D., Wenk, E. (2025).",
+    "austraits.portal: A code-free web interface to the AusTraits database.",
+    "https://app.austraits.org/austraits/"
+  )
+)
 
 bibentry(
   bibtype  = "Article",

@@ -1,32 +1,32 @@
 Package: austraits.portal
 Title: Shiny interface to the AusTraits database
 Version: 0.0.0.9000
-Authors@R: 
-        c(person(given = "Daniel",
-             family = "Falster",
+Authors@R:
+        c(person(given = "Pushkal",
+             family = "Garg",
              role = c("aut", "cre"),
-             email = "daniel.falster@unsw.edu.au",
-             comment = c(ORCID = "0000-0002-9814-092X")),
-      person(given = "Elizabeth", 
-            family = "Wenk", 
-            role = "aut",
-            email = "e.wenk@unsw.edu.au", 
-            comment = c(ORCID = "0000-0001-5640-5910")),
+             email = "pushkal.garg@student.unsw.edu.au",
+             comment = c(ORCID = "0009-0002-0179-2946")),
       person(given = "Fonti",
              family = "Kar",
              role = "aut",
              email = "f.kar@unsw.edu.au",
              comment = c(ORCID = "0000-0002-2760-3974")),
-      person(given = "Eve",
+      person(given = "Daniel",
+             family = "Falster",
+             role = "aut",
+             email = "daniel.falster@unsw.edu.au",
+             comment = c(ORCID = "0000-0002-9814-092X")),
+      person(given = "Elizabeth",
+            family = "Wenk",
+            role = "aut",
+            email = "e.wenk@unsw.edu.au",
+            comment = c(ORCID = "0000-0001-5640-5910")),
+      person(given = "Ray",
              family = "Miles",
              role = "ctb",
              email = "e.miles@unsw.edu.au",
-             comment = c(ORCID = "0009-0008-4168-8645")),
-      person(given = "Pushkal",
-             family = "Garg",
-             role = "ctb",
-             email = "pushkal.garg@student.unsw.edu.au",
-             comment = c(ORCID = "0009-0002-0179-2946"))
+             comment = c(ORCID = "0009-0008-4168-8645"))
              )
 Description: Shiny R package to the AusTraits Plant Traits database.
 License: CC BY 4.0 + file LICENSE
