@@ -1,0 +1,175 @@
+/* AusTraits Data Portal styling — matches austraits.org
+   Design tokens and component styling adapted from the austraits.org
+   site stylesheet so the portal reads as part of the same platform. */
+
+:root {
+  --at-ink: #2b332f;
+  --at-muted: #64726b;
+  --at-green: #2f7d55;
+  --at-green-dark: #235c43;
+  --at-blue: #2a7f9e;
+  --at-gold: #d9a441;
+  --at-cream: #f7f7f4;
+  --at-mint: #f2f6f3;
+  --at-sky: #f3f7f8;
+  --at-line: #e5e8e5;
+  --at-white: #ffffff;
+  --at-shadow: 0 10px 26px rgba(30, 45, 38, 0.08);
+  --at-radius: 8px;
+}
+
+body {
+  color: var(--at-ink);
+  background: #fdfdfc;
+}
+
+a {
+  color: var(--at-green-dark);
+}
+
+a:hover {
+  color: var(--at-blue);
+}
+
+/* --- Brand bar (page title) --------------------------------------------
+   bslib renders the page title inside a `.navbar` that contains
+   `.bslib-page-title`. Style it as the dark-green AusTraits brand bar. */
+.navbar:has(.bslib-page-title) {
+  background: var(--at-green-dark);
+  box-shadow: 0 1px 8px rgba(30, 55, 42, 0.12);
+  position: relative;
+}
+
+.navbar:has(.bslib-page-title)::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 4px;
+  content: "";
+  background: linear-gradient(90deg, var(--at-green), var(--at-blue), var(--at-gold));
+}
+
+.bslib-page-title,
+.navbar:has(.bslib-page-title) .navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--at-white);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.bslib-page-title img,
+.navbar:has(.bslib-page-title) .navbar-brand img {
+  max-height: 30px;
+  width: auto;
+}
+
+/* --- Tab navigation bar -------------------------------------------------
+   The `navset_bar` renders a second `.navbar.navbar-default`. Present it as
+   a light sub-navigation with a green active indicator. */
+.navbar.navbar-default {
+  --bs-navbar-active-color: var(--at-green-dark);
+  background: var(--at-white);
+  border-bottom: 1px solid var(--at-line);
+  box-shadow: none;
+}
+
+.navbar.navbar-default .navbar-brand {
+  color: var(--at-green-dark);
+  font-weight: 600;
+}
+
+.navbar.navbar-default .nav-link {
+  color: var(--at-muted);
+  font-weight: 500;
+}
+
+.navbar.navbar-default .nav-link:hover,
+.navbar.navbar-default .nav-link:focus {
+  color: var(--at-green-dark);
+}
+
+/* Underlined-tab active state */
+.nav-underline {
+  --bs-nav-underline-link-active-color: var(--at-green-dark);
+  --bs-nav-underline-border-color: var(--at-green);
+}
+
+.nav-underline .nav-link.active,
+.nav-underline .show > .nav-link {
+  color: var(--at-green-dark);
+  border-bottom-color: var(--at-green);
+}
+
+/* --- Headings -----------------------------------------------------------*/
+h1, h2, .content h2 {
+  color: var(--at-green-dark);
+}
+
+h3, h4, h5 {
+  color: var(--at-ink);
+}
+
+/* --- Sidebar ------------------------------------------------------------*/
+.bslib-sidebar-layout > .sidebar {
+  --bs-card-bg: var(--at-cream);
+}
+
+.bslib-sidebar-layout > .sidebar .sidebar-content {
+  background: var(--at-cream);
+}
+
+.bslib-sidebar-layout > .sidebar h5 {
+  color: var(--at-green-dark);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* --- Buttons ------------------------------------------------------------
+   Green (the Bootstrap primary) is the AusTraits identity colour; gold is
+   reserved as an accent (brand-bar stripe, highlights). */
+.btn-primary {
+  font-weight: 600;
+}
+
+.btn-outline-primary,
+.btn-secondary {
+  --bs-btn-color: var(--at-green-dark);
+  --bs-btn-border-color: var(--at-green-dark);
+  --bs-btn-hover-color: var(--at-white);
+  --bs-btn-hover-bg: var(--at-green-dark);
+  --bs-btn-hover-border-color: var(--at-green-dark);
+}
+
+/* --- Cards / value boxes ------------------------------------------------*/
+.card,
+.bslib-value-box {
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
+  box-shadow: 0 6px 18px rgba(30, 45, 38, 0.06);
+}
+
+/* --- Links inside data tables & selectize accents ----------------------*/
+.selectize-input.focus,
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--at-green);
+  box-shadow: 0 0 0 0.2rem rgba(47, 125, 85, 0.2);
+}
+
+/* --- Footer -------------------------------------------------------------*/
+footer {
+  color: var(--at-muted);
+  border-top: 1px solid var(--at-line);
+  background: var(--at-cream);
+  font-size: 0.9rem;
+}
+
+footer a {
+  color: var(--at-green-dark);
+}
+
+footer a:hover {
+  color: var(--at-blue);
+}

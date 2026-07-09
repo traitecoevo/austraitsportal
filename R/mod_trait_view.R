@@ -92,12 +92,12 @@ trait_profile <- reactive({
         
         # Add species averages banner at top 
         banner <- tags$div(
-          style = "background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px 16px; margin-bottom: 5px; border-radius: 4px;",
+          style = "background: #f2f6f3; border-left: 4px solid #2f7d55; padding: 12px 16px; margin-bottom: 5px; border-radius: 4px;",
           tags$div(
             style = "display: flex; align-items: center; gap: 8px;",
-            icon("info-circle", style = "color: #1976d2;"),
+            icon("info-circle", style = "color: #2f7d55;"),
             tags$span(
-              style = "color: #1565c0; font-weight: 500;",
+              style = "color: #235c43; font-weight: 500;",
               "Species Averages Dataset"
             )
           ),
@@ -122,12 +122,12 @@ trait_profile <- reactive({
       
       # raw data banner
       banner <- tags$div(
-        style = "background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px 16px; margin-bottom: 5px; border-radius: 4px;",
+        style = "background: #f2f6f3; border-left: 4px solid #2f7d55; padding: 12px 16px; margin-bottom: 5px; border-radius: 4px;",
         tags$div(
           style = "display: flex; align-items: center; gap: 8px;",
-          icon("info-circle", style = "color: #1976d2;"),
+          icon("info-circle", style = "color: #2f7d55;"),
           tags$span(
-            style = "color: #1565c0; font-weight: 500;",
+            style = "color: #235c43; font-weight: 500;",
             "Raw Observation Data"
           )
         ),
