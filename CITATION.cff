@@ -1,0 +1,64 @@
+# ------------------------------------------------
+# CITATION.cff file created with {cffr} R package
+# See also: https://docs.ropensci.org/cffr/
+# ------------------------------------------------
+
+cff-version: 1.2.0
+message: 'To cite the austraits.portal software in publications use:'
+type: software
+license: CC-BY-4.0
+title: 'austraits.portal: A code-free web interface to the AusTraits database'
+version: 0.0.0.9000
+abstract: A Shiny web application providing a code-free, point-and-click interface
+  for exploring and downloading data from the AusTraits plant trait database.
+authors:
+- family-names: Garg
+  given-names: Pushkal
+  email: pushkal.garg@student.unsw.edu.au
+  orcid: https://orcid.org/0009-0002-0179-2946
+- family-names: Kar
+  given-names: Fonti
+  email: f.kar@unsw.edu.au
+  orcid: https://orcid.org/0000-0002-2760-3974
+- family-names: Falster
+  given-names: Daniel
+  email: daniel.falster@unsw.edu.au
+  orcid: https://orcid.org/0000-0002-9814-092X
+- family-names: Wenk
+  given-names: Elizabeth
+  email: e.wenk@unsw.edu.au
+  orcid: https://orcid.org/0000-0001-5640-5910
+repository-code: https://github.com/traitecoevo/austraits.portal
+url: https://app.austraits.org/austraits/
+contact:
+- family-names: Garg
+  given-names: Pushkal
+  email: pushkal.garg@student.unsw.edu.au
+  orcid: https://orcid.org/0009-0002-0179-2946
+references:
+- type: article
+  title: AusTraits, a curated plant trait database for the Australian flora
+  notes: The AusTraits dataset accessed through this portal. Cite this when you use AusTraits data.
+  authors:
+  - family-names: Falster
+    given-names: Daniel
+    email: daniel.falster@unsw.edu.au
+    orcid: https://orcid.org/0000-0002-9814-092X
+  - family-names: Gallagher
+    given-names: Rachael
+  - family-names: Wenk
+    given-names: Elizabeth H.
+  - family-names: Wright
+    given-names: Ian J.
+  - family-names: Indiarto
+    given-names: Dony
+  - family-names: Andrew
+    given-names: Samuel C.
+  - name: others
+  journal: Scientific Data
+  year: '2021'
+  volume: '8'
+  issue: '1'
+  doi: 10.1038/s41597-021-01006-6
+  url: https://doi.org/10.1038/s41597-021-01006-6
+  start: '254'

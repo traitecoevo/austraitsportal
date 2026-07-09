@@ -1,7 +1,17 @@
 #' User interface (UI) for AusTraits Data Portal
 
 app_ui <- function() {
+  # Serve the packaged static assets (AusTraits stylesheet, logo) under www/
+  shiny::addResourcePath(
+    "www",
+    system.file("www", package = "austraits.portal")
+  )
+
   ui <- page_sidebar(
+    # AusTraits site stylesheet (matches austraits.org)
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "www/austraits-portal.css")
+    ),
     # Custom CSS for DataTable
 tags$head(
   tags$style(HTML("
@@ -83,16 +93,35 @@ tags$head(
       shinybusy::add_busy_spinner(
         spin = "fading-circle",
         position = "top-right",
-        color = "#00FFC6",
+        color = "#2f7d55",
         height = "60px",
         width = "60px"
       ),
 
-    # Set the overall theme of the app
-    theme = bs_theme(preset = "flatly"),
+    # Set the overall theme of the app to match austraits.org (simplex base
+    # with the AusTraits brand palette).
+    theme = bs_theme(
+      preset = "simplex",
+      primary = "#235c43",
+      secondary = "#64726b",
+      success = "#2f7d55",
+      info = "#2a7f9e",
+      warning = "#d9a441",
+      "body-bg" = "#fdfdfc",
+      "body-color" = "#2b332f",
+      "link-color" = "#235c43",
+      "link-hover-color" = "#2a7f9e",
+      "border-radius" = "8px"
+    ),
 
-    # Title of the portal
-    title = "AusTraits Data Portal",
+    # Title of the portal, with the AusTraits hex logo. The
+    # `bslib-page-title` class matches the brand-bar rules in
+    # austraits-portal.css (bslib does not add it for custom title nodes).
+    title = tags$span(
+      class = "bslib-page-title navbar-brand",
+      tags$img(src = "www/austraits_hex.png", alt = "AusTraits", height = "30"),
+      "AusTraits Data Portal"
+    ),
 
     footer =  tags$footer(
       "Powered by ",

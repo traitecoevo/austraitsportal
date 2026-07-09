@@ -24,7 +24,7 @@ profile_links <- function(github = NULL, orcid = NULL) {
   }
   
   # Reusable section header style
-  hdr <- "color: #1565c0; border-bottom: 2px solid #2196f3; padding-bottom: 6px; margin-top: 7px; margin-bottom: 14px;"
+  hdr <- "color: #235c43; border-bottom: 2px solid #2f7d55; padding-bottom: 6px; margin-top: 7px; margin-bottom: 14px;"
   
   card(
     card_header("About & Information"),
@@ -40,8 +40,9 @@ profile_links <- function(github = NULL, orcid = NULL) {
         tags$strong("Ray Miles"), " ", profile_links(github = "https://github.com/raymiles"), "."
       ),
       
-      p("The AusTraits Database and design of this portal are supported by an UNSW Research Infrastructure Grant ",
-        "and Australian Research Data Commons co-investment. ",
+      p("Development of this portal was supported by a UNSW Research Infrastructure Grant. ",
+        "AusTraits is a co-investment partnership with the Australian Research Data Commons (ARDC) ",
+        "through the Planet Research Data Commons. ",
         "The ARDC is enabled by the Australian Government's National Collaborative Research Infrastructure Strategy (NCRIS)."),
       
       tags$style(".logo-link img { transition: transform 0.2s ease, opacity 0.2s ease; }
@@ -56,9 +57,9 @@ profile_links <- function(github = NULL, orcid = NULL) {
         tags$a(href = "https://www.westernsydney.edu.au/", target = "_blank", class = "logo-link",
           tags$img(src = "https://upload.wikimedia.org/wikipedia/en/f/f0/Western_Sydney_University_Crest.png", height = "70px", alt = "Western Sydney University", style = "max-width: 140px;")),
         tags$a(href = "https://www.botanicgardens.org.au", target = "_blank", class = "logo-link",
-          tags$img(src = "https://austraits.org/images/RBG.png", height = "70px", alt = "Royal Botanic Garden Sydney", style = "max-width: 140px;")),
+          tags$img(src = "https://nesplandscapes.edu.au/wp-content/uploads/2021/07/RBGS-Royal-Botanic-Gardens-Sydney.png", height = "70px", alt = "Royal Botanic Garden Sydney", style = "max-width: 140px;")),
         tags$a(href = "https://ardc.edu.au", target = "_blank", class = "logo-link",
-          tags$img(src = "https://austraits.org/images/ARDC2.png", height = "70px", alt = "ARDC")),
+          tags$img(src = "https://austraits.org/images/ARDC.png", height = "70px", alt = "ARDC")),
         tags$a(href = "https://www.education.gov.au/ncris", target = "_blank", class = "logo-link",
           tags$img(src = "https://bioplatforms.com/wp-content/uploads/2024/03/afb87787085b2b5c5a7814a28971e5aa-1.png", height = "70px", alt = "NCRIS", style = "max-width: 140px;"))
       ),
@@ -92,7 +93,7 @@ profile_links <- function(github = NULL, orcid = NULL) {
       tags$h4(style = hdr, "How to Use"),
       
       tags$div(
-        style = "background: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px 15px; border-radius: 4px; margin-bottom: 18px;",
+        style = "background: #f2f6f3; border-left: 4px solid #2f7d55; padding: 10px 15px; border-radius: 4px; margin-bottom: 18px;",
         tags$strong("Quick start:"),
         " Select a dataset type \u2192 set your taxonomy \u2192 pick a trait (optional) \u2192 explore."
       ),
@@ -134,26 +135,26 @@ profile_links <- function(github = NULL, orcid = NULL) {
         
         # Sessions card
         tags$div(
-          style = "flex: 1; min-width: 140px; background: #e3f2fd; border-radius: 10px; padding: 18px; text-align: center;",
-          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #1565c0;", uiOutput(ns("metric_sessions"))),
-          tags$div(style = "font-size: 0.82em; color: #546e7a; margin-top: 4px;",
-            icon("users", style = "color: #1976d2;"), " Total Sessions")
+          style = "flex: 1; min-width: 140px; background: #f2f6f3; border-radius: 10px; padding: 18px; text-align: center;",
+          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #235c43;", uiOutput(ns("metric_sessions"))),
+          tags$div(style = "font-size: 0.82em; color: #64726b; margin-top: 4px;",
+            icon("users", style = "color: #2f7d55;"), " Total Sessions")
         ),
-        
+
         # Searches card
         tags$div(
-          style = "flex: 1; min-width: 140px; background: #f3e5f5; border-radius: 10px; padding: 18px; text-align: center;",
-          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #6a1b9a;", uiOutput(ns("metric_searches"))),
-          tags$div(style = "font-size: 0.82em; color: #546e7a; margin-top: 4px;",
-            icon("search", style = "color: #7b1fa2;"), " Searches")
+          style = "flex: 1; min-width: 140px; background: #f3f7f8; border-radius: 10px; padding: 18px; text-align: center;",
+          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #2a7f9e;", uiOutput(ns("metric_searches"))),
+          tags$div(style = "font-size: 0.82em; color: #64726b; margin-top: 4px;",
+            icon("search", style = "color: #2a7f9e;"), " Searches")
         ),
-        
+
         # Downloads card
         tags$div(
-          style = "flex: 1; min-width: 140px; background: #e8f5e9; border-radius: 10px; padding: 18px; text-align: center;",
-          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #2e7d32;", uiOutput(ns("metric_downloads"))),
-          tags$div(style = "font-size: 0.82em; color: #546e7a; margin-top: 4px;",
-            icon("download", style = "color: #388e3c;"), " Downloads")
+          style = "flex: 1; min-width: 140px; background: rgba(217, 164, 65, 0.14); border-radius: 10px; padding: 18px; text-align: center;",
+          tags$div(style = "font-size: 1.8em; font-weight: 700; color: #9a6f16;", uiOutput(ns("metric_downloads"))),
+          tags$div(style = "font-size: 0.82em; color: #64726b; margin-top: 4px;",
+            icon("download", style = "color: #d9a441;"), " Downloads")
         )
       ),
 
