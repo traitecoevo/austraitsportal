@@ -56,9 +56,9 @@ profile_links <- function(github = NULL, orcid = NULL) {
         tags$a(href = "https://www.westernsydney.edu.au/", target = "_blank", class = "logo-link",
           tags$img(src = "https://upload.wikimedia.org/wikipedia/en/f/f0/Western_Sydney_University_Crest.png", height = "70px", alt = "Western Sydney University", style = "max-width: 140px;")),
         tags$a(href = "https://www.botanicgardens.org.au", target = "_blank", class = "logo-link",
-          tags$img(src = "www/RBG.png", height = "70px", alt = "Royal Botanic Garden Sydney", style = "max-width: 140px;")),
+          tags$img(src = "https://nesplandscapes.edu.au/wp-content/uploads/2021/07/RBGS-Royal-Botanic-Gardens-Sydney.png", height = "70px", alt = "Royal Botanic Garden Sydney", style = "max-width: 140px;")),
         tags$a(href = "https://ardc.edu.au", target = "_blank", class = "logo-link",
-          tags$img(src = "www/ARDC.png", height = "70px", alt = "ARDC")),
+          tags$img(src = "https://austraits.org/images/ARDC.png", height = "70px", alt = "ARDC")),
         tags$a(href = "https://www.education.gov.au/ncris", target = "_blank", class = "logo-link",
           tags$img(src = "https://bioplatforms.com/wp-content/uploads/2024/03/afb87787085b2b5c5a7814a28971e5aa-1.png", height = "70px", alt = "NCRIS", style = "max-width: 140px;"))
       ),
