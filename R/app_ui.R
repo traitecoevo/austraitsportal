@@ -1,6 +1,12 @@
 #' User interface (UI) for AusTraits Data Portal
 
 app_ui <- function() {
+  # Serve the packaged static assets (AusTraits stylesheet, logo) under www/
+  shiny::addResourcePath(
+    "www",
+    system.file("www", package = "austraits.portal")
+  )
+
   ui <- page_sidebar(
     # AusTraits site stylesheet (matches austraits.org)
     tags$head(
