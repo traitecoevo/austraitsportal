@@ -1,7 +1,7 @@
 # Tests for data preparation functions
 
 test_that("prepare_data_for_portal creates required files", {
-  
+  skip("Integration test - requires full data preparation, run manually")  
   # This is an integration test that would require a full database
   # Typically run manually during data preparation
   temp_dir <- tempdir()
