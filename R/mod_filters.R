@@ -218,12 +218,6 @@ mod_filters_ui <- function(id) {
       )
     ),
 
-    conditionalPanel(
-      condition = sprintf('input["%s"] != "" && input["%s"] != null && input["%s"] != null && input["%s"].length > 0 && input["%s"] != null && input["%s"].length > 0', 
-                        ns("custom_col_2"), ns("custom_col_2"), ns("custom_val_1"), ns("custom_val_1"), ns("custom_val_2"), ns("custom_val_2")),
-      uiOutput(ns("custom_val_3_ui"))
-    ),
-
     actionButton(
     ns("apply_filters_btn"),
     "Apply Filters",

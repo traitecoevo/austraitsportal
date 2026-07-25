@@ -105,7 +105,7 @@ read_telemetry_metrics <- function(from_date = "2020-01-01", to_date = NULL) {
       return(tibble::tibble(type = character(), timestamp = character(), details = character()))
     })
   } else {
-    # Cloud Supabase mode
+    # Cloud Supabase mode - WITH PAGINATION
     url <- getOption("supabase_telemetry_url")
     key <- getOption("supabase_telemetry_key")
     
@@ -116,21 +116,37 @@ read_telemetry_metrics <- function(from_date = "2020-01-01", to_date = NULL) {
     if (is.null(to_date)) to_date <- as.character(Sys.Date() + 1)
     
     tryCatch({
-      query_url <- paste0(
-        url, 
-        "/rest/v1/telemetry_events?",
-        "timestamp=gte.", from_date,
-        "&timestamp=lte.", to_date,
-        "&order=timestamp.desc"
-      )
+      all_data <- list()
+      offset <- 0
       
-      resp <- request(query_url) |>
-        req_headers(
-          "apikey" = key,
-          "Authorization" = paste("Bearer", key)
-        ) |>
-        req_perform() |>
-        resp_body_json()
+      repeat {
+       
+        query_url <- paste0(
+          url, 
+          "/rest/v1/telemetry_events?",
+          "timestamp=gte.", from_date,
+          "&timestamp=lte.", to_date,
+          "&order=timestamp.desc",
+          "&limit=1000",
+          "&offset=", offset
+        )
+      
+        resp <- request(query_url) |>
+          req_headers(
+            "apikey" = key,
+            "Authorization" = paste("Bearer", key)
+          ) |>
+          req_perform() |>
+          resp_body_json()
+        
+        if (length(resp) == 0) break
+        
+        all_data[[length(all_data) + 1]] <- resp
+        offset <- offset + 1000
+      }
+      
+      # Combine all batches
+      resp <- unlist(all_data, recursive = FALSE)
       
       if (length(resp) > 0) {
         tibble::tibble(
@@ -148,4 +164,80 @@ read_telemetry_metrics <- function(from_date = "2020-01-01", to_date = NULL) {
       tibble::tibble(type = character(), timestamp = character(), details = character())
     })
   }
+}
+#' Get monthly telemetry metrics
+#' @param from_date Start date
+#' @param to_date End date
+#get_monthly_metrics <- function(from_date = "2020-01-01", to_date = NULL) {
+ # data <- read_telemetry_metrics(from_date, to_date)
+  
+get_monthly_metrics <- function(from_date = "2020-01-01", to_date = NULL) {
+   
+  data <- read_telemetry_metrics(from_date, to_date)
+ 
+  if (nrow(data) == 0) {
+    return(tibble::tibble(
+      month = character(),
+      logins = numeric(),
+      searches = numeric(),
+      downloads = numeric()
+    ))
+  }
+  
+  result <- data |>
+    dplyr::mutate(
+      month = format(as.Date(timestamp), "%Y-%m")
+    ) |>
+    dplyr::group_by(month) |>
+    dplyr::summarise(
+      logins = sum(type == "login", na.rm = TRUE),
+      searches = sum(type == "search", na.rm = TRUE),
+      downloads = sum(type == "download", na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    dplyr::arrange(dplyr::desc(month))
+  
+   return(result)
+}
+#' Export COUNTER metrics as CSV
+export_counter_csv <- function(from_date = "2020-01-01", to_date = NULL) {
+  monthly_data <- get_monthly_metrics(from_date, to_date)
+  
+  if (nrow(monthly_data) == 0) {
+    return(NULL)
+  }
+  
+  counter_df <- data.frame(
+    Reporting_Period = monthly_data$month,
+    Metric_Type_Investigations = "Investigations",
+    Investigations_Count = monthly_data$logins,
+    Metric_Type_Requests = "Requests",
+    Requests_Count = monthly_data$searches + monthly_data$downloads,
+    Searches = monthly_data$searches,
+    Downloads = monthly_data$downloads
+  )
+  
+  return(counter_df)
+}
+
+#' Export COUNTER metrics as JSON
+export_counter_json <- function(from_date = "2020-01-01", to_date = NULL) {
+  monthly_data <- get_monthly_metrics(from_date, to_date)
+  
+  if (nrow(monthly_data) == 0) {
+    return(NULL)
+  }
+  
+  counter_list <- lapply(1:nrow(monthly_data), function(i) {
+    row <- monthly_data[i, ]
+    list(
+      reporting_period = row$month,
+      investigations = as.numeric(row$logins),
+      requests_total = as.numeric(row$searches) + as.numeric(row$downloads),
+      searches = as.numeric(row$searches),
+      downloads = as.numeric(row$downloads)
+    )
+  })
+  
+  return(jsonlite::toJSON(counter_list, pretty = TRUE))
 }
