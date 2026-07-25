@@ -7,7 +7,7 @@ test_that("prepare_data_for_portal creates required files", {
   temp_dir <- tempdir()
   
   # Mock austraits object would be needed here
-  expect_no_failure({
+  expect_success({
     austraits:::austraits_5.0.0_lite |>
       prepare_data_for_portal(temp_dir, overwrite = TRUE)
   })
