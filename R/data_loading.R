@@ -168,17 +168,21 @@ if (nchar(supabase_url) > 0 && nchar(supabase_key) > 0) {
   init_supabase_telemetry(supabase_url, supabase_key)
   options(telemetry_mode = "cloud")
 } else {
-  message("✓ Using local SQLite telemetry")
-  library(shiny.telemetry)
-  dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
-  telemetry <- shiny.telemetry::Telemetry$new(
-    app_name = "austraits_portal",
-    data_storage = shiny.telemetry::DataStorageSQLite$new(
-      db_path = "inst/telemetry/telemetry.db"
+  tryCatch({
+    message("✓ Using local SQLite telemetry")
+    library(shiny.telemetry)
+    dir.create("inst/telemetry", showWarnings = FALSE, recursive = TRUE)
+    telemetry <- shiny.telemetry::Telemetry$new(
+      app_name = "austraits_portal",
+      data_storage = shiny.telemetry::DataStorageSQLite$new(
+        db_path = "inst/telemetry/telemetry.db"
+      )
     )
-  )
-  options(
-    telemetry_mode = "local",
-    telemetry_object = telemetry
-  )
+    options(
+      telemetry_mode = "local",
+      telemetry_object = telemetry
+    )
+  }, error = function(e) {
+    message("ℹ Local telemetry not available (test environment)")
+  })
 }

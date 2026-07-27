@@ -10,7 +10,8 @@ app_ui <- function() {
   ui <- page_sidebar(
     # AusTraits site stylesheet (matches austraits.org)
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "www/austraits-portal.css")
+      tags$link(rel = "stylesheet", type = "text/css", href = "www/austraits-portal.css"),
+      tags$link(rel = "icon", href = "www/austraits_hex.png", type = "image/png")
     ),
     # Custom CSS for DataTable
 tags$head(

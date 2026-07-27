@@ -7,6 +7,7 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
+library(DT)
 mod_app_info_ui <- function(id){
   ns <- NS(id)
   
@@ -159,8 +160,20 @@ profile_links <- function(github = NULL, orcid = NULL) {
       ),
 
       tags$p(style = "font-size: 0.8em; color: #90a4ae;", 
-        "Metrics are updated in real time and reflect cumulative portal activity."),      
+        "Metrics are updated in real time and reflect cumulative portal activity."),    
 
+tags$div(
+  style = "display: flex; flex-direction: column;",
+  tags$div(
+    style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;",
+    tags$h4(style = hdr, "Monthly Breakdown"),
+    tags$div(
+      downloadButton(ns("download_csv"), "Download CSV", style = "margin-right: 10px;"),
+      downloadButton(ns("download_json"), "Download JSON")
+    )
+  ),
+  DT::DTOutput(ns("monthly_data_table"))
+),
       # USAGE GUIDELINES
       tags$h4(style = hdr, "Usage Guidelines"),
       
@@ -182,7 +195,7 @@ mod_app_info_server <- function(id){
     ns <- session$ns
 
 # Refreshing using Supabase REST API
-metrics <- reactive({
+	metrics <- reactive({
   # Auto-refresh every 60 seconds
   invalidateLater(60000, session)
   
@@ -201,8 +214,7 @@ metrics <- reactive({
       list(sessions = 0, searches = 0, downloads = 0)
     }
   }, error = function(e) {
-    message("Metrics read error: ", e$message)
-    list(sessions = 0, searches = 0, downloads = 0)
+       list(sessions = 0, searches = 0, downloads = 0)
   })
 })
 
@@ -223,5 +235,44 @@ output$metric_downloads <- renderUI({
   m <- metrics()
   tags$span(format(m$downloads, big.mark = ","))
 })
+# Monthly metrics table
+output$monthly_data_table <- DT::renderDT({
+  tryCatch({
+    monthly_data <- get_monthly_metrics("2020-01-01", as.character(Sys.Date() + 1))
+    
+    dt <- DT::datatable(
+      monthly_data,
+      escape = FALSE,
+      rownames = FALSE,
+      filter = "none",
+      colnames = c("Month", "Logins", "Searches", "Downloads"),
+      options = list(pageLength = 12, searching = FALSE, ordering = FALSE)
+    )
+    dt
+  }, error = function(e) {
+    DT::datatable(data.frame(Error = e$message))
+  })
+})
+# Download CSV
+output$download_csv <- downloadHandler(
+  filename = function() {
+    paste0("austraits_counter_metrics_", Sys.Date(), ".csv")
+  },
+  content = function(file) {
+    df <- export_counter_csv("2020-01-01", as.character(Sys.Date() + 1))
+    write.csv(df, file, row.names = FALSE)
+  }
+)
+
+# Download JSON
+output$download_json <- downloadHandler(
+  filename = function() {
+    paste0("austraits_counter_metrics_", Sys.Date(), ".json")
+  },
+  content = function(file) {
+    json_data <- export_counter_json("2020-01-01", as.character(Sys.Date() + 1))
+    writeLines(json_data, file)
+  }
+)
   })
 }
