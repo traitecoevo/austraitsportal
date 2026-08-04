@@ -102,6 +102,14 @@ a:hover {
   border-bottom-color: var(--at-green);
 }
 
+/* bslib gives `.bslib-page-main` a 576px min-width, which the sidebar grid
+   cell cannot honour on narrow screens — the tab bar and content then spill
+   past the right edge. The portal is embedded in an iframe on austraits.org,
+   so let the main region shrink with its cell instead. */
+.bslib-page-main {
+  min-width: 0 !important;
+}
+
 /* --- Headings -----------------------------------------------------------*/
 h1, h2, .content h2 {
   color: var(--at-green-dark);

@@ -124,14 +124,6 @@ tags$head(
       "AusTraits Data Portal"
     ),
 
-    footer =  tags$footer(
-      "Powered by ",
-      tags$a(href = "https://www.unsw.edu.au/science", target = "_blank", "UNSW Faculty of Science"), 
-      align = "right", style = "padding: 30px",
-      
-      div("Created by AusTraits Team",  
-          target)
-      ),
     # Create a sidebar for the app
     sidebar = mod_filters_ui("filters"),
 
@@ -158,6 +150,19 @@ tags$head(
       nav_panel(
         title = "Citations",
         mod_citations_ui("citations")
+      ),
+
+      # Note: the footer belongs on navset_bar, not page_sidebar —
+      # page_sidebar() has no `footer` argument, so passing one there is
+      # silently swallowed as an HTML attribute and never renders.
+      footer = tags$footer(
+        "Powered by ",
+        tags$a(href = "https://www.unsw.edu.au/science", target = "_blank",
+               "UNSW Faculty of Science"),
+        align = "right", style = "padding: 30px",
+
+        div("Created by AusTraits Team",
+            target)
       )
     )
   )
