@@ -28,7 +28,7 @@ profile_links <- function(github = NULL, orcid = NULL) {
   hdr <- "color: #235c43; border-bottom: 2px solid #2f7d55; padding-bottom: 6px; margin-top: 7px; margin-bottom: 14px;"
   
   card(
-    card_header("About & Information"),
+    card_header("About and Information"),
     card_body(
       # ATTRIBUTION
       tags$h4(style = hdr, "Attribution"),
