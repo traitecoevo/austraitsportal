@@ -170,10 +170,22 @@ srv_url_params <- function(input, output, session,
         full_filtered_cache(NULL)
         filtered_database(filtered_data)
 
-      if (isTRUE(parsed_filters$taxon$taxon_type == "taxon_name") &&
-       length(parsed_filters$taxon$taxon_name) == 1) {
-       apply_filters_trigger(apply_filters_trigger() + 1)
-      }
+        if (isTRUE(parsed_filters$taxon$taxon_type == "taxon_name") &&
+            length(parsed_filters$taxon$taxon_name) == 1) {
+
+          target_taxon <- parsed_filters$taxon$taxon_name
+          taxon_view_unlocked <- reactiveVal(FALSE)
+
+          observe({
+            if (taxon_view_unlocked()) return()
+            fv <- filters()
+            if (isTRUE(fv$taxon_type == "taxon_name") &&
+                isTRUE(identical(fv$taxon_name, target_taxon))) {
+              taxon_view_unlocked(TRUE)
+              apply_filters_trigger(apply_filters_trigger() + 1)
+            }
+          })
+        }
         
         elapsed_total <- as.numeric(Sys.time() - start_time, units = "secs")
         cat(sprintf("[FILTER] ✅ URL filters applied in %.2f sec\n", elapsed_total))
