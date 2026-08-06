@@ -361,7 +361,8 @@ observeEvent(input[["filters-clear_filters"]], {
     filtered_query_cache,
     full_filtered_cache,
     current_austraits_display,
-    filters
+    filters,
+    apply_filters_trigger
   )  
 # Cleanup DuckDB connection when app stops
   onStop(function() {
