@@ -92,12 +92,19 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
   # now combine species-level proportions for each categorical trait value,
   # outputting family-level proportions instead
   prop_by_family <- prop_by_species |>
-    dplyr::select(-taxon_name) |>
     dplyr::filter(family %in% most_common_families$family) |>
     dplyr::group_by(family, value) |>
-    dplyr::mutate(counts_per_value = sum(prop)) |>
+    dplyr::mutate(
+      counts_per_value = sum(prop),
+      # actual number of taxa in the family with a record for this value.
+      # NB: counts_per_value is a fractional, prop-weighted total - taxa whose
+      # records disagree (e.g. "annual" in one dataset, "perennial" in another)
+      # get split and down-weighted across every value they touch, so it
+      # under-counts taxa and must not be used to size the bubbles
+      n_taxa = dplyr::n_distinct(taxon_name)
+    ) |>
     dplyr::ungroup() |>
-    dplyr::distinct(family, value, counts_per_value) |>
+    dplyr::distinct(family, value, counts_per_value, n_taxa) |>
     dplyr::group_by(family) |>
     dplyr::mutate(
       total = sum(counts_per_value)
@@ -141,7 +148,7 @@ plot_categorical_trait_distribution <- function(data, trait, family_count) {
     dplyr::filter(!is.na(family)) |>
     dplyr::arrange(family)
 
-  ggplot2::ggplot(ggplot2::aes(y = family, x = value, fill = prop, size = counts_per_value), data = prop_by_family |> filter(prop > 0)) +
+  ggplot2::ggplot(ggplot2::aes(y = family, x = value, fill = prop, size = n_taxa), data = prop_by_family |> filter(prop > 0)) +
     ggplot2::geom_jitter(shape = 21, width = 0.15, height = 0) +
     ggplot2::scale_size_continuous() +
     ggplot2::scale_fill_viridis_c(option = "D") +
